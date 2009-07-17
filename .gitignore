@@ -1,0 +1,22 @@
+# autotools generated
+*.o
+*.so
+*.l[oa]
+*.loT
+.deps
+.libs
+stamp-h*
+config.h
+*~
+Makefile
+Makefile.in
+libtool
+/aclocal.m4
+/autom4te.cache
+/src/config.h
+/src/config.h.in
+/config.log
+/config.status
+/config
+/configure
+

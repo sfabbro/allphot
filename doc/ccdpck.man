@@ -1,0 +1,1392 @@
+Dear sir and/or madam:
+
+You are a guinea pig.  This software is mine, written by myself for
+me.  It seems that you want to use it.  That's OK with me, but please
+understand that it's on a shared-risk basis.  As far as I know these
+programs work (more or less), at least in the mode in which I use
+them.  I'm not prepared to guarantee that the programs are entirely
+bug-free, and I CERTAINLY don't promise not to try to improve my
+copies.  Don't count on me to send you unsolicited updates.  As you can
+see, the documentation is a little on the sketchy side, too.  What can
+I tell you?  I'm not a professional software house making the big bucks
+from my code.
+
+However, this I can tell you.  By supplying you with these programs
+I'm getting messed up in it with you.  If you have questions, get back
+to me.  I'll answer.  If you run into a problem that you suspect may be
+my fault, get back to me.  I'll try to fix it.  If you have bright ideas
+for improving things, get back to me.  Maybe I'll use them.  Just promise
+me you won't pass copies of the source code along to anyone else.  If
+someone should happen to ask you for a copy, put them in touch with me.
+The last thing I need is various versions and generations of this crud
+circulating and crossing paths all through the astronomical community.
+If you got a copy vintage thus-and-so from me, then that's what you've
+got.  You want a later, improved version?  You can get it from me.
+Better than buying a hot copy out of the trunk of somebody's car.
+
+Please let me know how you make out.  Preprints are nice.
+
+PBS
+
+#####################################################################
+
+These programs combine all sorts of information from a variety of
+origins in various ways to produce final, output photometry.
+Unfortunately, the most convenient way to do this seems to involve a
+many different sorts of data files, and quite a number of different
+programs that use different combinations of them as input.
+
+The first file that you are going to want to create is one which
+contains exposure information:  CCD image filenames, filters, exposure
+times, airmasses, and the like.  These files should have the extension
+.INF (.inf in Unix; henceforth, whenever I specify a filename or
+extension in capitals, you may assume that the Unix equivalent is in
+lower case), and I include an example named SAMPLE.INF.  This file must
+be typed in by hand, because I'm not going to write a routine which can
+extract the necessary information from FITS headers, non-standard as
+most of them are.  Here are the first few lines (note that the number
+of blank spaces is not correct; refer to SAMPLE.INF to get an accurate
+layout).
+
+==============================================================================
+
+ kp4m:d46      2   3 54  1.201   6.010  kp4m:85kpno5          sav:l106_550
+ kp4m:d47      1   3 56  1.200   4.010  kp4m:85kpno5          sav:l106_550
+ kp4m:d48      1   3 56  1.200   4.010  kp4m:85kpno5          sav:l106_550
+ kp4m:d49      2   3 57  1.199   6.010  kp4m:85kpno5          sav:l106_550
+
+==============================================================================
+
+Field 1: frame identifier [directory-name]:[filename]
+      2: filter identifier
+      3: time of the exposure (UT, in this case) in hh mm format
+      4: airmass
+      5: exposure time
+
+{The exposure times are 0.010 seconds longer than an integer because of
+an error in the timing of shutter openings/closures in the KPNO 4m
+prime-focus camera.  See Stetson, 1989, Highlights of Astronomy, 8,
+635-444 both for the determination of shutter timing errors and for
+computing the effective airmass of an observation.}
+
+Field 6: the name of the .obs file which includes data for that frame
+      7: the name of the .fet file identifying the stars in that frame
+
+The format of this file is strictly fixed:
+
+      FORMAT (1X, A30, I3, F4.0, F3.0, F7.3, F8.1, 2X, A30, 2X, A30)
+
+Your filters must be numbered consecutively from 1 through N (but the
+order is up to you: e.g.  visual = 1, blue = 2, red = 3, etc.) and you
+must maintain the same convention throughout all subsequent programs
+and data files.  Your times do not need to be defined on a scale
+which increases monotonically...  you may go from 23:58 to 23:59 to 0:00
+to 0:01 at midnight.  You may use civil time, universal time, sidereal
+time --- whatever is most convenient for you.
+
+The next set of information that you need is the total, integrated
+instrumental magnitudes of your standard stars, as extracted from your
+CCD frames.  These are usually derived from aperture photometry and a
+growth-curve analysis directly, or from profile-fitting photometry plus
+a net magnitude correction derived by comparison to aperture photometry
+(and a growth-curve analysis).  These corrections can be computed by
+hand or by some program like DAOGROW.
+
+***********************************************************************
+
+Aside: DAOGROW
+
+DAOGROW requires the following input:
+
+   1.  The name of the file defining the aperture radii that
+       you used for your multiple aperture photometry
+       (e.g. PHOTO.OPT).  After you specify the filename,
+       DAOGROW will type out the file's contents for you
+       to verify that it is correct.  At the ``PHO>'' prompt
+       hit <CR> and the program will proceed.  Aperture radii
+       should be strictly in order of increasing size.
+
+   2.  The name of the .INF file containing the airmasses for
+       all your .AP files.
+
+   3.  A file containing the names of all your .AP files, one
+       filename per line.  Such a file can easily be generated
+       in VMS by the command
+
+          $ DIR/COLU=1/OUTP=listfilename.ext *.AP
+
+       or in Unix by
+
+          % ls *.ap >! listfilename.ext
+
+       followed by editing to remove header/trailer information
+       and/or unwanted filenames.
+
+Refer now to Stetson, 1990, PASP, 102, 932, Eq. 1.  DAOGROW will
+ask you how many of the parameters A, B, C, D, E you want to
+solve for.  If you answer ``4'' it will solve for A, ..., D;
+if you answer ``2'' it will solve for A, and B; and so on.  It
+will always solve for at least A and a seeing radius for every
+frame.  DAOGROW will ask you to type in values for the remaining
+parameters that you do not want new solutions for.  I suggest
+D = 0.9 and E = 0.0, unless you have better information to the
+contrary.
+
+DAOGROW will now ask for the ``Maximum magnitude error.''  When
+the program sees an aperture magnitude with a standard error
+larger than the value you enter, that magnitude and the magnitudes
+from all larger apertures for that star will be ignored.
+
+DAOGROW will now fit the growth curves.  It will type out values
+for each of the five parameters A, ..., E followed by an estimate
+of the current scatter of residuals as the solution iterates.
+After convergence it will type out the final values for these
+numbers, and estimates of the standard errors of the final values.
+Finally, it will type out for each aperture the ``average'' value
+of the analytic model values for the difference between that aperture 
+and the next smaller one, taken over all frames; the average
+residual between the actual, observed magnitude differences and
+the analytic models, taken over all stars in all frames; and the
+rms residuals of the actual magnitude differences from the analytic
+model growth curves, over all stars and frames.  These allow you
+to see whether there is some gross mismatch between the family of
+analytic models and the imaging properties of your telescope.
+
+DAOGROW creates the following files.
+
+   1.  <lisffilename>.GRO, which is a summary of the data and the
+       (analytic, empirical, and adopted) growth curves for all
+       the frames, suitable for printing out
+
+   2.  <listfilename>.SEE, which contains file model growth curves,
+       for the best-seeing frame in your data set, for the poorest
+       seeing frame in our data set, and for three equally-spaced
+       intermediate values, suitable for plotting a la
+       Stetson 1990, Figs. 1 and 6.
+
+   3.  For each input <imagename>.AP file it creates
+
+       a.  <imagename>.TOT, which contains the final, cumulative,
+           total instrumental magnitude of each of the stars,
+           extrapolated to a radius equal to twice the largest 
+           aperture;
+
+       b.  <imagename>.CUR, which contains the (analytic,
+           empirical, and adopted) growth curves, and
+           <imagename>.POI, which contains the actual, observed
+           magnitude differences in a form suitable for plotting
+           a la Stetson 1990, Figs. 2, 3, 4, 5, and 7.
+
+DAGROW will consider only the 40 first valid stars from each
+.AP file, so sort by magnitude or hand-pick the stars you want
+used (e.g. use the same stars as you used to define the PSF).
+
+***********************************************************************
+
+Now, I have written some programs that make life easier when you
+have several frames for a field.  First, you want to choose your
+``best'' frame of each field, whether that be the deepest frame,
+or the most centered frame, or whatever.  The first thing you want
+to do is associate the real-world names of the objects contained
+within that frame with their positions in the frame.  This information
+is contained in what I call a ``fetch'' file, <filename>.FET.
+This label comes from a program which I wrote for our Vicom machine,
+which permitted a user to specify the name of a <filename>.AP
+file or a <filename>.NST file; then you would display the image on
+the image display, place the cursor on a star, type in the star's
+real-world name, and the program would search through the file
+for the star nearest that position and tack the star name onto it.
+I include L106_550.FET --- a fetch file for stars near Landolt
+106-550 --- as an example.  Note that the only things that matter
+in this file are the object name in columns 2-13 of the first
+line, and the x,y coordinates in columns 7-24 of the second line
+for each object.  Anything else is optional.
+
+For any IRAF fans in the audience, I include an IRAF script named
+FETCH.CL, which operates pretty much as our old Vicom routine did.
+Using images.tv.display or equivalent, load your image into the
+image display.  Place the cursor on a star and press any key.
+Then type in the star's name followed by <CR>.  FETCH.CL will
+create (or append to) an output file containing the cursor positions
+and the star-names you have entered.  When this is done, exit with
+CTRL-Z or whatever the END-OF-FILE is on your machine.  Then run
+the FORTRAN program named FETCH.  This will accept the file generated
+by FETCH.CL and any DAOPHOT output file for the image (i.e. .NST,
+.ALS, ...).  It will look in the DAOPHOT file for the stars nearest
+the cursor positions and generate a ``fetch'' file in the appropriate
+format.
+
+Now, you do not want to have to create a .FET file for every CCD frame
+of a given field.  Instead, what you want is a file that gives the
+positional transformation equations to convert the coordinate system of
+an arbitrary frame of a given field, to the coordinate system of the
+frame for which the .FET file is defined.  This is done with the
+programs DAOMATCH and DAOMASTER.
+
+DAOMATCH accepts the names of photometry files created by DAOPHOT.
+Give it first the name of the ``best'' frame of the field ---
+the one for which the .FET file is defined.  It will then seek
+your approval for the name of an output file.  Once the name of
+the output file has been specified, it will ask for the names of
+the remaining files for that field, one by one.  From each input
+file it will extract the 30 brightest stars, and attempt to 
+cross-identify them with the 30 brightest stars from the first
+frame, by the method of matching triangles (see Stetson 1990,
+``The Techniques of Least Squares and Stellar Photometry with
+CCDs,'' Chapter 5, and Groth 1986 AJ, 91, 1244).  When it thinks
+it has cross-identified ``enough'' stars, it will type out a
+table containing the number of different triangles in which each
+star of frame n corresponds with a given star of frame 1, followed
+by the provisional transformation equations based on the stars it
+thinks it has cross-identifed.  These equations are in the form
+
+              x(1) = A + C*x(n) + E*y(n)
+              y(1) = B + D*x(n) + F*y(n)
+
+Look at these equations and decide whether they look reasonable:
+for instance, if both frames were taken with the same telescope
+and the camera was not rotated in between, then
+
+   C approx = F approx = 1    and    D approx = E approx = 0.
+
+If they were taken with the same telescope and the camera was 
+rotated then 
+
+   C approx = F and D approx = E,   and   C**2 + D**2 approx = 1.  
+
+DAOMATCH can match up frames from different filters, and frames from
+different telescopes (including some from prime foci with some from
+Cassegrain foci).  The major restriction is that the program tends to
+fail if the brightest 30 stars between the two frames have fewer than 5
+or 6 in common.  That is, the overlap on the sky should be at least 25
+or 30 percent, and the exposure times should not be such that the
+brightest stars in one frame are unmeasureable in the other.  If these
+conditions are not met, then I suggest you generate the approximate
+transformation equations by measuring positions on your image display.
+I include L106_550.MCH --- a sample file generated by DAOMATCH.
+
+DAOMASTER solves two problems simultaneously.  First, given the
+approximate transformation equations that relate positions in all the
+frames of a given field to the positions in the best frame,
+cross-identify all stars possible (not just the brightest 30, but every
+star in every frame).  Second, given a set of provisional
+cross-identifications, refine the estimates of the transformation
+equations.  DAOMASTER solves these two problems iteratively, see-sawing
+back and forth from one to the other.  When you run DAOMASTER, the
+first thing it asks you for is the name of the .MCH file which you have
+presumably just created with MATCH.  DAOMASTER then reads in the
+positions, magnitudes, and standard errors of all the stars in all the
+files, packs them as tightly as it can in computer memory, figures out
+how much space is left, and then tells you how big a final ``master
+list'' it has room for.  It then asks for various constraints from you
+on when a star is to be regarded as ``real'' --- and kept --- or ``a
+false detection'' --- and discarded.
+
+   1.  First, how many frames was the star detected in?  You
+       must enter three numbers, separated by commas or spaces,
+       in the following order:
+
+       a.  Minimum number of frames.  A star absolutely must be
+           detected in at least so many frames, or it is discarded.
+           If you are willing to keep detections that were seen only
+           once, and did not appear in other frames of the same
+           field, you may set this to 1; if you have some V frames and
+           some B frames, and you are uninterested in any star for
+           which you can't generate a color, then set this to at least
+           2.
+
+       b.  Minimum fraction of frames.  Of those frames that a
+           star may reasonably be expected to appear in (its
+           average position, transformed to the coordinate system
+           of this frame, falls within this frame; its average
+           magnitude, offset to the magnitude system of this frame,
+           is reasonably bright compared to the magnitude limit
+           of this frame), it actually is found in at least this
+           fraction of them.  The fraction must be between 0.0
+           and 1.0, inclusive.
+
+       c.  Enough frames.  Any star which appears in at least this
+           many frames will be accepted, regardless of how many frames
+           it could have been found in.
+
+       Example:  let's say you have 17 frames of some field.  When 
+       DAOMASTER asks you
+
+          Minimum number, minimum fraction, enough frames:
+
+       you answer
+
+          2, 0.6, 5.
+
+       Then if the star OUGHT to be visible in
+
+                1 frame                    reject
+                2 frames      accept if it's in both (2 > 1.2)
+                3    "        accept if it's in at least 2 (2 > 1.8)
+                4    "        accept if it's in at least 3 (3 > 2.4)
+                5    "        accept if it's in at least 3 (3 = 3.0)
+                6    "        accept if it's in at least 4 (4 > 3.6)
+              7-17   "        accept if it's in at least 5
+
+       by suitable choices of these limits, you can do a reasonable
+       job of defining ``real'' objects for most combinations of
+       spatial and magnitude overlap among the frames.
+
+   2.  Reject any star with too uncertain a magnitude.  DAOMASTER asks for
+
+          Maximum sigma:
+
+       and you type in a number.  A star will be rejected if its mean
+       instrumental magnitude, based on a weighted average of all
+       available observerations corrected to the magnitude scale of the
+       ``best'' frame, is larger than the number you type in.
+
+   3.  Then you specify how complicated a transformation you want.  If your
+       frames for this field were all taken one right after another on
+       the same night with the same telescope, then you might answer
+       "2" and DAOMASTER will solve only for mean offsets A and B among
+       the various frames.  If you answer "4" DAOMASTER will solve for
+       the four (and a half) constants in these equations:
+
+                x(1) = A + C*x(2) -/+ D*y(2)
+                y(1) = B + D*x(2) +/- C*y(2)
+
+       which allow for arbitrary rotation angles and scale differences,
+       as well as translations of the origin.  The -/+ and +/- also
+       allow for a flip, as when matching a frame from prime focus with
+       one from a Cassegrain focus.  If you answer "6" DAOMASTER solves
+       for all of A, ..., F in the equations above.
+
+   4.  Finally you specify a match-up radius.  After having transformed
+       the stars in frame n to the coordinate system of the master
+       frame, stars will be cross-identified only if their positions
+       agree to within that tolerance.  Furthermore, they will agree
+       only if that is the closest otherwise unassigned star in frame n
+       to that star in the master list, and only if that is the closest
+       otherwise unassigned star in the master list to that star in
+       frame n.  Multiple cross-identifications of the same star in one
+       list to different stars in the other are not allowed.
+
+In the beginning, the transformation equations from MATCH are only
+approximate (based on some small subset of 30 stars).  So set the match
+up radius large ...  maybe 5 or 10 pixels.  DAOMASTER will go through
+all the star lists and match as many stars as it can to stars appearing
+in the master list (initially equal to the list of stars found in frame
+1); many of these provisional cross-identifications will be spurious,
+but legitimate cross-identifications will outnumber them.  DAOMASTER
+then uses robust techniques to estimate corrections to the
+transformation constants, and approximate magnitude offsets.  At the
+same time it will have collected and cross-matched as many stars as
+possible from frames 2, ..., N that don't appear in frame one.  It will
+then go through this enlarged star list and reject any stars that don't
+meet the acceptance criteria above.  It will type out for each frame
+the rms residuals in x and y, the values of the transformation
+parameters, the approximate magnitude offset and its standard
+deviation, and the number of stars used.  It will then type out the
+current number of stars in the master list and ask for a new limiting
+match-up radius.  Because the transformations are (presumably) more
+accurate now than before, you specify a somewhat smaller match-up
+radius, and DAOMASTER goes through the whole thing again.  Keep an eye
+on the rms residuals of the x- and y-positions for each frame; keep
+reducing the size of the match-up radius iteration by iteration until
+you are specifying maybe something like 3 to 5 times the typical rms
+positional error (recalling that the positions of the faintest real
+stars will be somewhat poorer than the positions of the ``average''
+star).  Keep entering this same radius for several more iterations,
+until the number of stars in the master list repeats itself.  For
+instance, for the successive iterations you might specify radii of 5,
+4, 3, 2, 1, 1, 1, 1.  When the master list converges, enter 0 as the
+radius to terminate the sequence.  DAOMASTER now has a self-consistent
+list of legitimate cross-identifications (at least, legitimate
+according to the criteria you yourself have specified), plus the
+transformation equations that they imply and that imply them.
+
+DAOMASTER now asks if you want the stars renumbered.  If you answer
+``Y'', it will sort the master list by mean magnitude, and renumber the
+stars from 1 to N.
+
+DAOMASTER offers a variety of output options.
+
+   1.  A file with mean magnitudes and scatter?
+
+       If you answer ``y'' it will correct all observed magnitudes
+       for each star to the system of frame 1, take a robust
+       average, and write out to a disk file the resulting mean
+       magnitude, standard error of the mean, the ratio of the
+       magnitude scatter observed to that expected from the 
+       individual standard errors (i.e., the ratio of external to
+       internal errors), and the root-mean-square chi value.
+
+   2.  A file with corrected magnitudes?
+
+       If you answer ``y'' it will correct all observed magnitudes for
+       each star to the system of frame 1 by means of an additive
+       constant, and write them all out to a disk file.  You can then
+       search for variables (for instance), using your own algorithms.
+
+   3.  A file with raw magnitudes and errors?
+
+       If you answer ``y'' it will simply write out all the
+       instrumental magnitudes observed for each star.
+
+   4.  A file with the new transformations?
+
+       If you answer ``y'' it will write out a new .MCH file with the
+       latest set of transformation constants, plus the mean magnitude
+       offsets.
+
+   5.  A file with the transfer table?
+
+       If you answer ``y'' it will write out a file which contains
+       where each star in the master list appears in each of the
+       input files:  Star 1 in the master list is the 37th star
+       in frame 1, it doesn't appear in frame 2, it is the 1193rd
+       star in frame 3, ....  
+
+   6.  Individual .COO files?
+
+       If you answer ``y'' it will invert the transformation equations
+       and project each star in the master list to where it SHOULD
+       have appeared in each of the CCD frames.  It will then create
+       new .COO files, so that if you want you can go through
+       aperture and profile-fitting photometry with exactly the same
+       star list for every frame.  A star will not be written to a .COO
+       file if it falls outside the actual area of that frame, however.
+
+   7.  Simply transfer star IDs?
+
+       If you answer ``y'' it will create verbatim copies of all
+       of the input files with only the ID numbers changed, so that
+       the same star has the same ID number in all frames.  If you
+       have not used the renumber option above, the ID number will
+       be transferred from frame 1 to each of the other frames,
+       except that stars in the master list that are not in frame
+       1 are given consecutive numbers starting with 50001.  The
+       new files are given the same filenames as the input files,
+       with extensions .MTR.
+      
+================================================================================
+
+OK.  With that out of the way you are ready to start construncting a
+file with the OBSERVED INSTRUMENTAL magnitudes of your primary
+standards and of any program stars that you want to transform directly
+to the standard system.  If you are talking about a cluster field that
+contains hundreds or thousands of stars, you do not want to transform
+every one of them right now.  Instead, what you want to do is to
+transform some 20 or 50 stars per field to the standard system, so that
+they can serve as local zero-point standards later.  You are making
+local, secondary standards like the ones in Stetson and Harris, 1988, AJ,
+909, Table IV (d)-(h).  Choose the brightest and most isolated stars in
+each of your program fields --- the ones you used to define the PSF
+will do nicely --- and make sure they are in your .FET files.  I will
+now try to talk you through a run of COLLECT.  My comments will be in
+square brackets; all else will be dialog between you and the computer.
+What you type will be shown as capitals, but what you actually type may
+indeed be in lower case.
+
+% COLLECT
+
+                            Name for output file: SAMPLE.OBS
+
+     Creating new file.
+
+                           Label for magnitude 1: v
+                           Label for magnitude 2: b
+                           Label for magnitude 3: <CR>
+
+[I have data for only two filters.  IF THE FILE SAMPLE.OBS ALREADY
+EXISTED, the program would open the existing file and append the
+new data to the end of it. Note that the program is asking for labels
+for MAGNITUDES --- because CCD frames measure magnitudes, not colors.
+I have maintained the tradition of using lower-case letters to stress
+the fact that these are instrumental magnitudes on the natural
+system of the CCD + filter + telescope + site.]
+
+              Mid-time of first exposure (hh mm): 20 15
+               Mid-time of last exposure (hh mm): 5 30
+
+[The program uses these to estimate the time of effective midnight.
+This is needed later on to ensure that your time scale through the
+night increases monotonically, rather than having a major jog as
+you go from 23:58 to 23:59 to 00:00 to 00:01 --- any exposure whose
+time indicates that it was taken more than twelve hours after midnight
+will be inferred to have been taken before midnight, and vice versa.
+Make sense?]
+
+   File with exposure information (default NONE): SAMPLE.INF
+
+[You don't need to have an .INF file if you don't want one.  COLLECT will
+then ask you to type in the exposure information for each image by hand.]
+
+                                 Critical radius: 2
+
+[A star will be ``identified'' only if it falls within this many pixels
+of its predicted position.  If several stars fall within this distance,
+only the closest will be chosen.]
+
+                      Photometry-filename prefix: KP4M:E
+
+[Any character string which appears at the beginning of all
+photometry filenames; saves typing later.  You can leave it blank if
+you want.]
+
+            File with positional transformations: M3
+
+[If the filename extension is the standard one, viz. .MCH, you don't
+need to type it.  Similarly, you didn't need to type .OBS or
+.INF in the answers to the previous question.  If the extension is
+other than the standard one for each type of file, you must include it
+explicitly.]
+
+             Name of FETCH file (default M3.FET): <CR>
+
+[It offered me the correct default, so I just kept it.]
+
+Not found in transformation file.  Not transforming positions.
+
+[If for some reason the file from which you generated the FETCH list is
+not the same as the first file in the .MCH file, the FETCH file must
+itself appear in the .MCH file so the program will know how to
+transform the positions.  Since in this case the FETCH file does not
+appear in the .MCH file, the program will assume that the positions
+given in the FETCH file correspond to the positions in the master
+list.]
+
+[Let me go through that again.  The file which appears on the first
+line of the .MCH file represents the original source of the positional
+system of the so-called "master list".  The coordinate systems of all
+other frames are transformed to the system of this frame.  Now, it is
+just barely possible that you have generated the "fetch" list NOT from
+this frame, but from some other.  For instance, look at the M92 paper
+(1988, AJ, 96, 909); see the plates, Figs. 1-6.  These are montages made
+up by merging many individual frames with differing offsets and
+rotations.  I generated by fetch lists from these made-up frames, and
+positions in these frames are NOT on the same system as positions in
+the "master" frame.  Or maybe you generated the .FET file from one
+frame, and then later on found that some other frame was more complete
+and would serve better as the initial "master" frame for MATCH and
+DAOMASTER.  Under either of these circumstances, the filename part of the
+.FET file must itself appear in the .MCH file, so that the program will
+know how to transform the positions it finds in the .FET file to the
+coordinate system of the master list.  Suppose the .FET file was
+generated from a file named 91cfh247.als, and hence got the name
+91cfh247.fet, while the "master" list was taken to be 91cfh233.als and
+hence you had 91cfh233.mch.  The file 91cfh233.mch presumably has
+91cfh233.als appearing on the first line, with coefficients 
+
+0.0 0.0 1.0 0.0 0.0 1.0 0.0, 
+
+and 91cfh247.als appears on some later line with some other
+coefficients.  When you tell COLLECT that the .FET file is named
+91cfh247.fet, and it discovers that 91cfh247.als appears in the .MCH
+file, then it will assume that the fetch list was generated from this
+frame and will use the coefficients to transform the (x,y) coordinates
+in 91cfh247.fet to the system of 91cfh233.als.  Then it will use the
+INVERSE of the transformations in the .MCH file to transform those
+positions to the system of all the various .ALS files that appear in
+the .MCH file.  If you have not named the .FET file after the CCD frame
+that it was generated from --- say you called it M12south.fet --- and
+if the .fet file was NOT generated from the master frame, then a file
+named M12south.??? must ITSELF appear in the .MCH file with the
+appropriate transformation coefficients.  If NO file M12south.???
+appears in the .MCH file, then COLLECT will assume that the coordinate
+system of the .FET file is the same as that of the master list.  No
+transformation of the positions found in the .FET file is then
+necessary or imposed.]
+
+                    Input .TOT file (default EXIT): 102
+
+[This means the filename is KP4M:E102.TOT; see ``prefix'' above.]
+
+                                           Filter:   1
+                      Time of observation (hh mm):    3 43
+                                          Airmass:   1.006
+                           Integration time (sec):   100.01
+
+[Types out information extracted from .INF file.]
+
+   Profile-fitting results (default KP4M:E102.ALS): <CR>
+
+          12.085  0.0019    -0.033    12.171  0.009    -0.119  0.009    1.00
+          12.433  0.0020    -0.033    12.515  0.005    -0.115  0.005    0.99
+          12.779  0.0019    -0.033    12.853  0.006    -0.107  0.006    0.80
+          13.270  0.0026    -0.033    13.366  0.009    -0.129  0.009    0.92
+          13.362  0.0030    -0.052    13.429  0.007    -0.119  0.008    1.00
+          13.699  0.0028    -0.044    13.761  0.005    -0.106  0.006    0.73
+          14.168  0.0037    -0.044    14.248  0.008    -0.124  0.009    0.99
+          14.556  0.0046    -0.081    14.585  0.007    -0.110  0.008    0.94
+          15.084  0.0059    -0.081    15.148  0.013    -0.145  0.014    0.63
+          15.235  0.0063    -0.105    15.245  0.006    -0.115  0.009    1.00
+          15.244  0.0063    -0.105    15.279  0.010    -0.140  0.012    0.67
+          15.304  0.0068    -0.081    15.357  0.021    -0.134  0.022    0.96
+          15.398  0.0071    -0.105    15.421  0.013    -0.128  0.015    0.98
+          15.379  0.0076    -0.081    15.439  0.015    -0.141  0.017    0.81
+          15.427  0.0071    -0.105    15.455  0.012    -0.133  0.014    0.91
+          15.647  0.0088    -0.105    15.646  0.010    -0.104  0.013    0.89
+
+                                              Mean:    -0.119
+                        Standard error of the mean:     0.0031
+                  Additional observational scatter:     0.0067
+
+                  PRESS <CR> WHEN READY TO PROCEED: 
+
+[For those stars with total magnitudes in the .TOT file, the program finds the
+corresponding stars in the file with profile-fitting photometry and computes the
+additive magnitude correction to place the relative profile-fitting magnitudes
+on the absolute system of the large-aperture photometry.  The columns are:
+raw aperture magnitude, standard error, growth-curve correction to place raw
+apeture magnitude on system of large aperture, profile-fitting magnitude,
+standard error, difference [(large aperture) - (profile-fitting)], standard
+error, weight.  In this case the correction is -0.119 +/- 0.0031 mag; the
+individual stars show a scatter which is larger by 0.0067 mag r.m.s. than
+that scatter expected from the individual standard errors.]
+
+                                                     <CR>
+
+          M3-1           101.02   417.66     0.06   16.530  0.0163   -0.119
+          M3-2            91.40   400.76     0.15   16.251  0.0551   -0.119
+          M3-3           102.99   388.85     0.11   17.572  0.0302   -0.119
+          M3-4           237.46   379.85     0.05   16.333  0.0193   -0.119
+          M3-5           155.87   378.23     0.07   15.908  0.0134   -0.119
+          M3-6            71.54   378.18     0.08   15.284  0.0163   -0.119
+          M3-7           188.38   372.35     0.05   16.527  0.0153   -0.119
+          M3-8           227.52   359.75     0.07   16.851  0.0163   -0.119
+          M3-9           177.91   341.98     0.03   17.223  0.0242   -0.119
+          M3-10          123.00   340.82     0.10   17.115  0.0183   -0.119
+          M3-11          159.26   338.66     0.14   17.118  0.0431   -0.119
+          M3-12           80.49   313.81     0.08   16.405  0.0282   -0.119
+          M3-13           98.87   310.53     0.07   16.786  0.0183   -0.119
+          M3-14          275.78   308.29     0.09   15.427  0.0071   -0.105
+          M3-15          209.50   304.08     0.07   15.398  0.0071   -0.105
+          M3-16          226.01   299.73     0.05   16.191  0.0105   -0.119
+          M3-17           97.76   293.95     0.06   15.974  0.0153   -0.119
+          M3-18          186.00   291.88     0.06   13.341  0.0068   -0.119
+          M3-19          194.33   290.16     0.05   16.223  0.0134   -0.119
+          M3-20           81.19   289.34     0.08   17.084  0.0232   -0.119
+          M3-21          117.99   275.53     0.03   15.244  0.0063   -0.105
+          M3-22          178.89   272.57     0.04   13.473  0.0059   -0.119
+          M3-23           93.91   266.85     0.09   16.207  0.0173   -0.119
+          M3-24          262.08   266.29     0.12   11.736  0.0077   -0.119
+          M3-25          183.29   253.94     0.07   10.792  0.0351   -0.119
+          M3-26          215.84   253.45     0.07   12.433  0.0020   -0.033
+          M3-27          138.29   244.80     0.03   16.274  0.0105   -0.119
+          M3-28          204.42   235.62     0.03   16.482  0.0143   -0.119
+          M3-29          161.19   235.58     0.04   17.268  0.0193   -0.119
+          M3-30          152.68   228.88     0.01   13.270  0.0026   -0.033
+          M3-31           71.56   226.96     0.08   16.429  0.0134   -0.119
+          M3-32          172.56   226.50     0.03   16.661  0.0183   -0.119
+          M3-33           85.05   217.77     0.08   16.323  0.0173   -0.119
+          M3-34          103.61   217.31     0.05   16.979  0.0193   -0.119
+          M3-35          255.39   198.71     0.09   14.168  0.0037   -0.044
+          M3-36          116.30   193.41     0.04   16.367  0.0134   -0.119
+          M3-37          212.22   187.91     0.00   16.796  0.0143   -0.119
+          M3-38           94.61   186.48     0.08   12.085  0.0019   -0.033
+          M3-39           76.55   183.38     0.11   17.491  0.0153   -0.119
+          M3-40          195.29   173.79     0.02   16.281  0.0114   -0.119
+          M3-41          173.67   171.04     0.05   16.453  0.0114   -0.119
+          M3-42          233.80   163.91     0.05   15.948  0.0086   -0.119
+          M3-43          180.87   156.59     0.00   16.267  0.0202   -0.119
+          M3-44          207.09   155.86     0.03   17.001  0.0143   -0.119
+          M3-45          196.72   151.47     0.02   16.527  0.0134   -0.119
+          M3-46           70.09   133.94     0.08   15.965  0.0153   -0.119
+          M3-47           87.86   122.33     0.08   15.379  0.0076   -0.081
+          M3-48          273.43   118.67     0.15   10.628  0.0163   -0.119
+          M3-49          114.53   108.99     0.07   11.761  0.0043   -0.119
+          M3-50          226.45   105.27     0.06   15.888  0.0095   -0.119
+          M3-51          256.67    99.28     0.04   15.807  0.0114   -0.119
+          M3-52          223.87    98.83     0.05   15.567  0.0114   -0.119
+          M3-53           79.39    96.77     0.11   16.700  0.0134   -0.119
+          M3-54          198.20    95.59     0.03   16.024  0.0153   -0.119
+          M3-55          122.41    82.32     0.05   17.082  0.0153   -0.119
+          M3-56          112.19    79.91     0.13   17.116  0.0531   -0.119
+          M3-57          184.45    78.05     0.07   13.362  0.0030   -0.052
+          M3-58           79.32    77.24     0.05   16.274  0.0173   -0.119
+          M3-59          118.09    69.48     0.07   15.876  0.0163   -0.119
+          M3-60          209.35    67.49     0.05   16.594  0.0222   -0.119
+          M3-61           99.21    67.19     0.03   17.408  0.0272   -0.119
+          M3-62          160.13    63.22     0.03   16.407  0.0163   -0.119
+          M3-63          227.13    60.64     0.03   16.431  0.0163   -0.119
+          M3-64          157.96    55.26     0.05   15.930  0.0202   -0.119
+          M3-65           82.86    55.11     0.11   17.603  0.0252   -0.119
+          M3-66          237.53    49.02     0.04   15.729  0.0095   -0.119
+          M3-67          145.78    47.39     0.09   16.002  0.0143   -0.119
+          M3-68          168.96    46.69     0.07   17.138  0.0212   -0.119
+          M3-69          119.62    41.25     0.05   17.187  0.0173   -0.119
+          M3-70          210.81    23.63     0.09   15.770  0.0143   -0.119
+          M3-71           66.76    19.83     0.11   16.773  0.0163   -0.119
+          M3-72          173.03    12.76     0.09   16.298  0.0173   -0.119
+          M3-73          187.73    11.40     0.05   16.501  0.0173   -0.119
+          M3-74          149.76     9.16     0.05   15.684  0.0143   -0.119
+
+       74 stars added from kp4m:e102.                    
+
+[If it can find the star, it types out its position, and how far the
+observed position was from the expected position.  It then gives the
+adopted, corrected raw magnitude, its standard error, and the
+correction from the raw magnitude to the total magnitude as it would
+have been measured in a large aperture.  Note that for the raw
+magnitude it takes EITHER the raw aperture magnitude OR the
+profile-fitting magnitude, WHICHEVER is better, taking into
+consideration both the standard error of the raw measurement and the
+uncertainty of all corrections.  If it can't find the star, it types
+out its predicted position in the system of that frame but leaves the
+last four columns blank.]
+
+[If it should happen that you do not have a profile-fitting photometry file,
+as when you have a frame with a photometric standard or two, and just did
+the aperture photometry, enter <CR> for the profile-fitting photometry
+file anyway.  When it can't find the file, it will just write out the 
+aperture results with no further ado.]
+
+                    Input .TOT file (default EXIT): [etc.]
+
+[Responding with <CR> to Input .TOT file (default EXIT):  exits the
+program.  Responding to this --- or to almost any other prompt in most
+of my programs --- with a CTRL-Z (maybe CTRL-D on some Unix machines
+--- whatever means END-OF-FILE on your system) backs you up to the
+previous question and allows you to change earlier entries.]
+
+NOTE:  if you don't want to go to the bother of an .INF file, COLLECT
+will prompt you to type in the necessary data by the keyboard.  If you
+don't want to have .MCH and .FET files, COLLECT will prompt you to enter
+the magnitudes, standard errors, and zero-point corrections by hand
+from the keyboard.
+
+================================================================================
+
+                              C C D L I B
+
+OK.  Now you need to have a file containing the STANDARD values for the
+standard stars.  This file need be created only once, and then may used
+for all nights' observations for which these standards were used.
+CCDLIB allows the user to create the disk file in the appropriate
+format, entering the necessary data via a computer keyboard.
+
+The program will want to know a filename for the standard-star
+library.  If a file of that name is not already in your current default
+directory, a new file will be created; if a file of that name does
+already exist, it will be opened and the data which you enter will be
+added to the end of it.
+
+CCDLIB is capable of accepting and storing up to six standard
+photometric indices per star.  The user is permitted to specify the
+labels by which the different photometric indices are to be identified
+in the library file and in the results produced by programs which use
+the library.  These labels are arbitrary character strings containing
+up to six characters each.  Thus, either "U-B" or "(U-B)" would be
+acceptable as the label for a photometric index, as would "V", "Vmag",
+or "Vstd".  "(U-B)std", however, would be truncated to "(U-B)s".  Note
+that the program is asking for INDICES, not magnitudes.  The indices
+usually consist of one magnitude plus some number of colors or color
+differences.  For instance Index 1 may be V (which just happens to be a
+magnitude), Index 2 may be U-B color, Index 3 may be B-V color, and so
+on.
+
+The user may choose to enter the photometric indices into the program
+in any order; however, once you have decided on the order of the
+indices for a newly created library, this order must be retained for
+all stars.  If CCDLIB is used to add stars to an existing library, it
+is able to read the index labels from the file header, and will prompt
+the user for the standard photometric indices in the proper order.
+
+CCDLIB allows the user to specify a "Star ID prefix"-- any character
+string which you wish to appear at the beginning of every star's ID,
+e.g.  the name of the cluster in which the star is located, or a code
+representing the source of the photometry.  Individual star IDs
+entered along with the photometry will be appended to this string:  if
+the prefix is entered as "M92-", and the individual stars are
+identified as "37", "Q1", "1037", "XX", and "93 B", ID's "M92-37",
+"M92-Q1", "M92-1037", "M92-XX", AND "M92-93 B" will be written into the
+library file.  Prefix plus individual star ID may not total more than
+12 characters.
+
+In addition to these star IDs and standard values for the photometric
+indices of each star, the program also desires a standard error for
+each photometric index.  These standard errors will be used by CCDSTD
+in evaluating the standard errors and weights of the observations.
+
+Answering CTRL-Z (maybe CTRL-D on UNIX) to almost any question asked by
+CCDLIB (or the other programs) will get you back to the previous
+question.  This makes it easy to fix most typographical errors.  For
+instance, by typing CTRL-Z in response to "Star ID:", you can get back
+to "Star ID prefix:", allowing you to change the prefix without getting
+out of the program and back in.  However, once you hit <CR> after
+entering the last photometric index for a star (see examples below),
+that star is written to the disk library file, and thenceforth any
+typos in the data for that star can be fixed only by editing the file.
+
+% CCDLIB
+
+               File name for standard-star library: SAMPLE
+
+ Adding to existing library.
+
+                                    Star ID prefix: L102-
+
+                                           Star ID: 276
+                                          V, error: 9.910,0.0014
+                                        B-V, error: 0.492,0.0014
+
+===================================================================================
+
+                               C C D S T D
+
+This program takes the observed instrumental magnitudes for standard stars
+from a file created by COLLECT, collects the standard photometric indices for 
+the same stars from among the data contained in a library created by CCDLIB,
+and transforms the former to the system of the latter, by least-squares 
+computation of the transformation and extinction coefficients.  Before it can
+do this, however, it must obtain additional information from a disk file which
+the user has created by some means, such as a text editor.  This is ...
+
+
+The transformation file:
+
+What the program needs to know is:  (1) How are the photometric indices
+formed from the constituent magnitudes?  (2) How may the standard magnitudes
+be computed from the standard photometric indices?  (3) What are the algebraic
+forms of the transformation equations which will relate the observed, 
+instrumental magnitudes to the system of the standard magnitudes?  (4) If some
+of the coefficients in the transformation equations are to be specified ahead
+of time, rather than solved for by least squares, which coefficients are
+they and what are their values?
+
+For the i-th photometric index, question (1) is answered for the program 
+by a line in the transformation file containing an equation of the form
+
+             Ii = a linear function of standard magnitudes Mj
+
+For the i-th magnitude, question (2) is answered for the program by a line
+in the transformation file containing an equation of the form
+
+             Mi = a linear function of standard indices Ij
+
+For the i-th observed instrumental magnitude, question (3) is answered
+by a line in the transformation file containing an equation of the form
+
+             Oi = Mi + a linear function of products of standard indices Ij, 
+                       airmass, time, and fitting coefficients
+
+For any transformation coefficient which is to be fixed ahead of time,
+question (4) is answered by a line in the transformation file containing an
+equation of the form
+
+             coefficient name = numerical constant
+
+-------------------------------------------------------------------------------
+
+Example 1:  Transformation file relating observed B,V magnitudes to standard
+                              UBV photometric indices
+
+Assume, as in the examples given with the discussion of CCDLIB and
+COLLECT, that the library contains standard star data for the following
+photometric indices:
+
+     Index 1:  V
+     Index 2: U-B
+     Index 3: B-V
+
+and the file with the observations contains data for the following instrumental
+magnitudes:
+
+     Magnitude 1: v
+     Magnitude 2: b
+
+Suppose that you wish to use transformation equations of the form
+
+     v = V + C + D * (B-V) + K1 * X + K2 * (B-V) * X
+     b = B + E + F * (B-V) + G * (B-V)**2 + k1 * X + k2 * (B-V) * X
+
+where X is the airmass of the observation.  Finally, suppose that from 
+independent sources of information you know that K2 = -0.008, G = 0.005, and
+k2 = -0.011.  The file for telling the computer these things might look like:
+
+===============================================================================
+M1 = I1
+M2 = I1 + I3
+I1 = M1
+I3 = M2 - M1
+O1 = M1 + A0 + A1*I3 + A2*X + A3*I3*X
+O2 = M2 + B0 + B1*I3 + B2*I3*I3 + B3*X + B4*I3*X
+A3 = -.008
+B2 = 0.005
+B4 = -.011
+===============================================================================
+
+     The first line of the file tells the program that the first standard 
+magnitude (V) is equal to the first photometric index in the library (also V).
+Line 2 tells the program that the second standard magnitude (B) is equal to 
+the sum of the first and third photometric indices [B = V + (B-V)].  Line 3 
+says that the first photometric index is equal to the first magnitude, and 
+line 4 says that photometric index number three is equal to magnitude 2 minus 
+magnitude 1.  (These last two equations will be used to compute the 
+photometric indices on the standard system from the magnitudes on the standard 
+system.)  My equation parser is not intelligent enough to infer the second 
+pair of equations from the first pair-- you must specify them explicitly.
+
+     The fifth and sixth lines say that the first and second observed 
+magnitudes are to be fitted by equations of the such-and-such a form.  Oi is 
+the i-th observed magnitude and Mi is the i-th standard magnitude; Ij is the 
+j-th standard photometric index (from the library), Ak is the k-th coefficient
+in the transformation for magnitude 1, and Bk is the k-th coefficient in the
+transformation for magnitude 2.
+
+------------------------------------------------------------------------------
+
+Example 2:  Transformation file relating observed uvby magnitudes to standard
+                          Stromgren photometric indices
+
+Let      Index 1 =  V                       Magnitude 1 = y
+         Index 2 = b-y                      Magnitude 2 = b
+         Index 3 = m1                       Magnitude 3 = v
+         Index 4 = c1                       Magnitude 4 = u
+
+         y(obs) = V + A + B*(b-y) + C*X + D*T 
+         b(obs) = b(std) + E + F*(b-y) + G*X + H*T
+         v(obs) = v(std) + I + J*(b-y) + K*m1 + L*X + M*T
+         u(obs) = u(std) + N + P*(b-y) + Q*c1 + R*X + S*T
+
+where X is the airmass, T is the time of the observation, and A, ..., S are
+real coefficients.  Also let
+
+D = H = M = S = 0.003
+
+(you know ahead of time that the detector sensitivity drifted by +0.03 mag. 
+during the ten-hour night ==> 0.003 mag/hour to first order).  Here's the 
+appropriate file:
+
+===============================================================================
+O1=M1 + A0 + A1*I2 + A2*X + A3*T
+O2=M2 + B0 + B1*I2 + B2*X + B3*T
+O3=M3 + C0 + C1*I2 + C2*I3 + C3*X + C4*T
+O4=M4 + D0 + D1*I2 + D2*I4 + D3*X + D4*T
+I1=M1
+M1=I1
+I2=M2-M1
+M2=I1+I2
+I3=M3-2*M2+M1
+M3=I1+2*I2+I3
+I4=M4-2*M3+M2
+M4=I1+3*I2+2*I3+I4
+A3=0.003
+B3=0.003
+C4=0.003
+D4=0.003
+===============================================================================
+
+Rules of grammar for transformation files:
+
+-- There should be no more than 132 characters per line.
+
+-- Blank spaces in the equations are optional, and are recommended for 
+   legibility's sake, but there should be no trailing blanks at the end of a
+   line.
+
+-- Each of the first 3n lines of the file (where n is the number of magnitudes
+   to be reduced) must begin with an I, an M, or an O, followed by a single
+   digit in the range 1 - 6, followed by an equals sign.
+
+   `Ii=' indicates you are defining the i-th photometric index in terms of the 
+         various magnitudes.  This must be followed by terms of the form 
+
+                            (sign)(number)*M(digit), 
+
+         where (sign) is either `+' or `-', (number) is either real or integer 
+         (if it is `1' it and the `*' may be omitted), and (digit) is an 
+         integer in the range 1 - 6.
+
+   `Mi=' indicates you are defining the i-th magnitude in terms of the various
+         photometric indices.  This must be followed by terms of the form
+
+                            (sign)(digit 1)*I(digit 2), 
+
+         where (sign) is either `+' or `-', (digit 1) is in the range 1 - 9 
+         (if it is `1' it and the `*' may be omitted), and (digit 2) is in the 
+         range 1 - 6.
+
+   `Oi=Mi' indicates you are defining a transformation equation relating the 
+         i-th instrumental magnitude to the i-th standard magnitude, the 
+         photometric indices, the airmass, and the time of observation.  This 
+         must be followed by terms of the form 
+
+                    (sign)(letter)(digit 1)*(factor)*(factor)*..., 
+
+         where (sign) is either `+' or `-', (letter) is `A' for i = 1, `B' for 
+         i = 2, ..., `F' for i = 6, (digit 1) is in the range 0 - 9, and 
+         (factor) is either nothing (in which case the `*' must be omitted), 
+         X, T, or I(digit 2), with (digit 2) in the range 1 - 6.
+
+   These lines need not appear in any particular order.
+
+
+-- After these 3n definitions, numerical values may be specified for any
+   coefficients you don't want to solve for, by adding an arbitrary number
+   of lines of the form (letter)(digit)=(numerical constant).  These numerical
+   values will be substituted for the coefficients in the transformations, and
+   will not be modified during the least-squares fit.  Coefficient values may
+   be specified only after all the `I', `M', and `O' equations have been
+   specified.  Leave at least one coefficient free in each transformation
+   equation.
+
+-- The i-th observational magnitude must be defined in terms of the i-th
+   standard magnitude:  in an equation of the form `Oi = Mi + ...', i must
+   be the same on both sides.  In an equation beginning with the character
+   `O', the first non-blank character after the equals sign must be `M'.
+
+-- The coefficients in the transformation equation for magnitude 1 must be
+   designated with the letter `A', the coefficients for magnitude 2 with the
+   letter `B', and so on.  The numerical parts of the coefficients' ID's
+   need not be consecutive; a transformation equation of the form
+
+         O3 = M3 + C1 + C2*I2 + C5*I3 + C7*X + C9*T
+
+   is acceptable.
+
+-- The equation parser does not recognize exponents; thus, in the first example
+   `(B-V)**2' is represented by `I3*I3'.  `(B-V)**3' would be `I3*I3*I3'.
+
+-- For cloudy night reductions, put the word CLOUD all by itself on a second
+   line.  If this word appears anywhere in the .TFM file, CCDSTD will go into
+   cloudy-night mode, where every individual frame which has more than one
+   standard in it will have a freely floating zero-point.  Cloudy night
+   reductions should include ONLY terms which involve at least one color:
+   the <letter>0 terms and any terms involving only X and/or T should be
+   omitted.  Terms with X and/or T AND a color may be retained.
+
+JUST IN CASE THIS HAS BEEN CONFUSING, remember:
+
+The notation Ii refers to a PHOTOMETRIC INDEX on the standard system.
+Examples of indices are V, U-B, B-V, m_1, c_1, and so on.  Photometric
+indices are what you find in the literature and are what you want.
+
+The notation Mi refers to a PHOTOMETRIC MAGNITUDE on the standard system.
+Magnitudes may be computed from the indices: for instance
+
+   B(mag) = V + (B-V),    U(mag) = V + (B-V) + (U-B).
+
+Conversely, the indices can be computed from the magnitudes:
+
+   (B-V) = B(mag) - V(mag),    m_1 = v(mag) - 2b(mag) + y(mag).
+
+The notation Oi refers to a PHOTOMETRIC MAGNITUDE on the INSTRUMENTAL
+system.  The calibration equations relate the INSTRUMENTAL MAGNITUDES
+to the STANDARD-SYSTEM magnitudes by means of a transformation
+equation which involves the STANDARD PHOTOMETRIC INDICES, the airmass
+(X) and the time of observation --- UT or other --- (T).
+
+   Oi = Mi + function(Ij for j=1,..., n, X, T)
+
+
+Additional comments on CCDSTD:
+
+     It is useful to understand why I have encoded the least-squares
+     problem in the form (observed magnitude) = function of (standard
+indices, airmass, time), where it might seem more natural to solve it
+in the form (standard index) = function of (observed magnitudes,
+airmass, time).  After all, in the latter case for the program stars
+you simply plug in the observed magnitudes, time, and airmass, and out
+pops the answer you want.  However, it is good least-squares practice
+to place the most uncertain observational quantities alone on one side
+of the equals sign, and to fit them with functions of well-determined
+quantities.  It is virtually certain that the standard photometric
+indices will have smaller relative errors than the observed
+instrumental magnitudes.  Second, if for some stars you are missing
+observations in some bandpasses, these stars could not be used in the
+calibrations if the standard magnitudes were expressed as functions of
+the instrumental magnitudes.  Say the equation were of the form
+
+     V(std) = function of observed (v, b-v, X, T, ...)
+
+a star which had no b observation during that night could not be used,
+even though it had a perfectly good v observation (as well as a known
+B-V index).  With equations of the form
+
+     v(obs) = function of standard (V, B-V, X, T, ...)
+     b(obs) = function of standard (B, B-V, X, T, ...)
+
+a star for which the b observation was lacking could be used in the
+solution of the first equation, at least, even though not for the
+second.  Third, the fact that CCD observations in different bandpasses
+often take place at significantly different times and airmasses implies
+that, if fitting standard magnitudes to functions of observed
+magnitudes, the equations would have to be of the form
+
+  V(std) = function of observed (v, b-v, X(v), X(b), T(v), T(b), ...)
+  B(std) = function of observed (b, b-v, X(v), X(b), T(v), T(b), ...)
+
+making for more complicated and less well-determined least-squares
+fits.  Lastly, if the transformations were expressed in the form
+
+     standard magnitude = function of observed magnitudes,
+
+it would be extremely difficult to apply the calibration to program
+fields for which the data in different bandpasses came from different
+nights.  In such a case the instrumental (b-v) color would not be on
+the same system as the (b-v) colors of the standard stars which were
+used to define the transformations.  If instead the equations are of
+the form
+
+     v(observed) = function of (V, B-V, X, T, ...)
+     b(observed) = function of (B, B-V, X, T, ...)
+
+then the values of v(observed) and b(observed) can be used to infer the
+values of V, B, and B-V by numerical inversion even if the v and b
+functions from two different nights must be used.
+
+     CCDSTD, then, requires three input files:  (1) the library of
+standard indices for a set of standard stars; (2) a set of observed
+instrumental magnitudes from a night's observing (this file may contain
+data for stars which are not in the standard-star library; the data for
+such stars will be transformed to the standard system after those
+transformations have been computed from those stars which do appear in
+the standard-star library); and (3) a transformation file defining the
+relationships between the instrumental magnitudes, and the standard
+magnitudes and indices.  CCDSTD will produce two output files:  (1) a
+file containing the residuals of the individual stars from the computed
+transformations and the mean transformed magnitudes for all stars
+observed, in printout form (filename extension:  .RSD); and (2) a file
+containing the computed transformation equations (filename extension:
+.CLB).  This file is identical in form to the file defining the
+transformations which was input into the program, except that the
+numerical values for all the fitting coefficients will have been
+added.
+
+Notes concerning the .RSD file
+
+-- "Additional observational scatter":  The user has specified in the
+   input to the program (a) the uncertainty of the standard photometric
+   indices from the literature, and (b) the uncertainty of the
+   instrumental magnitudes from the observational data.  Taken
+   together, these imply the amount of scatter that the standard-star
+   observations may be expected to show about the best-fitting
+   transformation.  In fact, the scatter is almost always observed to
+   be larger than this, due presumably to error sources which are
+   unrelated (a) to the observational errors of whoever set up the
+   standard system, and (b) to the readout noise and Poisson statistics
+   of the CCD observations.  Examples of these error sources are:
+   variations in transparency during the night; changes in the quantum
+   efficiency of the detector; errors in the flat-fielding of the data,
+   combined with the stars' being observed at different places on the
+   chip; neglected higher-order terms in the transformations or simple
+   star-to-star spectral differences which can not be related to the
+   data at hand (e.g. two stars with exactly the same standard (B-V)'s
+   might have different instrumental (b-v)'s if they have different
+   metallicities, gravities, or reddenings, and if the standard and
+   instrumental bandpasses are sufficiently different).  All such
+   additional sources of error are described by the "additional
+   observational scatter."  The program varies this quantity until the
+   expected and observed scatters are equal.  Each star is weighted in
+   the fits by
+
+         wt = 1./[(error of std indices)**2 + (error of obs. mag)**2 +
+                    (add'l obs. scatter)**2]
+
+-- "?" and "!":  Any residual which is between two and three standard
+   errors [std error = quadratic sum of (error of std indices), (error
+   of obs. mag), and (add'l obs. scatter)] is flagged with a "?".  Any
+   residual larger than three standard errors is flagged with a "!".
+
+-- The .RSD file also types out for every star a weight describing the
+   amount of confidence the program places in that observation.  Large
+   residuals get reduced weight (= reduced confidence), so truly
+   discordant observations should not distort the answers too much.
+
+-- Finally, the last columns for each star in the .RSD file give all
+   the standard photometric indices for the star, so it is easy to use
+   supermongo or some other plotting package to produce plots of
+   residual versus everything under the Sun to look for systematic
+   effects.
+
+-- Stars which appear in the .OBS file but not in the .LIB file are
+   treated as program objects.  CCDSTD will type out their names on the
+   terminal just so you can check and make sure they aren't typos.
+   These stars will not be used to compute the transformations, but
+   after the transformations have been computed they can be applied to
+   the observations of these stars (see CCDAVE below).
+
+----------------------------- C C D A V E --------------------------------
+
+CCDAVE takes all available observations of each star in your .OBS
+files, and computes the best average photometric indices on the
+standard system, using the .CLB files generated by CCDSTD.
+
+When you run CCDAVE, the dialog goes something like this:
+
+          File with standard-star library:  something.lib
+
+[You give it the same library that you used when running CCDSTD.  CCDAVE
+simply uses the star IDs from this file, and reduces stars in the order
+in which they appear in the library.]
+
+ Output file name (default something.net):  <CR> or filename
+
+[This output file with contain the final photometric results for all the
+stars.]
+
+                   File with observations: night1.obs
+   1161 stars.
+
+ File with observations (default PROCEED): night2.obs
+
+    983 stars.
+
+ File with observations (default PROCEED): night3.obs
+
+  1023 stars.
+
+                        .
+                        .
+                        .
+
+ File with observations (default PROCEED): <CR>
+
+                Include non-library stars? y (or n)
+
+[If you answer "y", then when it finds a star ID in some .OBS file which
+does not occur in the .LIB file, the star will be tacked on the end of
+the star list and reduced.  If you answer "n" CCDAVE will ignore any
+stars not found in the .LIB file.]
+
+                        Sigma multipliers: 1.27 1.10
+
+[Each observation in the .OBS file has a standard error associated with it,
+and the "additional nightly errors" from CCDSTD are in the .CLB files.
+Even when these are properly taken into account, it is usually found that
+different observations of the same star show greater night-to-night scatter
+than predicted from these standard errors.  Therefore, after the standard
+error for each observation has been computed from first principles, it
+is multiplied by the factor you enter here.  You'll see later how to
+estimate the factor. You must enter one multiplier for each filter.]
+
+[After the program has read in all the data from the .OBS files, it will
+start spitting out the reduced data on your terminal, like this, one
+bunch of data for each star:]
+
+ E3 R1        <<
+
+   13.931  0.014  10  CT85:85A13    14.619  0.024   8  CT85:85A11  
+   13.938  0.018  10  CT85:85A14    14.683  0.024   9  CT85:85A12  
+   13.936  0.020  10  CT85:85B12    14.671  0.029  10  CT85:85B10  
+   13.942  0.020  10  CT85:85B13    14.598  0.029   7  CT85:85B11  
+   13.944  0.015  10  CT85:85B48    14.670  0.026  10  CT85:85B46  
+   13.929  0.015  10  CT85:85B49    14.675  0.026  10  CT85:85B47  
+   13.939  0.014  10  CT85:85C12    14.652  0.022  10  CT85:85C14  
+   13.953  0.014   9  CT85:85C13    14.654  0.022  10  CT85:85C15  
+  ---------------                  ---------------                 
+   13.9390 0.0036   0.50            14.6555 0.0095   1.13   0.0069<
+
+[For each filter, it types out all the available observations,
+transformed to the standard magnitude system, its standard error, a
+weight based on the size of the residual, and the name of the frame the
+observation came from.  Under the dashed line it gives you the weighted
+average of the standard-system magnitude, its estimate of the standard
+error of the average magnitude, the chi value = the ratio of (the
+observed observation- to-observation scatter) to (the expected
+observation-to-observation scatter, based on the input error
+estimates).  If chi is greater than unity, it also gives you a fourth
+number which is the extra standard error of one observation which must
+be added to the other, known sources of error to account for the
+observed observation-to- observation scatter.  For example, for the
+second filter for this star, the magnitudes showed 0.0069 mag more
+scatter per observation than expected, and the first observation should
+have been
+
+     14.619 +/- sqrt(0.024**2 + 0.0069**2)
+
+the last observation should have been
+
+     14.654 +/- sqrt(0.022**2 + 0.0069**2)
+
+and so on.  The standard error of the average magnitude, 0.0095,
+includes consideration of this "extra" scatter as well as the input
+standard errors and the weights.  All of this information will also be
+written to a disk file named filename.AVE, where filename will the the
+same as the filename in filename.NET above.]
+
+[After all stars have been reduced, the program will put out a brief
+summary of the form:]
+
+ Mean errors of unit weight:   0.98    1.07
+               Total weight:  13917   13878
+      Total number of stars:   2295    2304
+
+[The mean error of unit weight is essentially the average chi value.
+In this case, over all available stars the observed observation-to-
+observation scatter averaged 98% of the expected observation-to-
+observation scatter in the first filter, and 1.07 times in the second
+filter.  This means that my first Sigma multiplier was a little too
+large and the second one was a little too small.  I should have used
+
+    1.24 1.18  (=0.98*1.27, 1.07*1.10)
+
+instead of 1.27, 1.10.  "Total weight" is the sum over all stars of
+the quantity {n(observations) - 1}, which is a measure of the
+weight which into determining the mean errors of unit weight.
+The Total number of stars is self-explanatory.]
+
+As I said, the file filename.AVE contains all the same information.
+filename.NET contains only the final average values for each star:
+each line contains
+
+ E3 R1             0.871  13.9390   0.0036   0.7165   0.0101    8    8
+
+The first number after the file name is the root-mean-square of the
+chi values.  Then come the photometric indices and their standard errors
+(NOTE:  PHOTOMETRIC INDICES in the filename.NET file, not MAGNITUDES.)
+Then the number of frames in each filter.  The format of the .NET file
+is the same as the .LIB file (with a little extra information added)
+so if you want to you can select stars from the .NET file with software
+or by hand with an editor and use them in a new .LIB file.
+
+----------------------------- R E D U C E  --------------------------------
+
+Okey-doke.  For stars with real-world names that appear in your .OBS
+files, you are now done: the results from CCDAVE are good enough for you.
+However, if you are trying to calibrate some cluster containing thousands
+of stars, most of those stars will be anonymous.  You get calibrated
+photometry for them from a program named REDUCE.  Here's all what you
+need:
+
+(1) A .INF file containing filters, airmasses, exposures and the rest.
+    If the cluster has been observed during various runs, you'll probably
+    have to patch together a .INF file for this cluster by extracting
+    the appropriate data lines from the .INF files for the various runs.
+
+(2) A file with the transfer table saying which star is which in each of
+    the individual profile-fitting photometry files (see DAOMASTER above).
+    If any of those profile-fitting photometry files have been sorted,
+    edited, or otherwise messed around with since you made the transfer
+    table, you'll have to make a new one.
+
+(3) A file with the standard-star library, giving standard-system
+    magnitudes and colors for stars, INCLUDING some stars in your
+    cluster field.  These may be standard-system colors and magnitudes
+    that you take from the literature, or that you derive yourself
+    with CCDSTD and CCDAVE (ain't it nice that the .NET file has the
+    correct format?)
+
+(4) A fetch file associating the starnames in the library file with
+    positions in the master list for your cluster field.  Only stars
+    actually in the field need be included in the fetch file.  You will
+    then be asked to specify a critical radius: as before, any star
+    which appears within this distance (a couple of pixels?) of the
+    position indicated by the fetch file, will be named by the name
+    given in the fetch file.  Then the program can look for the
+    standard system photometry of this star in the library file.
+
+(5) As before, you can specify constants by which the estimated 
+    standard errors will be multiplied.
+
+(6) Then you specify an output file name for the final photometry.
+    The default filename-extension is .FNL
+
+The program will use the standard-system photometry for the local
+standards and the calibration equations generated by CCDSTD (the name
+of the .CLB file appropriate to each exposure is given in the .INF
+file) to compute new photometric zero-points for each frame.  Then
+for each program star, all available observations are rounded up
+by means of the transfer table, and these observations are run
+backward through the transformation equations to produce new
+standard-system magnitudes and colors.
+
+Easy, isn't it?
