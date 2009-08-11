@@ -1,7 +1,6 @@
 # -*-bash-*-
 #!/usr/bin/env bash
 
-export ALLPHOT_OPT_DIR=$HOME/src/allphot/scripts
 export ALLPHOT_OPT_DAOPHOT=${ALLPHOT_OPT_DIR}/daophot.opt
 export ALLPHOT_OPT_PHOTO=${ALLPHOT_OPT_DIR}/photo.opt
 export ALLPHOT_OPT_ALLSTAR=${ALLPHOT_OPT_DIR}/allstar.opt

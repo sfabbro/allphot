@@ -5,7 +5,7 @@
 # very simple so far, needs more work
 check_exist() {
     if [[ ! -f ${1} ]]; then
-	echo " Error: file ${1} not found." >&2
+	echo "*** Error: file ${1} not found." >&2
 	return -1
     fi
 }
@@ -37,7 +37,7 @@ get_fwhm() {
 daophot_process_init() {
     check_exist ${1} || return -1
     local image=$(basename ${1%.*})
-    ALLPHOT_PROCESS_DIR=${PWD}/${image}_process    
+    ALLPHOT_PROCESS_DIR=${PWD}/${image}_process  
     mkdir -p ${ALLPHOT_PROCESS_DIR}
     pushd ${ALLPHOT_PROCESS_DIR} &> /dev/null
     [[ ! -r daophot.opt ]] && cp ${ALLPHOT_OPT_DAOPHOT} daophot.opt
@@ -59,5 +59,5 @@ daophot_process_end() {
 daophot_split_process() {
     local ncores=$(grep -c processor /proc/cpuinfo)
     echo " Number of core to split: ${ncores}"
-    echo " Not implemented"
+    echo " *** Error: multi-core not implemented"
 }

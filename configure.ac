@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT([allphot], [4.0.1], [Peter Stetson <pbs@nrc.dao.ca>])
+AC_INIT([allphot], [4.0.1], [pbs@nrc.dao.ca])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/daophot.f])
 AC_CONFIG_AUX_DIR([config])
@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE
 
 AC_PROG_F77
 
-dnl also automatically add -lm to all linking steps
+dnl automatically add -lm to all linking steps
 AC_CHECK_LIB(m,cos)
 
 sinclude(acx_cfitsio.m4)
@@ -21,5 +21,6 @@ AC_CONFIG_FILES([Makefile
 		src/Makefile
 		doc/Makefile
 		data/Makefile
+		tests/Makefile
 		scripts/Makefile])
 AC_OUTPUT

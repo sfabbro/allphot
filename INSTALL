@@ -1,6 +1,31 @@
 Installation Instructions
 *************************
 
+ALLPHOT should be fairly straight forward to install. The requirements
+are minimum and met by most modern and ancient UNIX/Linux
+distributions. In order to install ALLPHOT, you will need to have
+these packages installed:
+* a working FORTRAN 77 compiler
+* bash
+* the precision calculator "bc"
+* cfitsio (make sure it is compiled with the fortran wrappers)
+
+To build, run:
+1. ./configure
+2. make 
+3. make install
+
+Specify cfitsio directories with the configure options:
+  --with-cfitsio-includedir=DIR directory where the headers were installed
+  --with-cfitsio-libdir=DIR directory where the library was installed
+
+Ex: install ALLPHOT in your home directory:
+./configure --prefix=$HOME FC=g77 FFLAGS="-O2 -march=pentium4"
+makeinstall
+
+Generic Instructions for autotools
+===================================
+
 Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 

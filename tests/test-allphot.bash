@@ -1,12 +1,13 @@
 #!/bin/bash
 
-source options.bash
-source recipes.bash
+export ALLPHOT_OPT_DIR=$(readlink -f ../data)
+export ALLPHOT_EXEC_DIR=$(readlink -f ../scripts)
+export ALLPHOT_BIN_DIR=$(readlink -f ../src)
+source ${ALLPHOT_EXEC_DIR}/recipes.bash
 
-DATA_DIR=$(readlink -f ../data)
-
-mkdir -p ${DATA_DIR}/tests
-cd ${DATA_DIR}/tests
+DATA_DIR=$(readlink -f ../tests)
+mkdir -p ${DATA_DIR}/_process
+cd ${DATA_DIR}/_process
 
 for im in ${DATA_DIR}/sky*.fits; do
     allphot_allstar_iterate ${im} ${DATA_DIR}/sky.assoc

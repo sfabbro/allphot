@@ -1,6 +1,3 @@
-SUBDIRS = src data scripts doc
-
-CLEANFILES = *~
 MAINTAINERCLEANFILES = \
 	aclocal.m4 \
 	configure \
@@ -10,4 +7,7 @@ MAINTAINERCLEANFILES = \
 	config/* \
 	autom4te.cache*
 
+CLEANFILES = *~
+
+SUBDIRS = src data scripts tests doc
 EXTRA_DIST = NEWS ChangeLog INSTALL COPYING README

@@ -20,3 +20,11 @@ libtool
 /config
 /configure
 
+/config.h.in
+/src/allframe
+/src/allstar
+/src/daogrow
+/src/daomaster
+/src/daomatch
+/src/daophot
+/src/montage2
