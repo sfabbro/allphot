@@ -23,7 +23,7 @@ allphot_opt() {
 }
 
 # allphot_find <fits> produce an image.coo file
-allphot_find() {@@@
+allphot_find() {
     echo " >>> DAOPHOT FIND"
     daophot_process_init ${1} || return -1
     local image=$(basename ${1%.*})
