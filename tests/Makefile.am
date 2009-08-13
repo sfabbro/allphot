@@ -1,7 +1,13 @@
 MAINTAINERCLEANFILES = Makefile.in
 CLEANFILES = *~
 
+check_SCRIPTS = test-allphot.bash
+check_PROGRAMS =
+
+TESTS = $(check_SCRIPTS)
+
 EXTRA_DIST= \
+	$(check_SCRIPTS) \
 	generate.py \
 	sky.assoc \
 	sky00.fits \
@@ -25,10 +31,5 @@ EXTRA_DIST= \
 	sky09.fits \
 	sky09.list
 
-check_SCRIPTS = test-allphot.bash
-check_PROGRAMS =
-
-TESTS = $(check_SCRIPTS)
-
 clean-local:
-	-rm -rf tests
+	-rm -rf _process

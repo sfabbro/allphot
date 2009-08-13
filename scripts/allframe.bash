@@ -1,7 +1,7 @@
 # -*-bash-*-
 #!/usr/bin/env bash
 
-source options.bash
+source ${ALLFRAME_EXEC_DIR}/options.bash
 
 # daophot_match <reference catalogue> <mch file> <list of catalogs files>
 daophot_match() {
@@ -19,11 +19,11 @@ daophot_match() {
 daophot_master() {
     local field=${1%.*}
     local niter=10 # matchup radii iterations
-    local nframes=$(wc -l ${field} | cut -d ' ' -f 1)
-    awk '{print "rm -f "substr($1,2,match($1,/\./)-2)".{coo,mtr}"}' ${field} | sh
+    local nframes=$(wc -l ${field}.mch | cut -d ' ' -f 1)
+    awk '{print "rm -f "substr($1,2,match($1,/\./)-2)".{coo,mtr}"}' ${field}.mch | sh
     rm -f ${field}.{mag,cor,raw,tfr}
     # start answering boring questions
-    echo ${field}
+    echo ${field}.mch
     echo -n "$(option_get_value MS daomaster.opt), "
     echo -n "$(option_get_value MC daomaster.opt), "
     echo "$(option_get_value MF daomaster.opt)"
