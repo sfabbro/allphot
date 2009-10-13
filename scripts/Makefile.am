@@ -1,7 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 CLEANFILES = *~
 
-#bin_SCRIPTS=allphot
+bin_SCRIPTS=allphot
 
 libexecprogdir = $(libexecdir)/@PACKAGE@
 libexecprog_SCRIPTS = \
@@ -16,8 +16,7 @@ EXTRA_DIST = $(bin_SCRIPTS) $(libexecprog_SCRIPTS)
 SUFFIXES = .in
 .in:
 	@echo "  SED   " "$@"
-	@@regex_cmd@ -e "s,\@PACKAGE_STRING\@,$(PACKAGE_STRING),g" \
-		-e "s,\./eix-functions\.sh\.in,'$(bindir)/eix-functions.sh',g" \
-		-e "s,\@BINDIR\@,$(bindir),g" \
+	@@regex_cmd@ \
+		-e "s,\@LIBEXECDIR\@,$(libexecdir),g" \
 		-e "s,\@DATADIR\@,$(datadir),g" \
 		"$<" > "$@"

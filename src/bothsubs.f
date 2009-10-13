@@ -18,10 +18,14 @@ C
 C
       ier = 0
       name = expand(extend(pictur(jmno), imgtyp(jmno)))
-      call ftgiou (j, ier)
-      call delfil (j, name, ier)
-      ier = 0
-      call ftfiou (j, ier)
+      if (imgtyp(jmno) .eq. 'imh') then
+         call imdele (name, ier)
+      else
+         call ftgiou (j, ier)
+         call delfil (j, name, ier)
+         ier = 0
+         call ftfiou (j, ier)
+      end if
       if (ier .ne. 0) then
          call stupid ('delpic: '//message(imgtyp(jmno), ier))
 c     print*,ier
@@ -60,7 +64,11 @@ C#######################################################################
 C
       character function  message  *80  (imgtyp, ier)
       character error*80, imgtyp*4
-      call ftgerr (ier, error)
+      if (imgtyp .eq. 'imh') then
+         call imemsg (ier, error)
+      else
+         call ftgerr (ier, error)
+      end if
       message = error
       return
       end
@@ -73,7 +81,12 @@ C
       integer j
 C
       ier = 0
-      call ftgkyj (imid(imno), keywrd, j, commnt, ier)
+      if (imgtyp(imno) .eq. 'imh') then
+         call imgkwi (imid(imno), keywrd, j, ier)
+         commnt = ' '
+      else
+         call ftgkyj (imid(imno), keywrd, j, commnt, ier)
+      end if
       if (ier .ne. 0) then
          call stupid ('jget: '//message(imgtyp(imno), ier))
          j = -1073741824
@@ -88,7 +101,12 @@ C
       character commnt*(*), keywrd*8
 C
       ier = 0
-      call ftgkye (imid(imno), keywrd, r, commnt, ier)
+      if (imgtyp(imno) .eq. 'imh') then
+         call imgkwr (imid(imno), keywrd, r, ier)
+         commnt = ' '
+      else
+         call ftgkye (imid(imno), keywrd, r, commnt, ier)
+      end if
 C
       if (ier .ne. 0) r = -1.1E19
       return
@@ -102,7 +120,12 @@ C
       double precision r
 C
       ier = 0
-      call ftgkyd (imid(imno), keywrd, r, commnt, ier)
+      if (imgtyp(imno) .eq. 'imh') then
+         call imgkwd (imid(imno), keywrd, r, ier)
+         commnt = ' '
+      else
+         call ftgkyd (imid(imno), keywrd, r, commnt, ier)
+      end if
 C
       if (ier .ne. 0) then
          call stupid ('dget: '//message(imgtyp(imno), ier))
@@ -118,7 +141,12 @@ C
       character s*(*), commnt*(*), keywrd*8
 C
       ier = 0
-      call ftgkys (imid(imno), keywrd, s, commnt, ier)
+      if (imgtyp(imno) .eq. 'imh') then
+         call imgkwc(imid(imno), keywrd, s, ier)
+         commnt = ' '
+      else
+         call ftgkys (imid(imno), keywrd, s, commnt, ier)
+      end if
 C
       if (ier .ne. 0) s = 'ERROR!'
       return
@@ -132,12 +160,16 @@ C
 C
       ier = 0
 c     print*,'a ',imgtyp(imno)
+      if (imgtyp(imno) .eq. 'imh') then
+         call imakwc (imid(imno), keywrd, s, commnt, ier)
+      else
 c     print*,'aa ',imid(imno), keywrd, ier
-      call ftdkey (imid(imno), keywrd, ier)
+         call ftdkey (imid(imno), keywrd, ier)
 c     print*,'b',ier, s
       ier = 0
-      call ftpkys (imid(imno), keywrd, s, commnt, ier)
+         call ftpkys (imid(imno), keywrd, s, commnt, ier)
 c     print*,'c',ier
+      end if
 C
       if (ier .ne. 0) s = 'ERROR!'
       return
@@ -151,16 +183,27 @@ C
       logical bad
 C
       n = ncol(imno)
-      ifirst = (iy-1)*n + ix
-      ier = 0
-      call ftgpve (imid(imno), 1, ifirst, 1, -1.01e19, 
-     .     rdpixl, bad, ier)
-      if (ier .ne. 0) then
-         call stupid ('ftgpve: '//message(imgtyp(imno), ier))
-         write (6,*) ' ftgpve in rdpixl', imno, imid(imno), ix, iy
-         write (6,*) pictur(imno), ier
-         rdpixl = -1.01e19
-         CALL OOPS
+      if (imgtyp(imno) .eq. 'imh') then
+         ier = 0
+         call imgs2r (imid(imno), rdpixl, ix, ix, iy, iy, ier)
+         if (ier .ne. 0) then
+            call stupid ('rdpixl: '//message(imgtyp(imno), ier))
+            write (6,*) ' imgs2r in rdpixl', imno, imid(imno), ix, iy
+            write (6,*) pictur(imno)
+            rdpixl = -1.01e19
+         end if
+      else
+         ifirst = (iy-1)*n + ix
+         ier = 0
+         call ftgpve (imid(imno), 1, ifirst, 1, -1.01e19, 
+     .        rdpixl, bad, ier)
+         if (ier .ne. 0) then
+            call stupid ('ftgpve: '//message(imgtyp(imno), ier))
+            write (6,*) ' ftgpve in rdpixl', imno, imid(imno), ix, iy
+            write (6,*) pictur(imno), ier
+            rdpixl = -1.01e19
+            CALL OOPS
+         end if
       end if
       return
       end
@@ -178,16 +221,27 @@ C
       ier =0
 c     if (show) print*,'in rdrow',ier
       n = ncol(imno)
-      ifirst = (iy-1)*n+1
+      if (imgtyp(imno) .eq. 'imh') then
+c     if (show) print*,'imh'
+         call imgl2r (imid(imno), row, iy, ier)
+c     if (show) print*,'X:',ier
+         if (ier .ne. 0) then
+            call stupid ('rdrow: '//message(imgtyp(imno), ier))
+            write (6,*) ' imgl2r in rdrow',imno,imid(imno),ncol(imno),iy
+            CALL OOPS
+         end if
+      else
+         ifirst = (iy-1)*n+1
 c     if (show) print*,'y',imno, imid(imno), ifirst, n, ier
-      call ftgpve (imid(imno), 1, ifirst, n, -1.01e15, row, 
-     .     bad, ier)
+         call ftgpve (imid(imno), 1, ifirst, n, -1.01e15, row, 
+     .        bad, ier)
 c     if (show) print*,'Y ',bad,ier
-      if (ier .ne. 0) then
-         write (6,*) ' ftgpve in rdrow',imno,imid(imno),ncol(imno),
-     .        iy, ier
-         call stupid ('rdrow: '//message(imgtyp(imno), ier))
-         CALL OOPS
+         if (ier .ne. 0) then
+            write (6,*) ' ftgpve in rdrow',imno,imid(imno),ncol(imno),
+     .           iy, ier
+            call stupid ('rdrow: '//message(imgtyp(imno), ier))
+            CALL OOPS
+         end if
       end if
 C
       return
@@ -215,8 +269,12 @@ C
          end do
       end if
 C
-      ifirst = (iy-1)*n+1
-      call ftppre (imid(imno), 1, ifirst, n, row, ier)
+      if (imgtyp(imno) .eq. 'imh') then
+         call impl2r (imid(imno), row, iy, ier)
+      else
+         ifirst = (iy-1)*n+1
+         call ftppre (imid(imno), 1, ifirst, n, row, ier)
+      end if
 C
       if (ier .ne. 0) then
          call stupid ('wrrow: '//message(imgtyp(imno), ier))
@@ -263,23 +321,40 @@ C
 C
 C my is now the vertical size of the subarray
 C
-      mx = mx-lx+1
+      if (imgtyp(imno) .eq. 'imh') then
+         jy = ly - 1
+         do j=1,my
+            jy = jy + 1
+            call imgs2r (id, func(1,j), lx, mx, jy, jy, ier)
+            if (ier .ne. 0) then 
+               call stupid ('rdaray: '//message(imgtyp(imno), ier))
+               write (6,*) 'rdaray:  x =', lx, ' to', mx, 
+     .              '  y =', jy
+            end if
+         end do 
+         mx = mx-lx+1
 C
 C mx is now the horizontal size of the subarray
 C
-      n = ncol(imno)
-      jy = ly-1
-      ifirst = jy*n + lx
-      do j=1,my
-         call ftgpve (id, 1, ifirst, mx, -1.01e19, func(1,j),
-     .        bad, ier)
-         if (ier .ne. 0) then 
-            call stupid ('rdaray: '//message(imgtyp(imno),ier))
-            write (6,*) 'rdaray ftgpve:  x =', lx, ' to', mx, 
-     .           '  y =', jy+j
-         end if
-         ifirst = ifirst + n
-      end do 
+      else
+         mx = mx-lx+1
+C
+C mx is now the horizontal size of the subarray
+C
+         n = ncol(imno)
+         jy = ly-1
+         ifirst = jy*n + lx
+         do j=1,my
+            call ftgpve (id, 1, ifirst, mx, -1.01e19, func(1,j),
+     .           bad, ier)
+            if (ier .ne. 0) then 
+               call stupid ('rdaray: '//message(imgtyp(imno),ier))
+               write (6,*) 'rdaray ftgpve:  x =', lx, ' to', mx, 
+     .              '  y =', jy+j
+            end if
+            ifirst = ifirst + n
+         end do 
+      end if
       return
       end
 C
@@ -326,20 +401,34 @@ C
       my = min(nrow(jmno),my)
       my = my-ly+1
 C
-      mx = mx-lx+1
-      n = ncol(jmno)
-      ifirst = (ly-2)*n + lx
-      jy = ly-1
-      do j=1,my
-         ifirst = ifirst + n
-         jy = jy + 1
-         call ftppre (id, 1, ifirst, mx, func(1,j), ier)
-         if (ier .ne. 0) then 
-            call stupid ('wraray: '//message(imgtyp(jmno),ier))
-            write (6,*) 'wraray ftppre:  x =', lx, ' to', mx, 
-     .           '  y =', jy
-         end if
-      end do 
+      if (imgtyp(jmno) .eq. 'imh') then
+         jy = ly - 1
+         do j=1,my
+            jy = jy + 1
+            call imps2r (id, func(1,j), lx, mx, jy, jy, ier)
+            if (ier .ne. 0) then 
+               call stupid ('wraray: '//message(imgtyp(jmno), ier))
+               write (6,*) 'wraray imps2r:  x =', lx, ' to', mx, 
+     .              '  y =', jy
+            end if
+         end do 
+         mx = mx-lx+1
+      else
+         mx = mx-lx+1
+         n = ncol(jmno)
+         ifirst = (ly-2)*n + lx
+         jy = ly-1
+         do j=1,my
+            ifirst = ifirst + n
+            jy = jy + 1
+            call ftppre (id, 1, ifirst, mx, func(1,j), ier)
+            if (ier .ne. 0) then 
+               call stupid ('wraray: '//message(imgtyp(jmno),ier))
+               write (6,*) 'wraray ftppre:  x =', lx, ' to', mx, 
+     .              '  y =', jy
+            end if
+         end do 
+      end if
       return
       end
 C
@@ -361,11 +450,15 @@ C
       my = min0(nrow(imno),my)
       nx = ncol(imno)
 C
-      i = (ly-1)*nx+1
-      n = (my-ly+1)*nx
-      bad = .false.
-      call ftgpve (imid(imno), 1, i, n, -1.01e19, 
-     .     dat(1,ly), bad, ier)
+      if (imgtyp(imno) .eq. 'imh ') then
+         call imgs2r (imid(imno), dat(1,ly), 1, nx, ly, my, ier)
+      else
+         i = (ly-1)*nx+1
+         n = (my-ly+1)*nx
+         bad = .false.
+         call ftgpve (imid(imno), 1, i, n, -1.01e19, 
+     .        dat(1,ly), bad, ier)
+      end if
 C
       if (ier .ne. 0) then
          call stupid ('rdsect: '//message(imgtyp(imno), ier))
@@ -432,11 +525,15 @@ C
          end do
       end if
 C
-      i = (ly-1)*nx+1
-      n = (my-ly+1)*nx
+      if (imgtyp(imno) .eq. 'imh') then
+         call imps2r (imid(imno), dat(1,ly), 1, nx, ly, my, ier)
+      else
+         i = (ly-1)*nx+1
+         n = (my-ly+1)*nx
 c     PRINT *,'before ftppre',imno,imid(imno),ly,my,nx,i,n,ier
-      call ftppre (imid(imno), 1, i, n, dat(1,ly), ier)
+         call ftppre (imid(imno), 1, i, n, dat(1,ly), ier)
 c     PRINT *,'after ftppre',ier,ncol(imno),nrow(imno)
+      end if
 C
       if (ier .ne. 0) then
          call stupid ('wrsect: '//message(imgtyp(imno), ier))
@@ -708,10 +805,36 @@ C
       else
          j = 1
       end if
-      if (show)print*,'imh unsuported in this version'
-      call stupid (commnt)
-      ncol(imno) = -1
-      return
+      call imopen (expand(name), j, imid(imno), ier)
+      if (ier .eq. 0) then
+C
+C '.imh' worked.
+C
+      if(show)print*,'imh worked', imid(imno)
+         imgtyp(imno) = 'imh '
+         call imgsiz (imid(imno), axlen, naxis, itype, ier)
+         if (ier .eq. 0) then
+            ncol(imno) = axlen(1)
+            nrow(imno) = axlen(2)
+            if (itype .eq. 3) then
+               dattyp(imno) = 'SHRT'
+            else if (itype .eq. 5) then
+               dattyp(imno) = 'LONG'
+            else if (itype .eq. 6) then
+               dattyp(imno) = 'REAL'
+            else
+               call stupid ('Unsupported data type')
+               ier = 1
+            end if
+            ier = 0
+            return
+         end if
+      else
+         call imemsg (ier, commnt)
+         call stupid (commnt)
+         ncol(imno) = -1
+         return
+      end if
 C
  5000 continue
       if(show)print*,5000
@@ -810,67 +933,105 @@ c     print*,name
       ncol(jmno) = axlen(1)
       nrow(jmno) = axlen(2)
 C
-      call ftgiou (j, ier)
+      if (imgtyp(jmno) .eq. 'imh') then
+         if (dattyp(jmno) .eq. 'SHRT') then
+            i = 3
+         else if (dattyp(jmno) .eq. 'LONG') then
+            i = 5
+         else if (dattyp(jmno) .eq. 'REAL') then
+            i = 6
+         else
+            ier = 2
+            return
+         end if
+         name = extend(pictur(jmno), 'imh')
+c     print*,'before imcrea', axlen, i
+c     print*,expand(name)
+         call imcrea (expand(name), axlen, 2, i, ier)
+c     print*,'crepic imcrea',ier
+         if (ier .ne. 0) then
+            call stupid ('crepic A: '//message('imh', ier))
+c     print*,'crepic imcrea ',expand(name)
+            call oops
+         end if
+         i = 3
+         call imopen (expand(name), i, imid(jmno), ier)
+c     print*,'crepic imopen',ier
+         if (ier .ne. 0) then
+            call stupid ('crepic B: '//message('imh', ier))
+c     print*,'crepic imopen ', expand(name)
+            call oops
+         end if
+         call imhcpy (imid(imno), imid(jmno), ier)
+         if (ier .ne. 0) then
+            call stupid ('crepic C: '//message('imh', ier))
+c     print*,'crepic imhcpy '
+            call oops
+         end if
+c     print*,'crepic imhcpy',ier
+      else
+         call ftgiou (j, ier)
 c     print*,'crepic ftgiou',j,ier
-      if (ier .ne. 0) then
-         call stupid ('crepic D: '//message('fits', ier))
+         if (ier .ne. 0) then
+            call stupid ('crepic D: '//message('fits', ier))
 c     print*,'crepic ftgiou'
-         return
-      end if
-      imid(jmno) = j
-      name = expand(extend(pictur(jmno), imgtyp(jmno)))
+            return
+         end if
+         imid(jmno) = j
+         name = expand(extend(pictur(jmno), imgtyp(jmno)))
 c     print*,'crepic ftinit', j, '"'//name//'"'
-      call ftinit (j, name, lblock, ier)
+         call ftinit (j, name, lblock, ier)
 c     print*,'after ftinit',lblock,ier
-      if (ier .ne. 0) then
-         call stupid ('crepic E: '//message('fits', ier))
+         if (ier .ne. 0) then
+            call stupid ('crepic E: '//message('fits', ier))
 c     print*,'crepic ftinit',j,name,lblock,ier
-         return
-      end if
+            return
+         end if
 c     print*,'crepic ftcopy',imid(imno),j
 c     print*,imno,' "'//pictur(imno)//'"'
-      name = expand(extend(pictur(imno), imgtyp(imno)))
-      if (access(name, 'r') .ne. 0) then
-         call stupid ('Error copying '//pictur(imno)//
-     .        ' to '//pictur(jmno))
-         ier = 99
-         return
-      end if
-      ier = 0
-      call ftcopy (imid(imno), j, 0, ier)
+         name = expand(extend(pictur(imno), imgtyp(imno)))
+         if (access(name, 'r') .ne. 0) then
+            call stupid ('Error copying '//pictur(imno)//
+     .           ' to '//pictur(jmno))
+            ier = 99
+            return
+         end if
+         ier = 0
+         call ftcopy (imid(imno), j, 0, ier)
 c     print*,'after ftcopy', ier
-      if (ier .ne. 0) then
-         call stupid ('crepic F: '//message('fits', ier))
+         if (ier .ne. 0) then
+            call stupid ('crepic F: '//message('fits', ier))
 c     print*, pictur(imno), j
 c     print*,'crepic ftcopy',imid(imno),j,ier
-c     return
-      end if
+c           return
+         end if
 C
 C Do we need to change the image dimensions or data type?
 C
-      ier = 0
-      if ((ncol(imno) .ne. ncol(jmno)) .or.
-     .     (nrow(imno) .ne. nrow(jmno)) .or.
-     .     (dattyp(imno) .ne. dattyp(jmno))) then
-         if (dattyp(jmno) .eq. 'SHRT') then
-            i = 16
-         else if (dattyp(jmno) .eq. 'LONG') then
-            i = 32
-         else if (dattyp(jmno) .eq. 'REAL') then
-            i = -32
-         else
-            ier = 1
-            return
-         end if
-         call ftrsim (j, i, 2, axlen, ier)
-         if (ier .ne. 0) then
-            call stupid ('crepic F: '//message('fits', ier))
-            call oops
-         end if
-         call ftflus (j, ier)
-         if (ier .ne. 0) then
-            call stupid ('crepic G: '//message('fits', ier))
-            call oops
+         ier = 0
+         if ((ncol(imno) .ne. ncol(jmno)) .or.
+     .       (nrow(imno) .ne. nrow(jmno)) .or.
+     .       (dattyp(imno) .ne. dattyp(jmno))) then
+            if (dattyp(jmno) .eq. 'SHRT') then
+               i = 16
+            else if (dattyp(jmno) .eq. 'LONG') then
+               i = 32
+            else if (dattyp(jmno) .eq. 'REAL') then
+               i = -32
+            else
+               ier = 1
+               return
+            end if
+            call ftrsim (j, i, 2, axlen, ier)
+            if (ier .ne. 0) then
+               call stupid ('crepic F: '//message('fits', ier))
+               call oops
+            end if
+            call ftflus (j, ier)
+            if (ier .ne. 0) then
+               call stupid ('crepic G: '//message('fits', ier))
+               call oops
+            end if
          end if
       end if
 C
@@ -895,17 +1056,26 @@ C
       ier = 0
       i = imid(imno)
       if (i .le. 0) return
-      call ftclos (i, ier)
-      if (ier .ne. 0) then
-         call stupid ('clpic: '//message('fits', ier))
+      if (imgtyp(imno) .eq. 'imh') then
+         call imclos (i, ier)
+         if (ier .ne. 0) then
+            call stupid ('clpic: '//message('imh', ier))
+c     print*,'clpic imclos ', pictur(imno)
+            call oops
+         end if
+      else
+         call ftclos (i, ier)
+         if (ier .ne. 0) then
+            call stupid ('clpic: '//message('fits', ier))
 c     print*,'clpic ftclos ', pictur(imno)
-         call oops
-      end if
-      call ftfiou (i, ier)
-      if (ier .ne. 0) then
-         call stupid ('clpic: '//message('fits', ier))
+            call oops
+         end if
+         call ftfiou (i, ier)
+         if (ier .ne. 0) then
+            call stupid ('clpic: '//message('fits', ier))
 c     print*,'clpic ftfiou ', pictur(imno)
-         call oops
+            call oops
+         end if
       end if
 C
       if (ier .ne. 0) then

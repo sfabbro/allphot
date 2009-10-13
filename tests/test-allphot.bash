@@ -2,7 +2,7 @@
 
 export ALLPHOT_OPT_DIR=$(readlink -f ../data)
 export ALLPHOT_EXEC_DIR=$(readlink -f ../scripts)
-export ALLPHOT_BIN_DIR=$(readlink -f ../src)
+export PATH="$(readlink -f ../src):${PATH}"
 source ${ALLPHOT_EXEC_DIR}/recipes.bash
 
 DATA_DIR=$(readlink -f ../tests)

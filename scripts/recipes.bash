@@ -6,13 +6,13 @@ source ${ALLPHOT_EXEC_DIR}/daophot.bash
 source ${ALLPHOT_EXEC_DIR}/allframe.bash
 source ${ALLPHOT_EXEC_DIR}/options.bash
 
-# allphot_opt <fits file> [<assoc file>]
+# allphot_opt <fits file> [<dictionary file>]
 allphot_opt() {
     echo " >>> DAOPHOT OPT"
     daophot_process_init ${1} || return -1
     local image=$(basename ${1%.*})
-    local assfile=${2:-${image}.assoc}
-    [[ -r ${assfile} ]] && option_update_from_fits ${1} ${assfile}
+    local dictfile=${2:-${image}.dict}
+    [[ -r ${dictfile} ]] && option_update_from_dict ${dictfile} ${1}
     if [[ -e ${image}.psf ]] && check_psf ${image}.psf; then
 	option_update_from_fwhm $(get_fwhm ${image}.psf)
 	option_update_psf_model

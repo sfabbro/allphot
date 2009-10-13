@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+
+ALLPHOT_EXEC_DIR="@LIBEXEC@/allphot"
+ALLPHOT_OPT_DIR="@DATADIR@"
+
+source ${ALLPHOT_EXEC_DIR}/options.bash
+source ${ALLPHOT_EXEC_DIR}/recipes.bash
+
+usage() {
+    echo "Usage: allphot [OPTIONS] <command> <fits images>"
+}
+
+OPTIND=1
+FIELD=standard
+while getopts "f:h" opt; do
+    case "${opt}" in
+	f) field="${OPTARG}";;
+	h) usage;;
+    esac
+done
+
+for im in $*; do
+    allphot_allstar_iterate ${im} ${FIELD}.fa
+done
+
+ln -s *_process/*.{psf,als,ap,fits} .
+ls -1 *.als | tail --lines=+2 > ${FIELD}.list
+allphot_daomatch $(ls -1 *.als | head -n1) ${FIELD} ${FIELD}.list
+allphot_daomaster ${FIELD}
+allphot_allframe ${FIELD}

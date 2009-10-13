@@ -41,16 +41,25 @@ option_set_value() {
 	echo "*** Error: could not change option ${1} in ${2}" >&2
 }
 
-# option_update_from_fits <FITS file> <FITS assoc table>
-option_update_from_fits() {
-    local fkey= mopt= fval=
+# option_update_from_dict  <dictionary table> [<FITS file>]
+# dictionary table is like:
+# <daophot option name>=<value> 
+#     or
+# <daophot option name>=fits(<key>)
+option_update_from_dict() {
+    local rhs= optname= optval=
     while read line; do
-	fkey=$(cut -f1 -d '=' <<< "${line}")
-	mopt=$(cut -f2 -d '=' <<< "${line}")
-	fval=$(fits_get_key ${fkey} ${1})
-	[[ -n ${fval} ]] && \
-	    option_set_value ${mopt}=${fval} daophot.opt
-    done < ${2}
+	optname=${line%=*}
+	rhs=${line#*=}
+	fkey=$(expr "${rhs}" : 'fits(\(.*.\))')
+	if [[ ${fkey} ]]; then
+	    optval=$(fits_get_key ${fkey} ${2})
+	else
+	    optval=${rhs}
+	fi
+	[[ -n ${optval} ]] && \
+	    option_set_value ${optname}=${optval} daophot.opt
+    done < ${1}
 }
 
 # option_update_from_fwhm <fwhm>

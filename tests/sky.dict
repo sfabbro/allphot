@@ -1,0 +1,3 @@
+GA=fits(GAIN)
+RE=fits(RON)
+HI=fits(SATLEV)
