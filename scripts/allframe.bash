@@ -1,7 +1,7 @@
 # -*-bash-*-
 #!/usr/bin/env bash
 
-source ${ALLFRAME_EXEC_DIR}/options.bash
+source ${ALLPHOT_EXEC_DIR}/options.bash
 
 # daophot_match <reference catalogue> <mch file> <list of catalogs files>
 daophot_match() {

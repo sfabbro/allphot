@@ -10,7 +10,7 @@ mkdir -p ${DATA_DIR}/_process
 cd ${DATA_DIR}/_process
 
 for im in ${DATA_DIR}/sky*.fits; do
-    allphot_allstar_iterate ${im} ${DATA_DIR}/sky.assoc
+    allphot_allstar_iterate ${im} ${DATA_DIR}/sky.dict
 done
 
 field=sky

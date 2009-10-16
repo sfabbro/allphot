@@ -7,6 +7,11 @@ AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE
 
 AC_PROG_F77
+AC_CHECK_PROGS([regex_cmd],
+	[sed],
+	[no])
+AS_CASE(["${regex_cmd}"],
+	[no], [AC_MSG_ERROR([sed is required])])
 
 dnl automatically add -lm to all linking steps
 AC_CHECK_LIB(m,cos)

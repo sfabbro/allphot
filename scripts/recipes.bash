@@ -18,7 +18,7 @@ allphot_opt() {
 	option_update_psf_model
     fi
     echo > ${image}.opt.in
-    ${ALLPHOT_BIN_DIR}/daophot < ${image}.opt.in
+    daophot < ${image}.opt.in
     daophot_process_end
 }
 
@@ -32,7 +32,7 @@ allphot_find() {
 	daophot_attach ${image}
 	daophot_find ${image}.coo
     } > ${image}.find.in
-    ${ALLPHOT_BIN_DIR}/daophot < ${image}.find.in
+    daophot < ${image}.find.in
     check_catalog ${image}.coo || mv -f ${image}.coo.old ${image}.coo
     rm -f ${image}jnk.fits ${image}.coo.old
     daophot_process_end
@@ -49,7 +49,7 @@ allphot_phot() {
 	daophot_attach ${image}
 	daophot_phot photo.opt ${catalog} ${image}.ap
     } > ${image}.phot.in
-    ${ALLPHOT_BIN_DIR}/daophot < ${image}.phot.in
+    daophot < ${image}.phot.in
     check_catalog ${image}.ap || mv -f ${image}.ap.old ${image}.ap
     rm -f ${image}.ap.old
     daophot_process_end
@@ -66,7 +66,7 @@ allphot_pick() {
     {
 	daophot_pick ${catalog} ${nstars} ${magfaint} ${image}.lst
     } > ${image}.pick.in    
-    ${ALLPHOT_BIN_DIR}/daophot < ${image}.pick.in
+    daophot < ${image}.pick.in
     check_catalog ${image}.lst || mv -f ${image}.lst.old ${image}.lst
     ## select stars with chi<2 and |sharp|<0.6
     if [[ ${2} == als ]]; then
@@ -94,7 +94,7 @@ allphot_psf() {
 	daophot_attach ${image}
 	daophot_psf ${catalog} ${image}.lst ${image}.psf
     } > ${image}.psf.in
-    ${ALLPHOT_BIN_DIR}/daophot < ${image}.psf.in
+    daophot < ${image}.psf.in
     check_psf ${image}.psf || mv -f ${image}.psf.old ${image}.psf
     rm -f ${image}.psf.old
     daophot_process_end
@@ -113,7 +113,7 @@ allphot_allstar() {
     fi
     daophot_allstar ${image} ${inpsf} ${incat} ${image}.als > ${image}.allstar.in
     [[ -e ${image}.als ]] && mv -f ${image}.als ${image}.als.old 
-    ${ALLPHOT_BIN_DIR}/allstar < ${image}.allstar.in
+    allstar < ${image}.allstar.in
     check_catalog ${image}.als || mv -f ${image}.als.old ${image}.als
     rm -f ${image}.als.old
     daophot_process_end
@@ -137,7 +137,7 @@ allphot_daomatch() {
     check_exist ${1}
     echo " >>> DAOMATCH"
     daophot_match ${1} ${field}.mch ${3} > ${field}.daomatch.in
-    ${ALLPHOT_BIN_DIR}/daomatch < ${field}.daomatch.in
+    daomatch < ${field}.daomatch.in
 }
 
 allphot_daomaster() {
@@ -145,7 +145,7 @@ allphot_daomaster() {
     echo " >>> DAOMASTER"
     [[ ! -r daomaster.opt ]] && cp -f ${ALLPHOT_OPT_DAOMASTER} daomaster.opt
     daophot_master ${field}.mch daomaster.opt > ${field}.daomaster.in
-    ${ALLPHOT_BIN_DIR}/daomaster < ${field}.daomaster.in
+    daomaster < ${field}.daomaster.in
 }
 
 allphot_allframe() {
@@ -153,5 +153,5 @@ allphot_allframe() {
     echo " >>> ALLFRAME"
     [[ ! -r allframe.opt ]] && cp -f ${ALLPHOT_OPT_ALLFRAME} allframe.opt
     daophot_allframe ${field}.mch ${field}.mag > ${field}.allframe.in
-    ${ALLPHOT_BIN_DIR}/allframe < ${field}.allframe.in
+    allframe < ${field}.allframe.in
 }

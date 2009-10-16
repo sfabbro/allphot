@@ -1,31 +1,36 @@
 #!/bin/bash
-#
 
-ALLPHOT_EXEC_DIR="@LIBEXEC@/allphot"
-ALLPHOT_OPT_DIR="@DATADIR@"
+ALLPHOT_EXEC_DIR="@LIBEXECDIR@/allphot"
+ALLPHOT_OPT_DIR="@DATADIR@/allphot"
 
 source ${ALLPHOT_EXEC_DIR}/options.bash
 source ${ALLPHOT_EXEC_DIR}/recipes.bash
 
 usage() {
-    echo "Usage: allphot [OPTIONS] <command> <fits images>"
+    echo "Usage: allphot [OPTIONS] <fits images>"
+    exit 1
 }
 
 OPTIND=1
-FIELD=standard
-while getopts "f:h" opt; do
+field=allphot.$$
+dict=
+
+while getopts "d:f:h" opt; do
     case "${opt}" in
+	d) dict="${OPTARG}";;
 	f) field="${OPTARG}";;
-	h) usage;;
+	h) usage ;;
     esac
 done
+shift
+[[ $# -eq 0 ]] && usage
 
 for im in $*; do
-    allphot_allstar_iterate ${im} ${FIELD}.fa
+    allphot_allstar_iterate ${im} ${dict}
 done
 
 ln -s *_process/*.{psf,als,ap,fits} .
-ls -1 *.als | tail --lines=+2 > ${FIELD}.list
-allphot_daomatch $(ls -1 *.als | head -n1) ${FIELD} ${FIELD}.list
-allphot_daomaster ${FIELD}
-allphot_allframe ${FIELD}
+ls -1 *.als | tail --lines=+2 > ${field}.list
+allphot_daomatch $(ls -1 *.als | head -n1) ${field} ${field}.list
+allphot_daomaster ${field}
+allphot_allframe ${field}
