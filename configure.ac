@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT([allphot], [4.0.2], [pbs@nrc.dao.ca])
+AC_INIT([allphot], [3.97], [pbs@nrc.dao.ca])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/daophot.f])
 AC_CONFIG_AUX_DIR([config])

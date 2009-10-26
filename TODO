@@ -3,4 +3,4 @@
 * multi-core allstar
 * calibration/daogrow
 * iraf i/o completely ignored for now.
-* make global allphot script
+* add actions to allphot script

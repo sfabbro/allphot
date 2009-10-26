@@ -69,17 +69,11 @@ daophot_psf() {
 	${2}
 	${3}
 
-	PSF
-	${1%.*}.nei
-	${2}
-	${3}
-
 EOF
 }
 
 # allstar_standard <fits file> <input psf file> <input mag file> <output allstar file>
 daophot_allstar() {
-    [[ -f ${1}s ]] && rm -f ${1}s
     cat <<-EOF
 
 	${1}
@@ -87,5 +81,25 @@ daophot_allstar() {
 	${3}
 	${4}
 	${1}s
+EOF
+}
+
+# daophot_append <input 1>  <input 2> <merged file>
+daophot_append() {
+    cat <<-EOF
+	APPEND
+	${1}
+	${2}
+	${3}
+EOF
+}
+
+# daophot_offset <input file> <ID DX DY DMAG> <output>
+daophot_offset() {
+    cat <<-EOF
+	OFFSET
+	${1}
+	${2} ${3} ${4} ${5}
+	${6}
 EOF
 }

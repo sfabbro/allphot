@@ -6,19 +6,99 @@ source ${ALLPHOT_EXEC_DIR}/daophot.bash
 source ${ALLPHOT_EXEC_DIR}/allframe.bash
 source ${ALLPHOT_EXEC_DIR}/options.bash
 
+get_nstars() {
+    wc -l ${1} | awk '{print $1 - 3}'
+}
+
+# remove_neighbors <neighbor file> <file to remove stars>
+remove_neighbors() {
+    local nstars=$(get_nstars ${2}) nnei=$(grep -c [\*\?] ${1})
+    [[ ${nnei} -gt 0 ]] && \
+	sed -i \
+	    $(grep [\*\?] ${1} | awk '{printf "-e /^[[:space:]]*"$1"/d "}') \
+	    ${2}
+    echo " >>> Removed ${nnei} PSF stars neighbours"
+}
+
+# apply_chisharp_cuts <pick catalog> <profile fit catalog> [chimax] [sharpmax]
+# from a profile fit 
+# select stars with chi<chimax and |sharp|<sharpmax
+apply_chisharp_cuts() {
+    local pickcat=${1} profcat=${2} id cmax=${3:-2} smax=${4:-0.6}
+    head -n 3 ${profcat} > ${pickcat}.filtered    
+    while read line; do
+	id=$(echo ${line} | awk '{print $1}')
+	awk -v vid="${id}" \
+	    -v vcmax="${cmax}" \
+	    -v vsmax="${smax}" \
+	    '{ if ( $1 == vid  && $8< vcmax && $9<vsmax && $9>-vsmax ) { print } }' \
+	    ${profcat} >> ${pickcat}.filtered
+    done < ${pickcat}
+    local nleft=$(( $(get_nstars ${pickcat}) - $(get_nstars ${pickcat}.filtered) ))
+    echo " >>> Removed ${nleft} objects with chi > ${cmax} and |sharp| > ${smax}"
+    mv ${pickcat}.filtered ${pickcat}
+}
+
+allphot_filter_psf_stars() {
+    echo " >>> ALLPHOT FILTER PSF STARS"
+    daophot_process_init ${1} || return -1
+    local image=$(basename ${1%.*})
+    if [[ -e ${image}.lst ]]; then
+	[[ -e ${image}.nei ]] && remove_neighbors ${image}.nei ${image}.lst
+	[[ -e ${image}.als ]] && apply_chisharp_cuts ${image}.lst ${image}.als ${3} ${4}
+    else
+	echo " Missing lst file for ${1}, no PSF star filtering"
+    fi
+    daophot_process_end
+}
+
+allphot_find_newstars() {
+    daophot_process_init ${1} || return -1
+    local image=$(basename ${1%.*})
+    local images=${image}s
+    echo " >>> DAOPHOT FIND"
+    [[ -e ${image}.coo ]] && mv -f ${image}.coo ${image}.coo.old
+    {
+	daophot_attach ${images}
+	daophot_find ${images}.coo
+	daophot_attach ${image}
+	daophot_phot_with_psf photo.opt ${catalog} ${image}.ap
+	daophot_offset ${images}.ap \
+	    $(tail -n 1 ${image}.coo | awk '{print $1+1}') 0 0 0 \
+	    ${images}.off
+	daophot_append ${image}.ap ${images}.off ${image}.cmb
+    } > ${image}.subfind.in
+    daophot < ${image}.subfind.in
+    check_catalog ${image}.ap || mv -f ${image}.ap.old ${image}.ap
+    rm -f ${image}jnk.fits ${image}.coo.old
+    daophot_process_end
+}
+
+
 # allphot_opt <fits file> [<dictionary file>]
 allphot_opt() {
     echo " >>> DAOPHOT OPT"
-    daophot_process_init ${1} || return -1
     local image=$(basename ${1%.*})
-    local dictfile=${2:-${image}.dict}
-    [[ -r ${dictfile} ]] && option_update_from_dict ${dictfile} ${1}
+    local fitsfile=$(readlink -f ${1})
+    local dictfile=$(readlink -f ${2:-${image}.dict})
+    daophot_process_init ${1} || return -1
+    [[ -r ${dictfile} ]] && option_update_from_dict ${dictfile} ${fitsfile}
     if [[ -e ${image}.psf ]] && check_psf ${image}.psf; then
-	option_update_from_fwhm $(get_fwhm ${image}.psf)
-	option_update_psf_model
+	option_update_from_fwhm $(get_psf_fwhm ${image}.psf)
     fi
     echo > ${image}.opt.in
     daophot < ${image}.opt.in
+    daophot_process_end
+}
+
+allphot_upgrade_psf() {
+    echo " >>> DAOPHOT PSF UPGRADE"
+    local image=$(basename ${1%.*})
+    local fitsfile=$(readlink -f ${1})
+    daophot_process_init ${1} || return -1
+    if [[ -e ${image}.psf ]] && check_psf ${image}.psf; then
+	option_upgrade_psf_model
+    fi
     daophot_process_end
 }
 
@@ -61,28 +141,17 @@ allphot_pick() {
     local image=$(basename ${1%.*})
     local catalog=${image}.${2:-ap}
     local nstars=200
-    local magfaint=16
+    local magfaint=13
     [[ -e ${image}.lst ]] && mv -f ${image}.lst ${image}.lst.old    
     {
 	daophot_pick ${catalog} ${nstars} ${magfaint} ${image}.lst
     } > ${image}.pick.in    
     daophot < ${image}.pick.in
     check_catalog ${image}.lst || mv -f ${image}.lst.old ${image}.lst
-    ## select stars with chi<2 and |sharp|<0.6
-    if [[ ${2} == als ]]; then
-	local id
-	head -n 3 ${catalog} > ${catalog}.filtered
-	while read line; do
-	    id=$(echo ${line} | awk '{print $1}')
-	    awk -v vid="${id}" '{ if ( $1 == vid  && $8<2 && $9<0.6 && $9>-0.6 ) { print } }' ${catalog} >> ${catalog}.filtered
-	done < ${image}.lst
-	echo "Selected $(wc -l ${catalog}.filtered | awk '{print $1}') stars out of $(wc -l ${image}.lst | awk '{print $1}')"
-	mv ${catalog}.filtered ${image}.lst
-    fi
     daophot_process_end
 }
 
-# allphot_psf <fits> <input coordinate catalog> produce image.psf
+# allphot_psf <fits> <input coordinate catalog> produces image.psf
 allphot_psf() {
     local image=$(basename ${1%.*})
     local catalog=${image}.${2:-ap}
@@ -112,24 +181,13 @@ allphot_allstar() {
 	return -1
     fi
     daophot_allstar ${image} ${inpsf} ${incat} ${image}.als > ${image}.allstar.in
-    [[ -e ${image}.als ]] && mv -f ${image}.als ${image}.als.old 
+    [[ -e ${image}.als ]] && mv -f ${image}.als ${image}.als.old
+    [[ -e ${image}s.fits ]] && mv -f ${image}s.fits ${image}s.fits.old
+
     allstar < ${image}.allstar.in
     check_catalog ${image}.als || mv -f ${image}.als.old ${image}.als
     rm -f ${image}.als.old
     daophot_process_end
-}
-
-allphot_allstar_iterate() {
-    allphot_opt ${1} ${2}
-    allphot_find ${1}
-    allphot_phot ${1}
-    allphot_pick ${1}
-    allphot_psf ${1}
-    allphot_allstar ${1}
-    allphot_opt ${1}
-    allphot_pick ${1} als
-    allphot_psf ${1} als
-    allphot_allstar ${1}
 }
 
 allphot_daomatch() {
@@ -154,4 +212,30 @@ allphot_allframe() {
     [[ ! -r allframe.opt ]] && cp -f ${ALLPHOT_OPT_ALLFRAME} allframe.opt
     daophot_allframe ${field}.mch ${field}.mag > ${field}.allframe.in
     allframe < ${field}.allframe.in
+}
+
+allphot_allstar_iterate() {
+    allphot_opt ${1} $DICT
+    allphot_find ${1}
+    allphot_phot ${1}
+    allphot_pick ${1}
+    allphot_psf ${1}
+    allphot_filter_psf_stars ${1}
+    allphot_psf ${1}
+    allphot_opt ${1} $DICT
+    allphot_psf ${1}
+    allphot_filter_psf_stars ${1}
+    allphot_psf ${1}
+    allphot_allstar ${1}
+    allphot_pick ${1} als
+    allphot_filter_psf_stars ${1}
+    allphot_psf ${1} als
+    allphot_filter_psf_stars ${1}
+    allphot_upgrade_psf ${1}
+    allphot_psf ${1} als
+    allphot_filter_psf_stars ${1}
+    allphot_psf ${1} als
+    allphot_filter_psf_stars ${1}
+    allphot_psf ${1} als
+    allphot_allstar ${1}
 }

@@ -52,7 +52,7 @@ option_update_from_dict() {
 	optname=${line%=*}
 	rhs=${line#*=}
 	fkey=$(expr "${rhs}" : 'fits(\(.*.\))')
-	if [[ ${fkey} ]]; then
+	if [[ -n ${fkey} ]]; then
 	    optval=$(fits_get_key ${fkey} ${2})
 	else
 	    optval=${rhs}
@@ -87,7 +87,7 @@ option_update_photo_from_fwhm() {
     option_set_value OS=$(calc "${fwhm}*12+20") photo.opt
 }
 
-option_update_psf_model() {
+option_upgrade_psf_model() {
     option_set_value AN=-6 daophot.opt
     option_set_value VA=2 daophot.opt
 }

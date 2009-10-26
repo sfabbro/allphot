@@ -1,36 +1,69 @@
-#!/bin/bash
+#/bin/bash
+# -*-bash-*-  vim: ft=bash
 
-ALLPHOT_EXEC_DIR="@LIBEXECDIR@/allphot"
 ALLPHOT_OPT_DIR="@DATADIR@/allphot"
+ALLPHOT_EXEC_DIR="@LIBEXECDIR@/allphot"
 
 source ${ALLPHOT_EXEC_DIR}/options.bash
 source ${ALLPHOT_EXEC_DIR}/recipes.bash
 
 usage() {
-    echo "Usage: allphot [OPTIONS] <fits images>"
-    exit 1
+    echo "Usage: allphot [OPTIONS] ACTION <FITS images>"
+}
+
+description() {
+    cat <<EOF
+  OPTIONS:
+       -f <field> : Specify a field name
+       -d <dict>  : Specify a dictionary file for DAOPHOT options
+       -j <njobs> : Number of jobs to run in parallel (default: one image/proc)
+       -h <njobs> : Number of jobs to run in parallel (default: one image/proc)
+  ACTION:
+       List of available action recognized
+       OPT        : Produce option file for DAOPHOT 
+       FIND       : Find stars in a field
+       PHOT       : Run aperture photometry
+       PICK       : Pick fairly isolated PSF candidate stars
+       PSF        : Produce a Point Spread Function from a list of stars
+       ALLSTAR    : Profile-fitting photometry for a field
+       DAOMATCH   : Match frames geometrically
+       DAOMASTER  : Refine match among frames and produce a union catalog
+       ALLFRAME   : Multi-frames profile-fitting photometry
+EOF
 }
 
 OPTIND=1
 field=allphot.$$
 dict=
+action=
+jobs=auto
 
-while getopts "d:f:h" opt; do
-    case "${opt}" in
-	d) dict="${OPTARG}";;
-	f) field="${OPTARG}";;
-	h) usage ;;
+while test $# -gt 0; do
+    case "${1}" in
+	-d=* | --dict=*)  dict="${1##*=}" ;;
+	-f=* | --field=*) field="${1##*=}" ;;
+	-j=* | --jobs=*)  jobs="${1##*=}" ;;
+	-h | --help) usage; description; exit 0;;
+	--) shift; break ;;
+	*) break ;;
     esac
+    shift
 done
-shift
-[[ $# -eq 0 ]] && usage
+
+[[ $# -eq 0 ]] && usage >&2 && exit 1
+
+export DICT=$dict
+allphot_process \
+    --action="allphot_allstar_iterate" \
+    --jobs=${jobs} \
+    $*
+
+exit 1
 
 for im in $*; do
-    allphot_allstar_iterate ${im} ${dict}
+    ln -s *_daophot/*.{psf,als,ap} .
+    ls -1 *.als | tail --lines=+2 > ${field}.list
+    allphot_daomatch $(ls -1 *.als | head -n1) ${field} ${field}.list
+    allphot_daomaster ${field}
+    allphot_allframe ${field}
 done
-
-ln -s *_process/*.{psf,als,ap,fits} .
-ls -1 *.als | tail --lines=+2 > ${field}.list
-allphot_daomatch $(ls -1 *.als | head -n1) ${field} ${field}.list
-allphot_daomaster ${field}
-allphot_allframe ${field}

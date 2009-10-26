@@ -1,5 +1,4 @@
 MAINTAINERCLEANFILES = Makefile.in
-CLEANFILES = *~
 
 bin_SCRIPTS=allphot
 
