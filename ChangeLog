@@ -3,12 +3,3 @@
 2009-06-11 Sebastien Fabbro <sfabbro@uvic.ca>
 	
 	* Started work in the scripts directory to automate DAOPHOT
-	
-
-
-2009-06-10 Sebastien Fabbro <sfabbro@uvic.ca>
-	
-	* Added configure.ac, Makefile.am, acx_cfitsio.m4, src/Makefile.am
-	to allow autotoolization.
-	* Changed the 
-	* Put the whole source in src directory

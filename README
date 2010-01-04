@@ -1,10 +1,4 @@
-This is a attempt to package and automate a stellar photometry software called
-DAOPHOT and its derivatives DAOMATCH, DAOMASTER, DAOGROW and
-ALLFRAME. To read more about the software, please read the original
-file README.txt, but do not pay attention to the installing part.
-
-What has been changed from the original daophot-4.tar ball is
-described in the ChangeLog file.
-
-Installation instructions and requirements are in the INSTALL file.
-Some documentation can be found in the doc directory.
+ALLPHOT is a package designed to automate the ALLFRAME suite. The idea was to create a friendly way of automating all ALLFRAME programs.
+It could be used for other command line programs, its API is fairly
+generic. The code is inspired by the "eselect" tool used on Gentoo,
+and shamefully actually borrows a lot of code from it.

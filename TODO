@@ -1,6 +1,4 @@
 * configure to make the *.inc hardcoded parameters
 * tests: reduce the number of images to test
-* multi-core allstar
 * calibration/daogrow
 * iraf i/o completely ignored for now.
-* add actions to allphot script
