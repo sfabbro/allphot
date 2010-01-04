@@ -1,0 +1,37 @@
+#!@BASH@
+# -*-bash-*-
+#  vim: ft=bash
+
+
+while test $# -gt 0; do
+    case "${1}" in
+	-j=* | --jobs=*) jobs="${1##*=}" ;;
+	--) shift; break ;;
+	*) break ;;
+    esac
+    shift
+done
+
+action="$@"
+
+if test -x "${action}"; then
+    echo "*** Error: ${1} is not a valid action to process" >&2
+    return -1
+fi
+
+# very simple automatic process (not portable)
+[[ ${jobs} == auto ]] && jobs=$(grep -c processor /proc/cpuinfo)
+[[ ${jobs} -gt $# ]]  && jobs=$#
+[[ ${jobs} -gt 2 ]]   && echo " >>> Will run ${jobs} jobs simultaneously"
+
+j=1
+while test $# -gt 0; do
+    echo " >>> Starting job ${j} on ${1}"
+    "${action}" ${1} &> allphot.job.$j.log &
+    shift
+    j=$(( ${j} + 1))
+    while [[ $(ps auxwww | grep -c "${action}") -ge ${jobs} ]]; do 
+	sleep 0.4
+	j=1
+    done
+done

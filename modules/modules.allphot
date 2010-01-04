@@ -1,0 +1,79 @@
+# -*-bash-*-  vim: ft=bash
+
+DESCRIPTION="A module for querying modules. By default, it lists all available modules"
+DEFAULT_ACTION="list"
+VERSION="4"
+
+inherit config
+
+### list action
+
+describe_list() {
+    echo "List all available modules"
+}
+
+# List all installed modules
+do_list() {
+    [[ $# -gt 0 ]] && die -q "Too many parameters"
+    
+    local path file module name desc
+    local -a photo_modules
+    
+    for path in "${ALLPHOT_MODULES_PATH[@]}" ; do
+	[[ -d ${path} ]] || continue
+	for file in "${path}"/*.allphot ; do
+	    [[ -f ${file} ]] || continue
+	    photo_modules=( "${photo_modules[@]}" "${file}" )
+	done
+    done
+    
+    if is_output_mode brief; then
+	# This is mainly intended for bash completion
+	echo "help"
+	echo "usage"
+	echo "version"
+	for module in "${photo_modules[@]}" ; do
+	    name=${module##*/}
+	    echo "${name%%.allphot}"
+	done
+    else
+	write_list_start "Built-in modules:"
+	write_kv_list_entry "help"			"Display a help message"
+	write_kv_list_entry "usage"			"Display a usage message"
+	write_kv_list_entry "version"		"Display version information"
+	
+	if [[ ${#photo_modules[@]} -gt 0 ]] ; then
+	    echo
+	    write_list_start "Photo modules:"
+	    for module in "${photo_modules[@]}" ; do
+		name=${module##*/}
+		name=${name%%.allphot}
+		desc=$(ALLPHOT_MODULE_NAME=${name} \
+		    load_config "${module}" DESCRIPTION)
+		desc=${desc:-No description available}
+		write_kv_list_entry "${name}" "${desc}"
+	    done
+	fi
+    fi
+}
+
+### has action
+
+describe_has() {
+    echo "Return true if the module is installed, and false otherwise"
+}
+
+describe_has_parameters() {
+    echo "<module>"
+}
+
+do_has() {
+    [[ -z $1 ]] && die -q "Required option (module name) missing"
+    [[ $# -gt 1 ]] && die -q "Too many parameters"
+    
+    local modname=$1 modpath
+    for modpath in "${ALLPHOT_MODULES_PATH[@]}" ; do
+	[[ -f ${modpath}/${modname}.allphot ]] && return 0
+    done
+    return 1
+}
