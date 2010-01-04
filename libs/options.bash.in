@@ -1,6 +1,6 @@
 # -*-bash-*-
 
-ALLPHOT_OPT_DIR=@DATADIR@/allphot/options
+ALLFRAME_OPT_DIR=@DATADIR@/allframe
 DAOPHOT_OPT=daophot.opt
 PHOTO_OPT=photo.opt
 ALLSTAR_OPT=allstar.opt
@@ -12,7 +12,11 @@ calc() {
 # return the value of a FITS keyword
 fits_get_key() {
     [[ ! -r ${2} ]] && die -q "get key: FITS file ${2} not found"
-    local value=$(listhead ${2} 2> /dev/null | grep "^${1}.*=" | cut -d '=' -f 2 | awk '{print $1}' | sed -e "s:'::g")
+    local value=$(listhead ${2} 2> /dev/null \
+	| grep "^${1}.*=" \
+	| cut -d '=' -f 2 \
+	| awk '{print $1}' \
+	| sed -e "s:'::g")
     [[ -z ${value} ]] && die -q "get_key: FITS keyword ${1} not found"
     echo ${value}
 }

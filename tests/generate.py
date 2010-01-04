@@ -52,5 +52,5 @@ if __name__ == '__main__':
     #if len(sys.argv)==1 :
     #    print "%s nstars nimages" % os.path.basename(sys.argv[0])    
     #generate_sky(sys.argv[1], sys.argv[2])
-    generate_sky('sky.list', 10)
+    generate_sky('sky.list', 4)
 

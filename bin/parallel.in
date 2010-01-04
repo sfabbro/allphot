@@ -2,7 +2,6 @@
 # -*-bash-*-
 #  vim: ft=bash
 
-
 while test $# -gt 0; do
     case "${1}" in
 	-j=* | --jobs=*) jobs="${1##*=}" ;;

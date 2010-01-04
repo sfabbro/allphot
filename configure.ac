@@ -1,7 +1,6 @@
-AC_PREREQ(2.61)
-AC_INIT([allphot], [0.1], [sfabbro@uvic.ca])
-AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_SRCDIR([src/])
+AC_INIT([allphot], [0.1], [sfabbro@uvic.ca], allphot)
+AC_PREREQ(2.59)
+AC_CONFIG_SRCDIR([bin/allphot.in])
 AC_CONFIG_AUX_DIR([config])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE
@@ -57,11 +56,10 @@ if test x$ALLFRAME = "x" ; then
 fi
 
 AC_CONFIG_FILES([Makefile 
-		doc/Makefile
 		data/Makefile
 		tests/Makefile
-		scripts/bin/Makefile
-		scripts/libs/Makefile
-		scripts/modules/Makefile
-		scripts/Makefile])
+		bin/Makefile
+		libs/Makefile
+		modules/Makefile
+		recipes/Makefile])
 AC_OUTPUT

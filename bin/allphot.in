@@ -3,32 +3,32 @@
 #  vim: ft=bash
 
 # Where are our data?
-ALLPHOT_DATA_PATH="@DATADIR@/allphot"
+@UPNAME@_DATA_PATH="@DATADIR@/@PACKAGE_NAME@"
 
 # Where are modules installed by default?
-ALLPHOT_DEFAULT_MODULES_PATH="${ALLPHOT_DATA_PATH}/modules"
+@UPNAME@_DEFAULT_MODULES_PATH="${@UPNAME@_DATA_PATH}/modules"
 
 # Look in these places for modules
-ALLPHOT_MODULES_PATH=( \
-	"${HOME}/.allphot/modules" \
-	"${ALLPHOT_DEFAULT_MODULES_PATH}" )
+@UPNAME@_MODULES_PATH=( \
+	"${HOME}/.@NAME@/modules" \
+	"${@UPNAME@_DEFAULT_MODULES_PATH}" )
 
 # Look in this place for libraries
-ALLPHOT_CORE_PATH="${ALLPHOT_DATA_PATH}/libs"
+@UPNAME@_CORE_PATH="${@UPNAME@_DATA_PATH}/libs"
 
 # Look here for the default contents of a module
-ALLPHOT_DEFAULT_ACTIONS="${ALLPHOT_CORE_PATH}/default.allphot"
+@UPNAME@_DEFAULT_ACTIONS="${@UPNAME@_CORE_PATH}/default.@NAME@"
 
 # Our program name and version
-ALLPHOT_VERSION="@VERSION@"
-ALLPHOT_PROGRAM_NAME="allphot"
+@UPNAME@_VERSION="@VERSION@"
+@UPNAME@_PROGRAM_NAME="@NAME@"
 
 # Invocation information
-ALLPHOT_BINARY_NAME="${0}"
-ALLPHOT_KILL_TARGET="$$"
+@UPNAME@_BINARY_NAME="${0}"
+@UPNAME@_KILL_TARGET="$$"
 
 # Global options
-ALLPHOT_OPTIONS=""
+@UPNAME@_OPTIONS=""
 
 # Remove all alias definitions. Unset functions and variables that are
 # known to cause trouble.
@@ -41,7 +41,7 @@ shopt -s extglob
 shopt -s expand_aliases
 
 # Load core functions
-source "${ALLPHOT_CORE_PATH}/core.bash" || exit 255
+source "${@UPNAME@_CORE_PATH}/core.bash" || exit 255
 # Load necessary functions for the main script
 inherit output paths tests
 
@@ -49,54 +49,48 @@ inherit output paths tests
 # it, don't ask...
 trap 'echo "exiting" >&2; exit 250' 15
 
-# allphot_find_module foo
 # Find and echo the filename of the foo module. If there's no foo module,
 # die.
-allphot_find_module() {
+@NAME@_find_module() {
     local modname="$1" modpath="" modfile=""
     [[ -z ${modname} ]] && die "Usage: ${FUNCNAME} <module>"
-    for modpath in "${ALLPHOT_MODULES_PATH[@]}" ; do
-	[[ -f ${modpath}/${modname}.allphot ]] && break
+    for modpath in "${@UPNAME@_MODULES_PATH[@]}" ; do
+	[[ -f ${modpath}/${modname}.@NAME@ ]] && break
     done
     
-    modfile="${modpath}/${modname}.allphot"
+    modfile="${modpath}/${modname}.@NAME@"
     [[ -r ${modfile} ]] || die -q "Can't load module ${modname}"
     echo ${modfile}
 }
 
-# allphot_do_usage
-# Display allphot usage
-allphot_do_usage() {
-    echo "Usage: allphot <global options> <module name> <module options>"
+# Display usage
+@NAME@_do_usage() {
+    echo "Usage: ${PROGRAM_NAME} <global options> <module name> <module options>"
 }
 
-# allphot_do_help
-# Display allphot help
-allphot_do_help() {
+# Display help
+@NAME@_do_help() {
     set_output_mode default
-    allphot_do_usage
+    @NAME@_do_usage
     echo
-    allphot_do_list_options
+    @NAME@_do_list_options
     echo
-    allphot_do_list_modules
+    @NAME@_do_list_modules
 }
 
-# allphot_do_version
-# Display allphot version
-allphot_do_version() {
-    echo "allphot ${ALLPHOT_VERSION}"
+# Display version
+@NAME@_do_version() {
+    echo "@NAME@ ${@UPNAME@_VERSION}"
 }
 
-# allphot_do_list_options
 # Display all recognized global options
-allphot_do_list_options() {
+@NAME@_do_list_options() {
     write_list_start "Global options:"
     write_kv_list_entry "--no-color,--no-colour"    "Disable coloured output"
 }
 
-# allphot_do_list_modules
-# Display all available allphot modules DEPRECATED
-allphot_do_list_modules() {
+# Display all available modules DEPRECATED
+@NAME@_do_list_modules() {
     do_action modules list "$@"
 }
 
@@ -138,11 +132,11 @@ if [[ -z ${action} ]] && [[ -n ${1##--} ]] ; then
     while [[ ${1##--} != ${1} ]] ; do
 	case ${1##--} in
 	    brief)
-		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} brief"
+		@UPNAME@_OPTIONS="${@UPNAME@_OPTIONS} brief"
 		set_output_mode brief
 		;;
 	    no-colour|no-color)
-		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} no-colour"
+		@UPNAME@_OPTIONS="${@UPNAME@_OPTIONS} no-colour"
 		nocolours
 		;;
 	    help|version)
@@ -161,12 +155,12 @@ if [[ -z ${action} ]] && [[ -n ${1##--} ]] ; then
 fi
 
 if [[ -n ${action} ]] ; then
-    if is_function "allphot_do_${action//-/_}" ; then
+    if is_function "@NAME@_do_${action//-/_}" ; then
 	[[ $# -gt 0 ]] && die -q "Too many parameters"
-	allphot_do_${action//-/_}
+	@NAME@_do_${action//-/_}
     else
 	do_action "${action}" "$@"
     fi
 else
-    allphot_do_help
+    @NAME@_do_help
 fi
