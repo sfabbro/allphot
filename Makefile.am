@@ -9,5 +9,5 @@ MAINTAINERCLEANFILES = \
 
 CLEANFILES = *~
 
-SUBDIRS = src data scripts tests doc
+SUBDIRS = bin data examples libs modules tests
 EXTRA_DIST = NEWS ChangeLog INSTALL COPYING README

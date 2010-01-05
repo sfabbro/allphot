@@ -1,6 +1,6 @@
 # -*-bash-*-
 
-ALLFRAME_OPT_DIR=@DATADIR@/allframe
+ALLFRAME_OPT_DIR=@DATADIR@/@PACKAGE@/options
 DAOPHOT_OPT=daophot.opt
 PHOTO_OPT=photo.opt
 ALLSTAR_OPT=allstar.opt

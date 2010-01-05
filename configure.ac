@@ -7,7 +7,6 @@ AM_INIT_AUTOMAKE
 
 # BASH may already be set in the shell, if the admin then changes the
 # the /bin/sh symlink to a non-bash shell, all hell will break lose.
-# thanks to James Rowe for the heads up.
 unset BASH
 AC_PATH_PROGS(BASH, bash)
 if test x$BASH = "x" ; then
@@ -61,5 +60,5 @@ AC_CONFIG_FILES([Makefile
 		bin/Makefile
 		libs/Makefile
 		modules/Makefile
-		recipes/Makefile])
+		examples/Makefile])
 AC_OUTPUT
