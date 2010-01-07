@@ -1,4 +1,4 @@
-optionsdir = $(datadir)/$(PACKAGE_NAME)/options
+optionsdir = $(datadir)/@PACKAGE_NAME@/options
 options_DATA = \
 	daophot.opt \
 	photo.opt \

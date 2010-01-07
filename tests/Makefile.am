@@ -32,4 +32,4 @@ EXTRA_DIST= \
 	sky09.list
 
 clean-local:
-	-rm -rf _process
+	-rm -rf daophot_*

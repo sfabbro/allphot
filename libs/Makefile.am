@@ -1,4 +1,4 @@
-allphotlibsdir = $(datadir)/$(PACKAGE_NAME)/libs
+allphotlibsdir = $(datadir)/@PACKAGE_NAME@/libs
 allphotlibs_DATA = \
 	core.bash \
 	config.bash \
@@ -25,9 +25,11 @@ EXTRA_DIST = \
 
 SUFFIXES = .in
 dosed = @SED@ \
-	   -e 's,\@SED\@,@SED@,g' \
-	   -e 's,\@CANONICALISE\@,@CANONICALISE@,g' \
-	   -e "s,\@DATADIR\@,$(datadir),g"
+	-e 's,\@BASH\@,$(BASH),g' \
+	-e 's,\@SED\@,@SED@,g' \
+	-e 's,\@CANONICALISE\@,@CANONICALISE@,g' \
+	-e 's,\@NAME\@,$(PACKAGE_NAME),g' \
+	-e "s,\@DATADIR\@,$(datadir),g"
 
 %.bash : %.bash.in
 	@$(dosed) $< > $@

@@ -3,7 +3,7 @@
 #  vim: ft=bash
 
 # Where are our data?
-@UPNAME@_DATA_PATH="@DATADIR@/@PACKAGE_NAME@"
+@UPNAME@_DATA_PATH="@DATADIR@/@NAME@"
 
 # Where are modules installed by default?
 @UPNAME@_DEFAULT_MODULES_PATH="${@UPNAME@_DATA_PATH}/modules"

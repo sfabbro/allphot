@@ -1,6 +1,6 @@
 # -*-bash-*-
 
-ALLFRAME_OPT_DIR=@DATADIR@/@PACKAGE@/options
+ALLPHOT_OPT_DIR=@DATADIR@/@NAME@/options
 DAOPHOT_OPT=daophot.opt
 PHOTO_OPT=photo.opt
 ALLSTAR_OPT=allstar.opt
@@ -24,8 +24,12 @@ fits_get_key() {
 # option_get_value <option name> <option file>
 option_get_value() {
     local value=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
-    [[ -z ${value} ]] && die -q "get_value: Option ${1} unknown in ${2}"
-    echo ${value}
+    if [[ -z ${value} ]]; then
+	write_warning_msg "Option ${1} unknown in ${2}"
+	echo "NA"
+    else
+	echo ${value}
+    fi
 }
 
 # option_set_value <option name>=<option value> <option file>

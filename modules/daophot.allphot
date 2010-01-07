@@ -5,9 +5,6 @@ VERSION="4"
 
 inherit options paths daophot qa
 
-ALLPHOT_OPT_DAOPHOT=${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT}
-ALLPHOT_OPT_PHOTO=${ALLPHOT_OPT_DIR}/${PHOTO_OPT}
-
 # get_psf_fwhm <psf file>
 get_psf_fwhm() {
     awk 'NR==2 {print ($1+$2)*1.176; exit}' ${1} 2> /dev/null

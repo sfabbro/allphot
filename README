@@ -1,4 +1,4 @@
 ALLPHOT is a package designed to automate the ALLFRAME suite. The idea was to create a friendly way of automating all ALLFRAME programs.
 It could be used for other command line programs, its API is fairly
 generic. The code is inspired by the "eselect" tool used on Gentoo,
-and shamefully actually borrows a lot of code from it.
+and shamefully borrows a lot of code from it.

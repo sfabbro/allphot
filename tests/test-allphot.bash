@@ -1,15 +1,15 @@
-#!/bin/bash
-
-mkdir -p ${DATA_DIR}/_process
-cd ${DATA_DIR}/_process
-
-for im in ${DATA_DIR}/sky*.fits; do
-    allphot  ${im} ${DATA_DIR}/sky.dict
-done
-
+# psf analytical profile 
+prof=1
+# name of the dictionary 
 field=sky
-ln -s *_process/*.{psf,als,ap,fits} .
-ls -1 *.als | tail --lines=+2 > ${field}.list
-allphot_daomatch $(ls -1 *.als | head -n1) ${field} ${field}.list
-allphot_daomaster ${field}
-allphot_allframe ${field}
+
+for i in sky*.fits; do
+    im=${i%.*}
+    allphot daophot opt --dict=${field}.dict ${im}.fits
+    allphot daophot psf ${im}.fits
+    allphot filters neighbours daophot_${im%.*}/${im}.{nei,lst}
+    allphot daophot psf --prof=${prof} ${im}.fits
+    allphot filters neighbours daophot_${im%.*}/${im}.{nei,lst}
+    allphot daophot psf --var=2 ${im}.fits
+    allphot daophot allstar ${im}.fits
+done

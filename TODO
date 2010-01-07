@@ -1,4 +1,3 @@
 * configure to make the *.inc hardcoded parameters
-* tests: reduce the number of images to test
 * calibration/daogrow
-* iraf i/o completely ignored for now.
+* iraf i/o

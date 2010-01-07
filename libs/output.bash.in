@@ -43,13 +43,13 @@ init_columns() {
 # write_error_msg PUBLIC
 # write an error
 write_error_msg() {
-    echo -e "${COLOUR_ERROR} Error: ${COLOUR_NORMAL}${*}" 1>&2
+    echo -e "${COLOUR_ERROR} Error *** ${COLOUR_NORMAL}${*}" 1>&2
 }
 
 # write_warning_msg PUBLIC
 # write a warning
 write_warning_msg() {
-    echo -e "${COLOUR_WARN} Warning: ${COLOUR_NORMAL}${*}" 1>&2
+    echo -e "${COLOUR_WARN} Warning *** ${COLOUR_NORMAL}${*}" 1>&2
 }
 
 # write_list_start PUBLIC
