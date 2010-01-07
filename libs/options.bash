@@ -1,0 +1,99 @@
+# -*-bash-*-
+
+ALLFRAME_OPT_DIR=/usr/local/share/@PACKAGE@/options
+DAOPHOT_OPT=daophot.opt
+PHOTO_OPT=photo.opt
+ALLSTAR_OPT=allstar.opt
+
+calc() {
+    echo "scale=4; $1" | bc ;
+}
+
+# return the value of a FITS keyword
+fits_get_key() {
+    [[ ! -r ${2} ]] && die -q "get key: FITS file ${2} not found"
+    local value=$(listhead ${2} 2> /dev/null \
+	| grep "^${1}.*=" \
+	| cut -d '=' -f 2 \
+	| awk '{print $1}' \
+	| sed -e "s:'::g")
+    [[ -z ${value} ]] && die -q "get_key: FITS keyword ${1} not found"
+    echo ${value}
+}
+
+# option_get_value <option name> <option file>
+option_get_value() {
+    local value=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
+    [[ -z ${value} ]] && die -q "get_value: Option ${1} unknown in ${2}"
+    echo ${value}
+}
+
+# option_set_value <option name>=<option value> <option file>
+option_set_value() {
+    if [[ -n $(grep ${1%=*} ${2}) ]]; then
+	option_update_value ${1} ${2}
+    else
+	echo "${1}" >> ${2}
+    fi
+}
+
+# only update the value if the option is present
+# option_update_value <option name>=<new option value> <option file>
+option_update_value() {
+    [[ -w ${2} ]] || die -q "File ${2} not found"
+    sed -i -e "s/\b${1%=*}=.*/${1}/" ${2} || \
+	die -q "set_value: Could not change option ${1} in ${2}"
+}
+
+# option_update_from_dict  <dictionary table> [<FITS file>]
+# dictionary table is like:
+# <daophot option name>=<value> 
+#     or
+# <daophot option name>=fits(<key>)
+option_update_from_dict() {
+    local rhs= optname= optval=
+    while read line; do
+	optname=${line%=*}
+	rhs=${line#*=}
+	fkey=$(expr "${rhs}" : 'fits(\(.*.\))')
+	if [[ -n ${fkey} ]]; then
+	    optval=$(fits_get_key ${fkey} ${2})
+	else
+	    optval=${rhs}
+	fi
+	[[ -n ${optval} ]] && \
+	    option_set_value ${optname}=${optval} ${DAOPHOT_OPT}
+    done < ${1}
+}
+
+# option_update_from_fwhm <fwhm>
+option_update_from_fwhm() {
+    local fwhm=${1}
+    [[ -z ${fwhm} ]] && return
+    option_update_value FW=${fwhm} ${DAOPHOT_OPT}
+    option_update_value PS=$(calc "${fwhm}*4.5") ${DAOPHOT_OPT}
+    option_update_value FI=$(calc "${fwhm}*1.4") ${DAOPHOT_OPT}
+    option_update_value FI=$(calc "${fwhm}*1.4") ${ALLSTAR_OPT}
+    option_update_value IS=$(calc "${fwhm}*0.5") ${ALLSTAR_OPT}
+    option_update_value OS=$(calc "${fwhm}*7")   ${ALLSTAR_OPT}
+}
+
+option_update_photo_from_fwhm() {
+    local fwhm=${1}
+    [[ -z ${fwhm} ]] && return
+    # update aperture radii
+    local rad=1
+    for i in $(seq 9) A B C; do
+	[[ -n $(option_get_value A${i} ${PHOTO_OPT}) ]] && \
+	    option_set_value A${i}=$(calc "${fwhm}*${rad}*0.8") ${PHOTO_OPT}
+	(( rad = ${rad} + 1 ))
+    done
+    # update sky annulus radii
+    option_set_value IS=$(calc "${fwhm}*${rad}") ${PHOTO_OPT}
+    option_set_value OS=$(calc "${fwhm}*${rad}+20") ${PHOTO_OPT}
+}
+
+option_update_psf_model() {
+    option_set_value AN=-6 ${DAOPHOT_OPT}
+    option_set_value VA=2 ${DAOPHOT_OPT}
+}
