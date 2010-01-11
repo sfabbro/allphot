@@ -21,10 +21,14 @@ libtool
 /configure
 
 /config.h.in
-/src/allframe
-/src/allstar
-/src/daogrow
-/src/daomaster
-/src/daomatch
-/src/daophot
-/src/montage2
+/bin/allphot
+/bin/parallel
+/libs/allframe.bash
+/libs/config.bash
+/libs/core.bash
+/libs/daophot.bash
+/libs/options.bash
+/libs/output.bash
+/libs/paths.bash
+/libs/qa.bash
+/libs/tests.bash

@@ -44,7 +44,7 @@ do_list() {
 	
 	if [[ ${#photo_modules[@]} -gt 0 ]] ; then
 	    echo
-	    write_list_start "Photo modules:"
+	    write_list_start "Photometry modules:"
 	    for module in "${photo_modules[@]}" ; do
 		name=${module##*/}
 		name=${name%%.allphot}

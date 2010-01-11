@@ -1,6 +1,6 @@
 # -*-bash-*-
 
-DESCRIPTION="Run DAOPHOT actions on a FITS image"
+DESCRIPTION="Run DAOPHOT actions"
 VERSION="4"
 
 inherit options paths daophot qa
@@ -36,14 +36,18 @@ describe_opt_parameters() {
 }
 
 describe_opt_options() {
-    echo "--dict=<dict file> : Load a dictionary to update option file from FITS keywords"
+    echo "--dict=<dict file>  : Load a dictionary to update option file from FITS keywords"
+    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: TH=4)"
+    echo "--frompsf           : Update all options that can be scaled with the PSF FWHM (need PSF)"
 }
 
 do_opt() {
-    local dict
+    local dict frompsf=no options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --dict=*) dict="$(canonicalise ${1##*=})" ;;
+	    --option) shift; options="${options} ${1/ //}" ;;
+	    --frompsf) frompsf=yes ;;    
 	    --*) die -q "Unrecognized option '$1'" ;;
               *) break ;;
 	esac
@@ -55,9 +59,131 @@ do_opt() {
     local image=$(basename ${imfile%.*})
     daophot_process_init ${imfile}
     [[ -r ${dict} ]] && option_update_from_dict ${dict} ${image}.fits
+    [[ ${frompsf} == yes ]] && [[ -r ${image}.psf ]] && option_update_from_fwhm $(get_psf_fwhm ${image}.psf)
+
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" ${DAOPHOT_OPT}
+	done
+    fi
+    
     echo > ${image}.opt.in
     daophot < ${image}.opt.in || die -q "Something wrong in your options"
     rm -f ${image}.opt.in
+    daophot_process_end
+}
+
+### sky action
+describe_sky() {
+    echo "Compute the sky background and r.m.s."
+}
+
+describe_sky_parameters() {
+    echo "<FITS image>"
+}
+
+do_sky() {
+    [[ -z ${1} ]] && die -q "missing input FITS file"
+
+    local imfile=$(canonicalise ${1})
+    local image=$(basename ${imfile%.*})
+    daophot_process_init ${imfile}
+    {
+	daophot_attach ${image}
+	daophot_sky
+    } > ${image}.sky.in
+    daophot < ${image}.sky.in || die -q "Bad sky"
+    rm -f ${image}.sky.in
+    daophot_process_end
+}
+
+### offset action
+describe_offset() {
+    echo "Add offsets the first 4 columns of a star file"
+}
+
+describe_offset_options() {
+    echo "--addid=<val> : Add <val> to ID (default: automatic)"
+    echo "--addx=<val>  : Add <val> to x-coordinate (default: 0)"
+    echo "--addy=<val>  : Add <val> to y-coordinate (default: 0)"
+    echo "--addmag=<val>: Add <val> to magnitude (default: 0)"
+    echo "--out=<file>  : Output file name (default <input>.off)"
+}
+
+describe_offset_parameters() {
+    echo "<star file>"
+}
+
+do_offset() {
+    local idoff=auto idx=0 idy=0 idmag=0 
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --addid=*) idoff=${1##*=} ;;
+            --addx=*) idx=${1##*=} ;;
+	    --addy=*) idy=${1##*=} ;;
+	    --addmag=*) idmag=${1##*=} ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    [[ -z ${1} ]] && die -q "missing input star file"
+
+    local infile=$(canonicalise ${1})
+    local incat=$(basename ${infile%.*})
+    [[ -z ${outfile} ]] && outfile=${incat}.off
+    [[ -e ${outfile} ]] && mv -f ${outfile}{,.old}
+    daophot_process_init ${infile}
+    # compute automatic id offset (max of id)
+    if [[ ${idoff} == auto]; then
+	daophot_sort 1 ${infile} ${infile}.tmp N > ${incat}.tmp.in
+	daophot < ${incat}.tmp.in
+	idoff=$(tail -n1 ${incat}.tmp | awk '{print $1}')
+	(( idoff = ${idoff} + 1 ))
+	rm -f ${incat}.tmp.in ${infile}.tmp
+    fi
+    echo " >>> DAOPHOT OFFSET on ${infile}"
+    daophot_offset ${infile} ${idoff} ${idx} ${idy} ${idmag} ${outfile} > ${incat}.off.in
+    daophot < ${incat}.off.in || die -q "Could not offset stars"
+    check_catalog ${outfile} && rm -f ${incat}.off.in ${outfile}.old
+    daophot_process_end
+}
+
+### append action
+describe_append() {
+    echo "Concatenate two stellar data files"
+}
+
+describe_append_options() {
+    echo "--out=<file>  : Output file name (default <input>.cmb)"
+}
+
+describe_append_parameters() {
+    echo "<star file 1> <star file 2>"
+}
+
+do_append() {
+    local outfile 
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --out=*) outfile=${1##*=} ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    [[ -z ${2} ]] && die -q "missing input star file"
+
+    local infile1=$(canonicalise ${1})
+    local infile2=$(canonicalise ${2})
+    local incat=$(basename ${infile1%.*})
+    [[ -z ${outfile} ]] && outfile=${incat}.cmb
+    [[ -e ${outfile} ]] && mv -f ${outfile}{,.old}
+    daophot_process_init ${infile1}
+    echo " >>> DAOPHOT APPEND ${infile2} to ${infile1}"
+    daophot_append ${infile1} ${infile2} ${outfile} > ${incat}.app.in
+    daophot < ${incat}.app.in || die -q "Could not offset stars"
+    check_catalog ${outfile} && rm -f ${incat}.app.in ${outfile}.old
     daophot_process_end
 }
 
@@ -67,8 +193,7 @@ describe_find() {
 }
 
 describe_find_options() {
-    echo "--threshold=<value> : Detection threshold in sigma units above sky value (default 4)"
-    echo "--fwhm=<value>      : FWHM of the Gaussian filter (default 4)"
+    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: TH=4)"
 }
 
 describe_find_parameters() {
@@ -76,11 +201,10 @@ describe_find_parameters() {
 }
 
 do_find() {
-    local thresh fwhm
+    local options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --thresh=*) thresh="${1##*=}";;
-	    --fwhm=*) fwhm="${1##*=}";;
+	    --option) shift; options="${options} ${1/ //}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -90,9 +214,13 @@ do_find() {
     local imfile=$(canonicalise ${1})
 
     daophot_process_init ${imfile}
+ 
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" ${DAOPHOT_OPT}
+	done
+    fi
 
-    [[ -n ${thresh} ]] && option_set_value TH=${thresh} ${DAOPHOT_OPT}
-    [[ -n ${fwhm} ]] && option_set_value FW=${fwhm} ${DAOPHOT_OPT}
     local image=$(basename ${imfile%.*})
     echo " >>> DAOPHOT FIND on ${image}"
     [[ -e ${image}.coo ]] && mv -f ${image}.coo ${image}.coo.old
@@ -112,7 +240,8 @@ describe_phot() {
 }
 
 describe_phot_options() {
-    echo "--fwhm=<value>      : FWHM to scale aperture (default 4)"
+    echo "--fwhm=<value>      : FWHM to scale aperture radii (default 4)"
+    echo "--radius <RAD>=<val>: Set a aperture radius <RAD> (Could be sky too)"
     echo "--neifile=<file>    : Subtract neighbours from a photometry file (need a PSF)"
 }
 
@@ -121,11 +250,12 @@ describe_phot_parameters() {
 }
 
 do_phot() {
-    local fwhm neifile
+    local fwhm neifile radii=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --fwhm=*) fwhm="${1##*=}" ;;
 	    --neifile=*) neifile="${1##*=}" ;;
+    	    --radius) shift; radii="${radii} ${1/ //}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -165,8 +295,13 @@ do_phot() {
     else
 	option_update_photo_from_fwhm $(option_get_value FW ${DAOPHOT_OPT})
     fi
+    if [[ -n ${radii} ]]; then
+	for rad in ${radii}; do
+	    option_set_value "${rad}" ${PHOTO_OPT}
+	done
+    fi
     {
-	daophot_attach ${image}	
+	daophot_attach ${image}
 	[[ ! -r ${image}.coo ]] && daophot_find ${image}.coo
 	if [[ -n ${neifile} ]]; then
 	    daophot_phot_with_psf ${PHOTO_OPT} ${image}.ppf ${image}.ppf ${image}.ap
@@ -231,15 +366,108 @@ do_pick() {
     daophot_process_end
 }
 
+### substar action
+describe_substar() {
+    echo "Subtract stars from an image with a scaled PSF"
+}
+
+describe_substar_options() {    
+    echo "--inkeep=<star file> : Do not subtract stars from this file (default is <in>.lst)"
+    echo "--inphot=<star file> : Input photometry file to subtract stars (default is <in>.nei)"
+    echo "--out=<FITS image>   : Output name for the subtracted image (default is <in>s.fits)"
+}
+
+describe_substar_parameters() {
+    echo "<FITS image>"
+}
+
+do_substar() {
+    local inkeep inphot outfile
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --inkeep=*) inkeep="${1##*=}";;
+	    --inphot=*) inphot="${1##*=}";;
+	    --out=*) outfile="${1##*=}";;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+
+    [[ -z ${1} ]] && die -q "missing input FITS file"
+    local imfile=$(canonicalise ${1})
+    local image=$(basename ${imfile%.*})
+
+    # check valid options first
+    daophot_process_init ${imfile}    
+
+    echo " >>> DAOPHOT SUBSTAR on ${image}"
+    [[ -z ${outfile} ]] && outfile=${image}s.fits
+    [[ -z ${inkeep} ]]  && [[ -r ${image}.lst ]] && inkeep=${image}.lst
+    [[ -z ${inphot} ]]  && inphot=${image}s.nei
+    [[ -e ${outfile} ]] && mv -f ${outfile} ${outfile}.old
+    {
+	daophot_attach ${image}
+	daophot_substar ${image}.psf ${inphot} ${outfile} ${inkeep}
+    } > ${image}.sub.in    
+    daophot < ${image}.sub.in
+    rm -f ${outfile}s.old ${image}.sub.in
+    daophot_process_end
+}
+
+### sort action
+describe_sort() {
+    echo "Sort a star file according to a given column"
+}
+
+describe_sort_options() {
+    echo "--index=<val>   : The column index to sort, negative is decreasing (default: 1)"
+    echo "--out=<file>    : Output file name (default <input>.srt)"
+    echo "--renum         : Renumber the star IDs"
+}
+
+describe_sort_parameters() {
+    echo "<star file>"
+}
+
+do_sort() {
+    local outfile="" idx=1 renum=N
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --index=*) idx="${1##*=}" ;;
+	    --out=*) outfile="${1##*=}" ;;
+	    --renum) renum=Y ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+
+    [[ -z ${1} ]] && die -q "missing input star file"
+    local infile=$(canonicalise ${1})
+    local incat=$(basename ${infile%.*})
+
+    # check valid options first
+    daophot_process_init ${imfile}
+    
+    echo " >>> DAOPHOT SORT on ${incat}"
+    [[ -z ${outfile} ]] && outfile=${incat}.srt
+    [[ -e ${outfile} ]] && mv -f ${outfile} ${outfile}.old
+    daophot_sort ${idx} ${infile} ${outfile} ${renum} > ${incat}.sort.in
+    daophot < ${incat}.sort.in
+    check_catalog ${outfile}
+    rm -f ${outfile}.old ${incat}.sort.in
+    daophot_process_end
+}
+
 ### psf action
 describe_psf() {
     echo "Fit an analytical PSF"
 }
 
 describe_psf_options() {
-    echo "--prof=[-6,6]    : Analytical profile to fit (default: 1)"
-    echo "--var=0|1|2     : Spatial variability of PSF residuals (default: 0)"
     echo "--cat=<suf>         : Suffix of catalog to use (default: ap)"
+    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: FI=4)"
 }
 
 describe_psf_parameters() {
@@ -247,12 +475,11 @@ describe_psf_parameters() {
 }
 
 do_psf() {
-    local prof= svar= suf=ap
+    local suf=ap options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --prof=*) prof="${1##*=}";;
-	    --var=*)  svar="${1##*=}";;
 	    --cat=*)  suf="${1##*=}";;
+	    --option) shift; options="${options} ${1/ //}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -265,8 +492,11 @@ do_psf() {
     local catalog=${image}.${suf}
 
     daophot_process_init ${imfile}
-    [[ -n ${prof} ]] && option_set_value AN=${prof} ${DAOPHOT_OPT}
-    [[ -n ${svar} ]] && option_set_value VA=${svar} ${DAOPHOT_OPT}
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" ${DAOPHOT_OPT}
+	done
+    fi
 
     echo " >>> DAOPHOT PSF on ${image}"
 
@@ -299,24 +529,45 @@ describe_allstar() {
     echo "Perform crowded-star profile fitting photometry"
 }
 
+describe_allstar_options() {
+    echo "--cat=<suf>         : Suffix of catalog to use (default: ap)"
+    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: FI=4)"
+}
+
 describe_allstar_parameters() {
     echo "<FITS image>"
 }
 
 do_allstar() {
+    local suf=ap options=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --cat=*)  suf="${1##*=}";;
+	    --option) shift; options="${options} ${1/ //}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
 
     [[ -z ${1} ]] && die -q "missing input FITS file"
     local imfile=$(canonicalise ${1})
     local image=$(basename ${imfile%.*})
 
     daophot_process_init ${imfile}
+
     echo " >>> ALLSTAR on ${image}"
     [[ -e ${image}.als ]] && mv -f ${image}.als ${image}.als.old
     [[ -e ${image}s.fits ]] && mv -f ${image}s.fits ${image}s.fits.old
     [[ ! -r ${ALLSTAR_OPT} ]] && cp ${ALLPHOT_OPT_DIR}/${ALLSTAR_OPT} .
 
-    option_update_from_fwhm $(get_psf_fwhm ${image}.psf)
-    daophot_allstar ${image} ${image}.psf ${image}.ap ${image}.als > ${image}.allstar.in
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" ${ALLSTAR_OPT}
+	done
+    fi
+
+    daophot_allstar ${image} ${image}.psf ${image}.${suf} ${image}.als > ${image}.allstar.in
     allstar < ${image}.allstar.in
     check_catalog ${image}.als
     rm -f ${image}.als.old ${image}s.fits.old ${image}.allstar.in

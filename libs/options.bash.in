@@ -26,7 +26,6 @@ option_get_value() {
     local value=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
     if [[ -z ${value} ]]; then
 	write_warning_msg "Option ${1} unknown in ${2}"
-	echo "NA"
     else
 	echo ${value}
     fi
@@ -74,12 +73,16 @@ option_update_from_dict() {
 option_update_from_fwhm() {
     local fwhm=${1}
     [[ -z ${fwhm} ]] && return
-    option_update_value FW=${fwhm} ${DAOPHOT_OPT}
-    option_update_value PS=$(calc "${fwhm}*4.5") ${DAOPHOT_OPT}
-    option_update_value FI=$(calc "${fwhm}*1.4") ${DAOPHOT_OPT}
-    option_update_value FI=$(calc "${fwhm}*1.4") ${ALLSTAR_OPT}
-    option_update_value IS=$(calc "${fwhm}*0.5") ${ALLSTAR_OPT}
-    option_update_value OS=$(calc "${fwhm}*7")   ${ALLSTAR_OPT}
+    if [[ -r ${DAOPHOT_OPT} ]]; then
+	option_update_value FW=${fwhm} ${DAOPHOT_OPT}
+	option_update_value PS=$(calc "${fwhm}*4.5") ${DAOPHOT_OPT}
+	option_update_value FI=$(calc "${fwhm}*1.4") ${DAOPHOT_OPT}
+    fi
+    if [[ -r ${ALLSTAR_OPT} ]]; then
+	option_update_value FI=$(calc "${fwhm}*1.4") ${ALLSTAR_OPT}
+	option_update_value IS=$(calc "${fwhm}*0.5") ${ALLSTAR_OPT}
+	option_update_value OS=$(calc "${fwhm}*7")   ${ALLSTAR_OPT}
+    fi
 }
 
 option_update_photo_from_fwhm() {

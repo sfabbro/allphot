@@ -13,9 +13,9 @@ im=${2%.*}
 allphot daophot opt --dict=${field}.dict ${im}.fits
 allphot daophot psf ${im}.fits
 allphot filters neighbours daophot_${im%.*}/${im}.{nei,lst}
-allphot daophot psf --prof=${prof} ${im}.fits
+allphot daophot psf --option AN=${prof} ${im}.fits
 for i in $(seq 1 5); do
     allphot filters neighbours daophot_${im%.*}/${im}.{nei,lst}
-    allphot daophot psf --var=2 ${im}.fits
+    allphot daophot psf --option VAR=2 ${im}.fits
 done
 allphot daophot allstar ${im}.fits
