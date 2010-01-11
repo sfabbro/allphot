@@ -36,9 +36,9 @@ describe_opt_parameters() {
 }
 
 describe_opt_options() {
-    echo "--dict=<dict file>  : Load a dictionary to update option file from FITS keywords"
-    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: TH=4)"
-    echo "--frompsf           : Update all options that can be scaled with the PSF FWHM (need PSF)"
+    echo "--dict=<dict file>  : Dictionary to set options from FITS keywords"
+    echo "--option <OP>=<val> : Pass option <OP> with value <val> (ex: TH=4)"
+    echo "--frompsf           : Scale some options with PSF FWHM (need PSF)"
 }
 
 do_opt() {
@@ -118,9 +118,9 @@ do_offset() {
     local idoff=auto idx=0 idy=0 idmag=0 
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --addid=*) idoff=${1##*=} ;;
-            --addx=*) idx=${1##*=} ;;
-	    --addy=*) idy=${1##*=} ;;
+	    --addid=*)  idoff=${1##*=} ;;
+            --addx=*)   idx=${1##*=} ;;
+	    --addy=*)   idy=${1##*=} ;;
 	    --addmag=*) idmag=${1##*=} ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
@@ -135,7 +135,7 @@ do_offset() {
     [[ -e ${outfile} ]] && mv -f ${outfile}{,.old}
     daophot_process_init ${infile}
     # compute automatic id offset (max of id)
-    if [[ ${idoff} == auto]; then
+    if [[ ${idoff} == auto ]]; then
 	daophot_sort 1 ${infile} ${infile}.tmp N > ${incat}.tmp.in
 	daophot < ${incat}.tmp.in
 	idoff=$(tail -n1 ${incat}.tmp | awk '{print $1}')
@@ -159,7 +159,7 @@ describe_append_options() {
 }
 
 describe_append_parameters() {
-    echo "<star file 1> <star file 2>"
+    echo "<file 1> <file 2>"
 }
 
 do_append() {
@@ -193,7 +193,7 @@ describe_find() {
 }
 
 describe_find_options() {
-    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: TH=4)"
+    echo "--option <OP>=<val> : Pass option <OP> with value <val> (ex: TH=4)"
 }
 
 describe_find_parameters() {
@@ -242,7 +242,7 @@ describe_phot() {
 describe_phot_options() {
     echo "--fwhm=<value>      : FWHM to scale aperture radii (default 4)"
     echo "--radius <RAD>=<val>: Set a aperture radius <RAD> (Could be sky too)"
-    echo "--neifile=<file>    : Subtract neighbours from a photometry file (need a PSF)"
+    echo "--neifile=<file>    : Subtract neighbour stars (need a PSF)"
 }
 
 describe_phot_parameters() {
@@ -372,9 +372,9 @@ describe_substar() {
 }
 
 describe_substar_options() {    
-    echo "--inkeep=<star file> : Do not subtract stars from this file (default is <in>.lst)"
-    echo "--inphot=<star file> : Input photometry file to subtract stars (default is <in>.nei)"
-    echo "--out=<FITS image>   : Output name for the subtracted image (default is <in>s.fits)"
+    echo "--inphot=<star file> : Input photometry file (default: <in>.nei)"
+    echo "--inkeep=<star file> : File with stars to keep (default: <in>.lst)"
+    echo "--out=<FITS image>   : Output subtracted image (default: <in>s.fits)"
 }
 
 describe_substar_parameters() {
@@ -421,8 +421,8 @@ describe_sort() {
 }
 
 describe_sort_options() {
-    echo "--index=<val>   : The column index to sort, negative is decreasing (default: 1)"
-    echo "--out=<file>    : Output file name (default <input>.srt)"
+    echo "--index=<val>   : Column index to sort (default: 1)"
+    echo "--out=<file>    : Output file name (default: <input>.srt)"
     echo "--renum         : Renumber the star IDs"
 }
 
@@ -467,7 +467,7 @@ describe_psf() {
 
 describe_psf_options() {
     echo "--cat=<suf>         : Suffix of catalog to use (default: ap)"
-    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: FI=4)"
+    echo "--option <OP>=<val> : Pass option <OP> with value <val> (ex: FI=4)"
 }
 
 describe_psf_parameters() {
@@ -531,7 +531,7 @@ describe_allstar() {
 
 describe_allstar_options() {
     echo "--cat=<suf>         : Suffix of catalog to use (default: ap)"
-    echo "--option <OP>=<val> : Pass an extra option <OP> with value <val> (ex: FI=4)"
+    echo "--option <OP>=<val> : Pass option <OP> with value <val> (ex: FI=4)"
 }
 
 describe_allstar_parameters() {
