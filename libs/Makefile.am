@@ -19,9 +19,10 @@ EXTRA_DIST = \
 	tests.bash.in \
 	options.bash.in \
 	qa.bash.in \
+	process.bash.in \
 	daophot.bash.in \
 	allframe.bash.in \
-	defaule.allphot.in
+	default.allphot.in
 
 SUFFIXES = .in
 dosed = @SED@ \

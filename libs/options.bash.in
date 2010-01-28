@@ -48,8 +48,8 @@ option_update_value() {
 	die -q "set_value: Could not change option ${1} in ${2}"
 }
 
-# option_update_from_dict  <dictionary table> [<FITS file>]
-# dictionary table is like:
+# option_update_from_dict  <dictionary table> <option file> [<FITS file>] 
+# dictionary table should be in the following format:
 # <daophot option name>=<value> 
 #     or
 # <daophot option name>=fits(<key>)
@@ -60,12 +60,12 @@ option_update_from_dict() {
 	rhs=${line#*=}
 	fkey=$(expr "${rhs}" : 'fits(\(.*.\))')
 	if [[ -n ${fkey} ]]; then
-	    optval=$(fits_get_key ${fkey} ${2})
+	    optval=$(fits_get_key ${fkey} ${3})
 	else
 	    optval=${rhs}
 	fi
 	[[ -n ${optval} ]] && \
-	    option_set_value ${optname}=${optval} ${DAOPHOT_OPT}
+	    option_set_value ${optname}=${optval} ${2}
     done < ${1}
 }
 

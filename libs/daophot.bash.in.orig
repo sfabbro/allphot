@@ -1,0 +1,131 @@
+#@BASH@
+# -*-bash-*-
+
+# daophot_opt <input option file>
+daophot_opt() {
+    cat <<-EOF
+	OPTION
+	${1}
+
+EOF
+}
+
+# daophot_attach <FITS file>
+daophot_attach() {
+    echo "ATTACH ${1}"
+}
+
+# daophot_sky
+daophot_sky() {
+    echo "SKY"
+}
+
+# daophot_find <output coordinate file>
+daophot_find() {
+    cat <<-EOF
+	FIND
+	1,1
+	${1}
+	y
+
+EOF
+}
+
+# daophot_phot <input phot options file> <input coordinate file> <output file>
+# or
+# daophot_opt <input phot options file> <psf phot file> <input id file> <output file>
+daophot_phot() {
+    cat <<-EOF
+	PHOT
+	${1}
+
+	${2}
+	${3}
+EOF
+    if [[ $# -eq 4 ]]; then
+	echo ${4}
+	echo
+    fi
+}
+
+# daophot_pick <input file> <nstars> <mag faint> <output psf stars file>
+daophot_pick() {
+    cat <<-EOF
+	PICK
+	${1}
+	${2} ${3}
+	${4}
+EOF
+}
+
+# daophot_psf <input mag file> <input psf stars file> <output psf file>  <output neihbour file>
+# do two rounds
+daophot_psf() {
+    cat <<-EOF
+	PSF
+	${1}
+	${2}
+	${3}
+	${4}
+EOF
+}
+
+# allstar_standard <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub>
+daophot_allstar() {
+    cat <<-EOF
+
+	${1}
+	${2}
+	${3}
+	${4}
+	${5}
+EOF
+}
+
+# daophot_append <input file 1>  <input file 2> <output merged file>
+daophot_append() {
+    cat <<-EOF
+	APPEND
+	${1}
+	${2}
+	${3}
+EOF
+}
+
+# daophot_offset <input file> <ID> <DX> <DY> <DMAG> <output file>
+daophot_offset() {
+    cat <<-EOF
+	OFFSET
+	${1}
+	${2} ${3} ${4} ${5}
+	${6}
+EOF
+}
+
+# daophot_sort <column index> <input file> <output file> <renumber stars?>
+daophot_sort() {
+    cat <<-EOF
+	SORT
+	${1}
+	${2}
+	${3}
+	${4}
+EOF
+}
+
+# daophot_substar <input psf file> <input phot file>  [<stars to keep file>] <output FITS file>
+daophot_substar() {
+    cat <<-EOF
+	SUBSTAR
+	${1}
+	${2}
+EOF
+    if [[ $# -eq 4 ]]; then
+	echo Y
+	echo ${3}
+	echo ${4}
+    else
+	echo N
+	echo ${3}
+    fi
+}

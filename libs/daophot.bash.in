@@ -1,137 +1,157 @@
 #@BASH@
 # -*-bash-*-
 
-# daophot_opt <optfile>
-daophot_opt() {
-    cat <<-EOF
-	OPTION
-	${1}
+ALLPHOT_NAME="image"
 
-EOF
+setup_input() {
+    # prepare input file names
+    [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
+    local procfile="${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}"
+    [[ -e ${procfile} ]] && [[ ! ${procfile} -ef ${1} ]] && rm -f ${procfile} && ln -s "${1}" ${procfile}
+    echo ${procfile}
 }
 
-# daophot_attach <file without extension>
+setup_output() {
+    [[ -r ${1} ]] && mv -f ${1}{,.old}
+    local procfile=${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}
+    rm -f ${procfile} && echo ${procfile}
+    if [[ ${procfile} -ef ${1} ]]; then
+	echo "mv -f ${procfile} ${1}" >> ${ALLPHOT_PROCDIR}/output.bash
+	echo "rm -f ${1}.old" >> ${ALLPHOT_PROCDIR}/output.bash
+    fi
+}
+
+# daophot_opt <input option file>
+daophot_opt() {
+    echo >> ${ALLPHOT_CMDFILE} "OPTION"
+    echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${1})"
+}
+
+# daophot_exit
+daophot_exit() {
+    echo  >> ${ALLPHOT_CMDFILE} "EXIT"
+}
+
+# daophot_attach <FITS file>
 daophot_attach() {
-    echo "ATTACH ${1}"
+    echo  >> ${ALLPHOT_CMDFILE} "ATTACH $(setup_input ${1})" 
 }
 
 # daophot_sky
 daophot_sky() {
-    echo "SKY"
+    echo  >> ${ALLPHOT_CMDFILE} "SKY"
 }
 
-# daophot_find <output file>
+# daophot_find <output coordinate file>
 daophot_find() {
-    cat <<-EOF
+    rm -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}jnk.*
+    cat  >> ${ALLPHOT_CMDFILE} <<-EOF
 	FIND
 	1,1
-	${1}
+	$(setup_output ${1})
 	y
-
 EOF
 }
 
-# daophot_phot <phot options file> <input file> <output file>
+# daophot_phot <input phot options file> <input coordinate file> <output file>
+# or
+# daophot_opt <input phot options file> <psf phot file> <input id file> <output file>
 daophot_phot() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PHOT
-	${1}
+	$(setup_input ${1})
 
-	${2}
-	${3}
+	$(setup_input ${2})
 EOF
-}
-
-# daophot_phot_with_psf <phot options file> <psf phot file> <input id file> <output file>
-daophot_phot_with_psf() {
-    cat <<-EOF
-	PHOT
-	${1}
-
-	${2}
-	${3}
-	${4}
-
-EOF
+    if [[ $# -eq 4 ]]; then
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
+    else
+	# hack to avoid doing the psf subtracted photometry
+	[[ -e ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf ]] && \
+	    mv -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf{,.bck}
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3)"
+    fi
 }
 
 # daophot_pick <input file> <nstars> <mag faint> <output psf stars file>
 daophot_pick() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PICK
-	${1}
+	$(setup_input ${1})
 	${2} ${3}
-	${4}
+	$(setup_output ${4})
 EOF
 }
 
-# daophot_psf <input mag file> <input psf stars file> <output psf file> 
+# daophot_psf <input mag file> <input psf stars file> <output psf file>  <output neihbour file>
 # do two rounds
 daophot_psf() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PSF
-	${1}
-	${2}
-	${3}
-
+	$(setup_input ${1})
+	$(setup_input ${2})
+	$(setup_output ${3})
+	$(setup_output ${4})
 EOF
 }
 
-# allstar_standard <fits file> <input psf file> <input mag file> <output allstar file>
-daophot_allstar() {
-    cat <<-EOF
-
-	${1}
-	${2}
-	${3}
-	${4}
-	${1}s
-EOF
-}
-
-# daophot_append <input 1>  <input 2> <merged file>
+# daophot_append <input file 1>  <input file 2> <output merged file>
 daophot_append() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	APPEND
-	${1}
-	${2}
-	${3}
+	$(setup_input ${1})
+	$(setup_input ${2})
+	$(setup_output ${3})
 EOF
 }
 
-# daophot_offset <input file> <ID DX DY DMAG> <output>
+# daophot_offset <input file> <ID> <DX> <DY> <DMAG> <output file>
 daophot_offset() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	OFFSET
-	${1}
+	$(setup_input ${1})
 	${2} ${3} ${4} ${5}
-	${6}
+	$(setup_output ${6})
 EOF
 }
 
 # daophot_sort <column index> <input file> <output file> <renumber stars?>
 daophot_sort() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	SORT
 	${1}
-	${2}
-	${3}
+	$(setup_input ${2})
+	$(setup_output ${3})
 	${4}
 EOF
 }
 
-# daophot_substar <psf file> <input phot file> <output FITS file> [<stars to keep file>]
+# daophot_substar <input psf file> <input phot file>  [<stars to keep file>] <output FITS file>
 daophot_substar() {
-    cat <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	SUBSTAR
-	${1}
-	${2}
+	$(setup_input ${1})
+	$(setup_input ${2})
 EOF
-    if [[ -n ${4} ]]; then
+    if [[ $# -eq 4 ]]; then
 	echo Y
-	echo ${4}
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
     else
-	echo N
+	echo >> ${ALLPHOT_CMDFILE} "N"
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3})"
     fi
-    echo ${3}
+}
+
+# allstar_standard <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub>
+daophot_allstar() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+
+	$(setup_input ${1})
+	$(setup_input ${2})
+	$(setup_input ${3})
+	$(setup_output ${4})
+	$(setup_output ${5})
+EOF
 }

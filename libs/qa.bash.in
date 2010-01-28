@@ -5,6 +5,11 @@ check_catalog() {
     die -q "${1} is not a valid catalog"
 }
 
+# get_psf_fwhm <psf file>
+get_psf_fwhm() {
+    awk 'NR==2 {print ($1+$2)*1.176; exit}' ${1} 2> /dev/null
+}
+
 # return false if fwhm of the psf file is not between 0.5 and 20
 check_psf() {
     local ifwhm10=$(awk 'NR==2 {print int(($1+$2)*11.76); exit}' ${1} 2> /dev/null)    

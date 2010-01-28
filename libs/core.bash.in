@@ -3,12 +3,12 @@
 # check_do function args
 # Check that function exists, and call it with args.
 check_do() {
-    local function="${1}"
+    local fcn="${1}"
     shift
-    if is_function "${function}" ; then
-	${function} "$@"
+    if is_function "${fcn}" ; then
+	${fcn} "$@"
     else
-	die "No function ${function}"
+	die "No function ${fcn}"
     fi
 }
 
