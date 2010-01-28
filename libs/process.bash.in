@@ -1,0 +1,67 @@
+# -*-bash-*-
+
+ALLPHOT_PROCDIR=""
+ALLPHOT_CMDFILE=""
+
+# allphot_setup <command> [<FITS file>]
+allphot_setup() {
+    local optfile="" options=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --optfile=*) optfile="${1##*=}" ;;
+	    --options=*) options="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '$1'" ;;
+              *) break ;;
+	esac
+	shift
+    done
+    local cmd=${1:-daophot}
+    if [[ -n ${2} ]]; then
+	echo " >>> Setting up $(basename ${2}) for ${cmd}"
+	ALLPHOT_PROCDIR="${PWD}/process_$(basename ${2%.*})"
+    else
+	echo " >>> Setting up ${cmd}"
+	ALLPHOT_PROCDIR="${PWD}/process_$$"
+    fi
+    mkdir -p ${ALLPHOT_PROCDIR}
+    ALLPHOT_CMDFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.in"
+
+    # prepare option file which always has to be passed
+    local cmdoptfile="${ALLPHOT_PROCDIR}/${cmd}.opt"
+    if [[ -n ${optfile} ]]; then
+	[[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"
+	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] && rm -f ${cmdoptfile} && ln -s ${optfile} ${cmdoptfile}
+    else
+	[[ -e ${optfile} ]] || cp ${ALLPHOT_OPT_DIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
+    fi
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" ${cmdoptfile}
+	done
+    fi
+}
+
+# allphot_do [<cmd>]
+allphot_do() {
+    local cmd="${1}"
+    [[ -z ${cmd} ]] && cmd="$(basename ${ALLPHOT_CMDFILE%_*})"
+    [[ -x ${cmd} ]] || die -q "${cmd} is not a known executable"
+    echo " >>> Running ${cmd}"
+
+    # process
+    pushd ${ALLPHOT_PROCDIR} &> /dev/null
+    ${cmd} < ${ALLPHOT_CMDFILE} || die -q "${cmd} failed"
+    popd &> /dev/null
+
+    # clean up
+    rm -f ${ALLPHOT_CMDFILE}
+    [[ -e ${ALLPHOT_PROCDIR}/output.bash ]] && \
+	bash ${ALLPHOT_PROCDIR}/output.bash && rm -f ${ALLPHOT_PROCDIR}/output.bash
+
+    # real dirty hack in the case of phot
+    for f in ${ALLPHOT_PROCDIR}/*.bck; do
+	[[ -e ${f} ]] && [[ ! -e ${f%.bck} ]] && mv -f ${f} ${f%.bck}
+    done
+}
+
+export ALLPHOT_PROCDIR ALLPHOT_CMDFILE

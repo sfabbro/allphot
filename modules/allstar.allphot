@@ -1,0 +1,45 @@
+# -*-shell-script-*-
+
+DESCRIPTION="Run ALLSTAR"
+VERSION="4"
+
+inherit options allstar process qa
+
+### allstar action
+describe_allstar() {
+    echo "Perform crowded-star profile fitting photometry"
+}
+
+describe_allstar_options() {
+    echo "--opt=<file>        : Option file as input (default: ${ALLPHOT_OPT_DIR}/${ALLSTAR_OPT})"
+    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
+    echo "--in=<file>      : Input photometry (default: <input>.ap)"
+    echo "--psf=<file>     : Input PSF file (default: <input>.psf)"
+    echo "--out=<file>     : Output photometry file (default: <input>.nei)"
+    echo "--sub=<FITS>     : Output residual image (default: <input>s.fits)"
+}
+
+describe_allstar_parameters() {
+    echo "<FITS image>"
+}
+
+do_allstar() {
+    local infile="" psffile="" outfile="" subfits="" options="" optfile=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --opt=*)  optfile="${1##*=}" ;;
+	    --option) shift; options="${options} ${1/ //}" ;;
+	    --in=*)   infile="${1##*=}" ;;
+	    --psf=*)  psffile="${1##*=}" ;;
+	    --out=*)  outfile="${1##*=}" ;;
+	    --sub=*)  subfits="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    
+    allphot_setup --options="${options}" --optfile="${optfile}" allstar "${1}"
+    daophot_allstar "${1}" "${psffile:-${1%.*}.psf}" "${infile:-${1%.*}.ap}" "${outfile:-${1%.*}.als}" "${subfits:-${%:.*}s.fits}"
+    allphot_do
+}
