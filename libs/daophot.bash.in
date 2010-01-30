@@ -7,24 +7,25 @@ setup_input() {
     # prepare input file names
     [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
     local procfile="${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}"
-    [[ -e ${procfile} ]] && [[ ! ${procfile} -ef ${1} ]] && rm -f ${procfile} && ln -s "${1}" ${procfile}
+    [[ -e ${procfile} ]] && [[ ! ${procfile} -ef ${1} ]] && \
+	rm -f ${procfile} && ln -s "${1}" ${procfile}
     echo ${procfile}
 }
 
 setup_output() {
     [[ -r ${1} ]] && mv -f ${1}{,.old}
-    local procfile=${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}
+    local procfile="${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}"
     rm -f ${procfile} && echo ${procfile}
     if [[ ${procfile} -ef ${1} ]]; then
-	echo "mv -f ${procfile} ${1}" >> ${ALLPHOT_PROCDIR}/output.bash
-	echo "rm -f ${1}.old" >> ${ALLPHOT_PROCDIR}/output.bash
+	echo >> ${ALLPHOT_PROCDIR}/output.bash "mv -f ${procfile} ${1}"
+	echo >> ${ALLPHOT_PROCDIR}/output.bash "rm -f ${1}.old"
     fi
 }
 
 # daophot_opt <input option file>
 daophot_opt() {
     echo >> ${ALLPHOT_CMDFILE} "OPTION"
-    echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${1})"
+    echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${1:-${DAOPHOT_OPT}})"
 }
 
 # daophot_exit
@@ -70,7 +71,7 @@ EOF
 	# hack to avoid doing the psf subtracted photometry
 	[[ -e ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf ]] && \
 	    mv -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf{,.bck}
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3)"
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3})"
     fi
 }
 
@@ -135,7 +136,7 @@ daophot_substar() {
 	$(setup_input ${2})
 EOF
     if [[ $# -eq 4 ]]; then
-	echo Y
+	echo >> ${ALLPHOT_CMDFILE} "Y"
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
     else

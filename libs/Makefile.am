@@ -9,6 +9,7 @@ allphotlibs_DATA = \
 	options.bash \
 	daophot.bash \
 	allframe.bash \
+	process.bash \
 	default.allphot
 
 EXTRA_DIST = \
@@ -22,6 +23,7 @@ EXTRA_DIST = \
 	process.bash.in \
 	daophot.bash.in \
 	allframe.bash.in \
+	process.bash.in \
 	default.allphot.in
 
 SUFFIXES = .in

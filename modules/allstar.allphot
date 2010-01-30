@@ -1,9 +1,9 @@
 # -*-shell-script-*-
 
-DESCRIPTION="Run ALLSTAR"
+DESCRIPTION="Run ALLSTAR on a FITS image"
 VERSION="4"
 
-inherit options allstar process qa
+inherit options daophot process qa
 
 ### allstar action
 describe_allstar() {

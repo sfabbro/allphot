@@ -30,5 +30,6 @@ libtool
 /libs/options.bash
 /libs/output.bash
 /libs/paths.bash
+/libs/process.bash
 /libs/qa.bash
 /libs/tests.bash

@@ -30,9 +30,11 @@ allphot_setup() {
     local cmdoptfile="${ALLPHOT_PROCDIR}/${cmd}.opt"
     if [[ -n ${optfile} ]]; then
 	[[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"
-	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] && rm -f ${cmdoptfile} && ln -s ${optfile} ${cmdoptfile}
+	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] \
+	    && rm -f ${cmdoptfile} && ln -s ${optfile} ${cmdoptfile}
     else
-	[[ -e ${optfile} ]] || cp ${ALLPHOT_OPT_DIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
+	[[ -e ${optfile} ]] || \
+	    cp ${ALLPHOT_OPT_DIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
     fi
     if [[ -n ${options} ]]; then
 	for opt in ${options}; do
@@ -45,6 +47,7 @@ allphot_setup() {
 allphot_do() {
     local cmd="${1}"
     [[ -z ${cmd} ]] && cmd="$(basename ${ALLPHOT_CMDFILE%_*})"
+    cmd=$(type -P ${cmd})
     [[ -x ${cmd} ]] || die -q "${cmd} is not a known executable"
     echo " >>> Running ${cmd}"
 
@@ -56,7 +59,8 @@ allphot_do() {
     # clean up
     rm -f ${ALLPHOT_CMDFILE}
     [[ -e ${ALLPHOT_PROCDIR}/output.bash ]] && \
-	bash ${ALLPHOT_PROCDIR}/output.bash && rm -f ${ALLPHOT_PROCDIR}/output.bash
+	bash ${ALLPHOT_PROCDIR}/output.bash && \
+	rm -f ${ALLPHOT_PROCDIR}/output.bash
 
     # real dirty hack in the case of phot
     for f in ${ALLPHOT_PROCDIR}/*.bck; do

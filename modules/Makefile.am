@@ -2,7 +2,7 @@ modulesdir=$(datadir)/$(PACKAGE_NAME)/modules
 
 modules_DATA = \
 	allframe.allphot \
-	allfstar.allphot \
+	allstar.allphot \
 	daophot.allphot \
 	modules.allphot \
 	filters.allphot
