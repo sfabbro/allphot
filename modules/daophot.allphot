@@ -216,10 +216,10 @@ do_psf() {
 	case "${1}" in
 	    --opt=*) optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
-	    --inpho=*) phofile="${1##*=})" ;;
-	    --inlst=*) lstfile="${1##*=})" ;;
-	    --outpsf=*) psffile="${1##*=})" ;;
-	    --outnei=*) neifile="${1##*=})" ;;
+	    --inpho=*) phofile="${1##*=}" ;;
+	    --inlst=*) lstfile="${1##*=}" ;;
+	    --outpsf=*) psffile="${1##*=}" ;;
+	    --outnei=*) neifile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
