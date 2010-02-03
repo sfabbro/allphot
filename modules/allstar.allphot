@@ -6,11 +6,11 @@ VERSION="4"
 inherit options daophot process qa
 
 ### allstar action
-describe_allstar() {
+describe_do() {
     echo "Perform crowded-star profile fitting photometry"
 }
 
-describe_allstar_options() {
+describe_do_options() {
     echo "--opt=<file>        : Option file as input (default: ${ALLPHOT_OPT_DIR}/${ALLSTAR_OPT})"
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
     echo "--in=<file>      : Input photometry (default: <input>.ap)"
@@ -19,11 +19,11 @@ describe_allstar_options() {
     echo "--sub=<FITS>     : Output residual image (default: <input>s.fits)"
 }
 
-describe_allstar_parameters() {
+describe_do_parameters() {
     echo "<FITS image>"
 }
 
-do_allstar() {
+do_do() {
     local infile="" psffile="" outfile="" subfits="" options="" optfile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
@@ -40,6 +40,6 @@ do_allstar() {
     done
     
     allphot_setup --options="${options}" --optfile="${optfile}" allstar "${1}"
-    daophot_allstar "${1}" "${psffile:-${1%.*}.psf}" "${infile:-${1%.*}.ap}" "${outfile:-${1%.*}.als}" "${subfits:-${%:.*}s.fits}"
+    daophot_allstar "${1}" "${psffile:-${1%.*}.psf}" "${infile:-${1%.*}.ap}" "${outfile:-${1%.*}.als}" "${subfits:-${1%.*}s.fits}"
     allphot_do
 }

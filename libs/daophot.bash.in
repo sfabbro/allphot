@@ -6,26 +6,41 @@ ALLPHOT_NAME="image"
 setup_input() {
     # prepare input file names
     [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
-    local procfile="${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}"
-    [[ -e ${procfile} ]] && [[ ! ${procfile} -ef ${1} ]] && \
-	rm -f ${procfile} && ln -s "${1}" ${procfile}
-    echo ${procfile}
+    local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
+    if [[ ! ${procfile} -ef ${1} ]]; then
+	rm -f ${procfile}
+	ln -s $(relative_name "${1}" "${ALLPHOT_PROCDIR}") ${procfile}
+    fi
+    echo $(basename ${procfile})
 }
 
 setup_output() {
     [[ -r ${1} ]] && mv -f ${1}{,.old}
-    local procfile="${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.${1##*.}"
-    rm -f ${procfile} && echo ${procfile}
-    if [[ ${procfile} -ef ${1} ]]; then
-	echo >> ${ALLPHOT_PROCDIR}/output.bash "mv -f ${procfile} ${1}"
-	echo >> ${ALLPHOT_PROCDIR}/output.bash "rm -f ${1}.old"
+    local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
+    rm -f ${procfile} && echo $(basename ${procfile})
+    if [[ ! ${procfile} -ef ${1} ]]; then
+	echo >> ${ALLPHOT_PROCDIR}/output.bash "mv -f ${procfile} $(canonicalise ${1})"
+	echo >> ${ALLPHOT_PROCDIR}/output.bash "rm -f $(canonicalise ${1}).old"
     fi
 }
 
-# daophot_opt <input option file>
+# daophot_opt <input option file> or
+# daophot_opt <OP1>=<value1>...<OPn>=<valuen>
 daophot_opt() {
+    # no arguments: don't change anything
+    [[ -z ${1} ]] && return 0
     echo >> ${ALLPHOT_CMDFILE} "OPTION"
-    echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${1:-${DAOPHOT_OPT}})"
+    # option file
+    if  [[ -e ${1} ]]; then
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${1})"
+	return 0
+    fi
+    # option command
+    for opt in $@; do
+	if [[ ${i} =~ = ]]; then
+	    echo >> ${ALLPHOT_CMDFILE} "${opt}"
+	fi
+    done
 }
 
 # daophot_exit
@@ -34,8 +49,10 @@ daophot_exit() {
 }
 
 # daophot_attach <FITS file>
-daophot_attach() {
-    echo  >> ${ALLPHOT_CMDFILE} "ATTACH $(setup_input ${1})" 
+daophot_attach() {    
+    local fitsname="$(setup_input ${1})"
+    ALLPHOT_NAME="${fitsname%.*}"    
+    echo  >> ${ALLPHOT_CMDFILE} "ATTACH ${fitsname}"
 }
 
 # daophot_sky
@@ -45,7 +62,7 @@ daophot_sky() {
 
 # daophot_find <output coordinate file>
 daophot_find() {
-    rm -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}jnk.*
+    rm -f ${ALLPHOT_PROCDIR}/*jnk.*
     cat  >> ${ALLPHOT_CMDFILE} <<-EOF
 	FIND
 	1,1
@@ -58,12 +75,11 @@ EOF
 # or
 # daophot_opt <input phot options file> <psf phot file> <input id file> <output file>
 daophot_phot() {
-    cat >> ${ALLPHOT_CMDFILE} <<-EOF
-	PHOT
-	$(setup_input ${1})
-
-	$(setup_input ${2})
-EOF
+    echo >> ${ALLPHOT_CMDFILE}	"PHOT"
+    # might have to do the option stuff 
+    echo >> ${ALLPHOT_CMDFILE} $(setup_input ${1})
+    echo >> ${ALLPHOT_CMDFILE}
+    echo >> ${ALLPHOT_CMDFILE} $(setup_input ${2})
     if [[ $# -eq 4 ]]; then
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"

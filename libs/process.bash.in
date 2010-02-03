@@ -9,7 +9,7 @@ allphot_setup() {
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --optfile=*) optfile="${1##*=}" ;;
-	    --options=*) options="${1##*=}" ;;
+	    --options=*) options="${1#*=}" ;;
 	    --*) die -q "Unrecognized option '$1'" ;;
               *) break ;;
 	esac
@@ -25,7 +25,8 @@ allphot_setup() {
     fi
     mkdir -p ${ALLPHOT_PROCDIR}
     ALLPHOT_CMDFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.in"
-
+    touch ${ALLPHOT_CMDFILE}
+ 
     # prepare option file which always has to be passed
     local cmdoptfile="${ALLPHOT_PROCDIR}/${cmd}.opt"
     if [[ -n ${optfile} ]]; then
@@ -33,7 +34,7 @@ allphot_setup() {
 	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] \
 	    && rm -f ${cmdoptfile} && ln -s ${optfile} ${cmdoptfile}
     else
-	[[ -e ${optfile} ]] || \
+	[[ -e ${cmdoptfile} ]] || \
 	    cp ${ALLPHOT_OPT_DIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
     fi
     if [[ -n ${options} ]]; then
@@ -45,15 +46,13 @@ allphot_setup() {
 
 # allphot_do [<cmd>]
 allphot_do() {
-    local cmd="${1}"
-    [[ -z ${cmd} ]] && cmd="$(basename ${ALLPHOT_CMDFILE%_*})"
-    cmd=$(type -P ${cmd})
-    [[ -x ${cmd} ]] || die -q "${cmd} is not a known executable"
+    local cmd="${1:-$(basename ${ALLPHOT_CMDFILE%_*})}"
+    [[ -x $(type -P ${cmd}) ]] || die -q "${cmd} is not a known executable"
     echo " >>> Running ${cmd}"
 
     # process
     pushd ${ALLPHOT_PROCDIR} &> /dev/null
-    ${cmd} < ${ALLPHOT_CMDFILE} || die -q "${cmd} failed"
+    $(type -P ${cmd}) < ${ALLPHOT_CMDFILE} || die -q "${cmd} failed"
     popd &> /dev/null
 
     # clean up
@@ -66,6 +65,7 @@ allphot_do() {
     for f in ${ALLPHOT_PROCDIR}/*.bck; do
 	[[ -e ${f} ]] && [[ ! -e ${f%.bck} ]] && mv -f ${f} ${f%.bck}
     done
+    echo " >>> Done."
 }
 
 export ALLPHOT_PROCDIR ALLPHOT_CMDFILE

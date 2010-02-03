@@ -3,7 +3,7 @@
 DESCRIPTION="Run DAOPHOT actions"
 VERSION="4"
 
-inherit options paths daophot process qa
+inherit options paths daophot process
 
 daophot_options_description() {
     echo "--opt=<file>        : Option file as input (default: ${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT})"
@@ -22,7 +22,7 @@ describe_opt_parameters() {
 describe_opt_options() {
     daophot_options_description
     echo "--dict=<file> : Dictionary to set options from FITS keywords"
-    echo "--out=<file>  : DAOPHOT option file as output (default: same as input)"
+    echo "--out=<file>  : DAOPHOT option file as output (default: input)"
 }
 
 do_opt() {
@@ -43,10 +43,11 @@ do_opt() {
     # update option from dictionnary
     if [[ -r ${dictfile} ]]; then
 	[[ -z ${1} ]] && die -q "missing input FITS file for directory"
-	option_update_from_dict ${dictfile} ${optfile:-${ALLPHOT_PROCDIR}/daophot.opt} "${1}"
+	option_update_from_dict ${dictfile} "${optfile:-${ALLPHOT_PROCDIR}/daophot.opt}" "${1}"
     fi
-    daophot_opt "${outfile:-${optfile}}"
+    daophot_opt "${optfile}"
     allphot_do
+    [[ -n ${outfile} ]] && cp -f "${optfile:-${ALLPHOT_PROCDIR}/daophot.opt}" "${outfile}"
 }
 
 ### sky action
@@ -134,9 +135,10 @@ do_phot() {
     done
 
     allphot_setup daophot "${1}"
-    # prepare option file which always has to be passed
-    radfile=${radfile:-${ALLPHOT_PROCDIR}/photo.opt}
-    [[ -r ${radfile} ]] || die -q "could not read photo file: '${radfile}'"
+    if [[ ! -e ${radfile} ]]; then
+	radfile=${ALLPHOT_PROCDIR}/${PHOTO_OPT}
+	cp -f ${ALLPHOT_OPT_DIR}/${PHOTO_OPT} ${radfile}
+    fi
     if [[ -n ${radii} ]]; then
 	for rad in ${radii}; do
 	    option_set_value "${rad}" ${radfile}
@@ -146,9 +148,9 @@ do_phot() {
     if [[ -n ${neifile} ]]; then
 	psffile="${psffile:-${1%.*}.psf}"
 	[[ -r ${psffile} ]] || die -q "could not read psf file: '${psffile}'"
-	daophot_phot "${optfile}" "${neifile}" "${infile:-${neifile}}" "${outfile:-${1%.*}.ap}"
+	daophot_phot "${radfile}" "${neifile}" "${infile:-${neifile}}" "${outfile:-${1%.*}.ap}"
     else
-	daophot_phot "${optfile}" "${infile:-${1%.*}.coo}" "${outfile:-${1%.*}.ap}"
+	daophot_phot "${radfile}" "${infile:-${1%.*}.coo}" "${outfile:-${1%.*}.ap}"
     fi
     allphot_do
 }
@@ -395,3 +397,6 @@ do_recipe() {
     source  "${infile:-${1%.*}.allphot}" >> ${ALLPHOT_CMDFILE}
     allphot_do
 }
+
+
+
