@@ -217,7 +217,7 @@ do_psf() {
 	    --opt=*) optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --pho=*) phofile="${1##*=}" ;;
-	    --lst=*) lstfile="${1##*=}" ;;
+	    --in=*)  lstfile="${1##*=}" ;;
 	    --out=*) psffile="${1##*=}" ;;
 	    --nei=*) neifile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
