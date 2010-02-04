@@ -197,10 +197,10 @@ describe_psf() {
 }
 
 describe_psf_options() {
-    echo "--inpho=<file>      : Input photometry (default: <input>.ap)"
-    echo "--inlst=<file>      : Input PSF star list (default: <input>.lst)"
-    echo "--outpsf=<file>     : Output PSF file (default: <input>.psf)"
-    echo "--outnei=<file>     : Output neighbour file (default: <input>.nei)"
+    echo "--pho=<file>      : Input photometry (default: <input>.ap)"
+    echo "--in=<file>      : Input PSF star list (default: <input>.lst)"
+    echo "--out=<file>     : Output PSF file (default: <input>.psf)"
+    echo "--nei=<file>     : Output neighbour file (default: <input>.nei)"
     echo "--opt=<file>        : Specify option file (default: ${DAOPHOT_OPT})"
     echo "--option <OP>=<val> : Pass option <OP> with value <val> (ex: TH=4)"
 }
@@ -216,10 +216,10 @@ do_psf() {
 	case "${1}" in
 	    --opt=*) optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
-	    --inpho=*) phofile="${1##*=}" ;;
-	    --inlst=*) lstfile="${1##*=}" ;;
-	    --outpsf=*) psffile="${1##*=}" ;;
-	    --outnei=*) neifile="${1##*=}" ;;
+	    --pho=*) phofile="${1##*=}" ;;
+	    --lst=*) lstfile="${1##*=}" ;;
+	    --out=*) psffile="${1##*=}" ;;
+	    --nei=*) neifile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -238,9 +238,9 @@ describe_substar() {
 }
 
 describe_substar_options() {    
-    echo "--in=<star file> : Input photometry file (default: <in>.nei)"
-    echo "--inkeep=<star file> : File with stars to keep (default: <in>.lst)"
-    echo "--out=<FITS image>   : Output subtracted image (default: <in>s.fits)"
+    echo "--in=<star file>   : Input photometry file (default: <in>.nei)"
+    echo "--keep=<star file> : File with stars to keep (default: <in>.lst)"
+    echo "--out=<FITS image> : Output subtracted image (default: <in>s.fits)"
 }
 
 describe_substar_parameters() {
@@ -253,7 +253,7 @@ do_substar() {
 	case "${1}" in
 	    --psf=*)    psffile="${1##*=}" ;;
 	    --in=*)     infile="${1##*=}" ;;
-	    --inkeep=*) inkeep="${1##*=}" ;;
+	    --keep=*)   keepfile="${1##*=}" ;;
 	    --out=*)    subfits="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
@@ -306,10 +306,10 @@ describe_offset() {
 }
 
 describe_offset_options() {
-    echo "--addid=<val> : Add <val> to ID (default: 0)"
-    echo "--addx=<val>  : Add <val> to x-coordinate (default: 0)"
-    echo "--addy=<val>  : Add <val> to y-coordinate (default: 0)"
-    echo "--addmag=<val>: Add <val> to magnitude (default: 0)"
+    echo "--id=<val> : Add <val> to ID (default: 0)"
+    echo "--x=<val>  : Add <val> to x-coordinate (default: 0)"
+    echo "--y=<val>  : Add <val> to y-coordinate (default: 0)"
+    echo "--mag=<val>: Add <val> to magnitude (default: 0)"
     echo "--out=<file>  : Output file name (default <input>.off)"
 }
 
@@ -321,10 +321,10 @@ do_offset() {
     local idoff=0 xoff=0 yoff=0 magoff=0 outfile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --addid=*)  idoff=${1##*=} ;;
-            --addx=*)   xoff=${1##*=} ;;
-	    --addy=*)   yoff=${1##*=} ;;
-	    --addmag=*) magoff=${1##*=} ;;
+	    --id=*)  idoff=${1##*=} ;;
+            --x=*)   xoff=${1##*=} ;;
+	    --y=*)   yoff=${1##*=} ;;
+	    --mag=*) magoff=${1##*=} ;;
 	    --out=*)    outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
