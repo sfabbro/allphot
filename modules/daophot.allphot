@@ -361,7 +361,7 @@ do_append() {
 	shift
     done
 
-    allphot setup daophot "${1}"
+    allphot_setup daophot "${1}"
     daophot_append "${1}" "${2}" "${outfile:-${1%.*}.cmb}"
     allphot_do
 }
@@ -397,6 +397,3 @@ do_recipe() {
     source  "${infile:-${1%.*}.allphot}" >> ${ALLPHOT_CMDFILE}
     allphot_do
 }
-
-
-
