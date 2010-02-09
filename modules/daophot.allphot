@@ -359,7 +359,7 @@ describe_append() {
 }
 
 describe_append_options() {
-    echo "--out=<file>  : Output file name (default <input>.cmb)"
+    echo "--out=<file>  : Output file name (default <input1>.cmb)"
 }
 
 describe_append_parameters() {
