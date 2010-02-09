@@ -38,8 +38,15 @@ do_do() {
         esac
 	shift
     done
+    local im=$(basename ${1%.*})
     
-    allphot_setup --options="${options}" --optfile="${optfile}" allstar "${1}"
-    daophot_allstar "${1}" "${psffile:-${1%.*}.psf}" "${infile:-${1%.*}.ap}" "${outfile:-${1%.*}.als}" "${subfits:-${1%.*}s.fits}"
+    allphot_setup --optfile="${optfile}" allstar "${1}"
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" "${ALLPHOT_PROCDIR}/${ALLSTAR_OPT}"
+	done
+    fi
+    daophot_allstar "${1}" "${psffile:-${im}.psf}" \
+	"${infile:-${im}.ap}" "${outfile:-${im}.als}" "${subfits:-${im}s.fits}"
     allphot_do
 }

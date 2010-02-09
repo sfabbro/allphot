@@ -1,4 +1,4 @@
-bin_SCRIPTS = allphot parallel
+bin_SCRIPTS = allphot parallel 
 EXTRA_DIST = allphot.in parallel.in
 PACKAGE_UPNAME=ALLPHOT
 

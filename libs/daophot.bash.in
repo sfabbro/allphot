@@ -36,11 +36,15 @@ daophot_opt() {
 	return 0
     fi
     # option command
+    local opt
+    echo >> ${ALLPHOT_CMDFILE}
     for opt in $@; do
-	if [[ ${i} =~ = ]]; then
+	if [[ ${opt} =~ = ]]; then
 	    echo >> ${ALLPHOT_CMDFILE} "${opt}"
 	fi
     done
+    echo >> ${ALLPHOT_CMDFILE}
+    echo " >>> Will run DAOPHOT OPT"
 }
 
 # daophot_exit
@@ -58,6 +62,7 @@ daophot_attach() {
 # daophot_sky
 daophot_sky() {
     echo  >> ${ALLPHOT_CMDFILE} "SKY"
+    echo " >>> Will run DAOPHOT SKY"
 }
 
 # daophot_find <output coordinate file>
@@ -69,6 +74,7 @@ daophot_find() {
 	$(setup_output ${1})
 	y
 EOF
+    echo " >>> Will run DAOPHOT FIND"
 }
 
 # daophot_phot <input phot options file> <input coordinate file> <output file>
@@ -89,6 +95,7 @@ daophot_phot() {
 	    mv -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf{,.bck}
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3})"
     fi
+    echo " >>> Will run DAOPHOT PHOT"
 }
 
 # daophot_pick <input file> <nstars> <mag faint> <output psf stars file>
@@ -99,18 +106,20 @@ daophot_pick() {
 	${2} ${3}
 	$(setup_output ${4})
 EOF
+    echo " >>> Will run DAOPHOT PICK"
 }
 
 # daophot_psf <input mag file> <input psf stars file> <output psf file>  <output neihbour file>
 # do two rounds
 daophot_psf() {
+    $(setup_output ${4}) &> /dev/null
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PSF
 	$(setup_input ${1})
 	$(setup_input ${2})
 	$(setup_output ${3})
-	$(setup_output ${4})
 EOF
+    echo " >>> Will run DAOPHOT PSF"
 }
 
 # daophot_append <input file 1>  <input file 2> <output merged file>
@@ -121,6 +130,7 @@ daophot_append() {
 	$(setup_input ${2})
 	$(setup_output ${3})
 EOF
+    echo " >>> Will run DAOPHOT APPEND"
 }
 
 # daophot_offset <input file> <ID> <DX> <DY> <DMAG> <output file>
@@ -131,6 +141,7 @@ daophot_offset() {
 	${2} ${3} ${4} ${5}
 	$(setup_output ${6})
 EOF
+    echo " >>> Will run DAOPHOT OFFSET"
 }
 
 # daophot_sort <column index> <input file> <output file> <renumber stars?>
@@ -142,6 +153,7 @@ daophot_sort() {
 	$(setup_output ${3})
 	${4}
 EOF
+    echo " >>> Will run DAOPHOT SORT"
 }
 
 # daophot_substar <input psf file> <input phot file>  [<stars to keep file>] <output FITS file>
@@ -159,6 +171,7 @@ EOF
 	echo >> ${ALLPHOT_CMDFILE} "N"
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3})"
     fi
+    echo " >>> Will run DAOPHOT SUBSTAR"
 }
 
 # allstar_standard <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub>
@@ -171,4 +184,5 @@ daophot_allstar() {
 	$(setup_output ${4})
 	$(setup_output ${5})
 EOF
+    echo " >>> Will run ALLSTAR"
 }

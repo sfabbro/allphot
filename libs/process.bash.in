@@ -32,15 +32,11 @@ allphot_setup() {
     if [[ -n ${optfile} ]]; then
 	[[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"
 	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] \
-	    && rm -f ${cmdoptfile} && ln -s ${optfile} ${cmdoptfile}
+	    && rm -f ${cmdoptfile} && \
+	    ln -s $(relative_name ${optfile}  "${ALLPHOT_PROCDIR}") ${cmdoptfile}
     else
 	[[ -e ${cmdoptfile} ]] || \
 	    cp ${ALLPHOT_OPT_DIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
-    fi
-    if [[ -n ${options} ]]; then
-	for opt in ${options}; do
-	    option_set_value "${opt}" ${cmdoptfile}
-	done
     fi
 }
 

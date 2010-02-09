@@ -39,15 +39,21 @@ do_opt() {
 	shift
     done
 
-    allphot_setup --optfile="${optfile}" --options="${options}" daophot "${1}"
+    allphot_setup --optfile="${optfile}" daophot "${1}"
     # update option from dictionnary
+    local cmdoptfile="${ALLPHOT_PROCDIR}/${DAOPHOT_OPT}"
     if [[ -r ${dictfile} ]]; then
 	[[ -z ${1} ]] && die -q "missing input FITS file for directory"
-	option_update_from_dict ${dictfile} "${optfile:-${ALLPHOT_PROCDIR}/daophot.opt}" "${1}"
+	option_update_from_dict ${dictfile} "${optfile:-${cmdoptfile}}" "${1}"
+    fi
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    option_set_value "${opt}" "${optfile:-${cmdoptfile}}"
+	done
     fi
     daophot_opt "${optfile}"
     allphot_do
-    [[ -n ${outfile} ]] && cp -f "${optfile:-${ALLPHOT_PROCDIR}/daophot.opt}" "${outfile}"
+    [[ -n ${outfile} ]] && cp -f "${optfile:-${cmdoptfile}}" "${outfile}"
 }
 
 ### sky action
@@ -93,9 +99,10 @@ do_find() {
 	shift
    done
 
-   allphot_setup --optfile="${optfile}" --options="${options}" daophot "${1}"
+   allphot_setup --optfile="${optfile}" daophot "${1}"
+   [[ -n ${options} ]] && daophot_opt "${options}"
    daophot_attach "${1}"
-   daophot_find "${outfile:-${1%.*}.coo}"
+   daophot_find "${outfile:-$(basename ${1%.*}).coo}"
    allphot_do
 }
 
@@ -145,12 +152,13 @@ do_phot() {
 	done
     fi
     daophot_attach "${1}"
+    local im=$(basename ${1%.*})
     if [[ -n ${neifile} ]]; then
-	psffile="${psffile:-${1%.*}.psf}"
+	psffile="${psffile:-${im}.psf}"
 	[[ -r ${psffile} ]] || die -q "could not read psf file: '${psffile}'"
-	daophot_phot "${radfile}" "${neifile}" "${infile:-${neifile}}" "${outfile:-${1%.*}.ap}"
+	daophot_phot "${radfile}" "${neifile}" "${infile:-${neifile}}" "${outfile:-${im}.ap}"
     else
-	daophot_phot "${radfile}" "${infile:-${1%.*}.coo}" "${outfile:-${1%.*}.ap}"
+	daophot_phot "${radfile}" "${infile:-${im}.coo}" "${outfile:-${im}.ap}"
     fi
     allphot_do
 }
@@ -186,8 +194,9 @@ do_pick() {
 	shift
     done
 
-    allphot_setup --optfile="${optfile}" --options="${options}" daophot "${1}"
-    daophot_pick "${1}" ${nstars} ${magfaint} "${outfile:-${1%.*}.lst}"
+    allphot_setup --optfile="${optfile}" daophot "${1}"
+    [[ -n ${options} ]] && daophot_opt "${options}"
+    daophot_pick "${1}" ${nstars} ${magfaint} "${outfile:-$(basename ${1%.*}).lst}"
     allphot_do
 }
 
@@ -226,10 +235,14 @@ do_psf() {
 	shift
     done
 
-    allphot_setup --optfile="${optfile}" --options="${options}" daophot "${1}"
+    allphot_setup --optfile="${optfile}" daophot "${1}"
+    [[ -n ${options} ]] && daophot_opt "${options}"
     daophot_attach "${1}"
-    daophot_psf "${phofile:-${1%.*}.ap}" "${lstfile:-${1%.*}.lst}" "${psffile:-${1%.*}.psf}" "${neifile:-${1%.*}.nei}"
-    allphot_do daophot
+    local im=$(basename ${1%.*})
+    daophot_psf \
+	"${phofile:-${im}.ap}" "${lstfile:-${im}.lst}" \
+	"${psffile:-${im}.psf}" "${neifile:-${im}.nei}"
+    allphot_do
 }
 
 ### substar action
@@ -261,9 +274,12 @@ do_substar() {
 	shift
     done
 
+    local im=$(basename ${1%.*})
     allphot_setup daophot "${1}"
     daophot_attach "${1}"
-    daophot_substar "${psffile:-${1%.*}.psf}" "${infile:-${1%.*}.nei}" "${keepfile:-${1%.*}.lst}" "${subfits:-${1%.*}s.fits}"
+    daophot_substar \
+	"${psffile:-${im}.psf}" "${infile:-${im}.nei}" \
+	"${keepfile:-${im}.lst}" "${subfits:-${im}s.fits}"
     allphot_do
 }
 
@@ -296,7 +312,7 @@ do_sort() {
     done
 
     allphot_setup daophot "${1}"
-    daophot_sort ${idx} "${1}" "${outfile:-${1%.*}.srt}" ${renum}
+    daophot_sort ${idx} "${1}" "${outfile:-$(basename ${1%.*}).srt}" ${renum}
     allphot_do
 }
 
@@ -333,7 +349,7 @@ do_offset() {
     done
 
     allphot_setup daophot "${1}"
-    daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-${1%.*}.off}"
+    daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-$(basename {1%.*}).off}"
     allphot_do
 }
 
@@ -362,7 +378,7 @@ do_append() {
     done
 
     allphot_setup daophot "${1}"
-    daophot_append "${1}" "${2}" "${outfile:-${1%.*}.cmb}"
+    daophot_append "${1}" "${2}" "${outfile:-$(basename {1%.*}).cmb}"
     allphot_do
 }
 
@@ -393,7 +409,8 @@ do_recipe() {
 	shift
     done
     
-    allphot_setup --optfile="${optfile}" --options="${options}" daophot "${1}"
-    source  "${infile:-${1%.*}.allphot}" >> ${ALLPHOT_CMDFILE}
+    allphot_setup --optfile="${optfile}" daophot "${1}"
+    [[ -n ${options} ]] && daophot_opt "${options}"
+    source  "${infile:-$(basename {1%.*}).allphot}" >> ${ALLPHOT_CMDFILE}
     allphot_do
 }
