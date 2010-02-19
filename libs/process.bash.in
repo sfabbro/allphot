@@ -33,10 +33,10 @@ allphot_setup() {
 	[[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"
 	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] \
 	    && rm -f ${cmdoptfile} && \
-	    ln -s $(relative_name ${optfile}  "${ALLPHOT_PROCDIR}") ${cmdoptfile}
+	    ln -s $(relative_name ${optfile} "${ALLPHOT_PROCDIR}") ${cmdoptfile}
     else
 	[[ -e ${cmdoptfile} ]] || \
-	    cp ${ALLPHOT_OPT_DIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
+	    cp ${ALLPHOT_OPTDIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
     fi
 }
 

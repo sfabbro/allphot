@@ -21,14 +21,14 @@ daophot_master() {
     rm -f ${field}.{mag,cor,raw,tfr}
     # start answering boring questions
     echo ${field}.mch
-    echo -n "$(option_get_value MS ${2}), "
-    echo -n "$(option_get_value MC ${2}), "
-    echo "$(option_get_value MF ${2})"
-    option_get_value MD ${2}
-    option_get_value GE ${2}
-    option_get_value MR ${2}
+    echo -n "$(opt_get_val MS ${2}), "
+    echo -n "$(opt_get_val MC ${2}), "
+    echo "$(opt_get_val MF ${2})"
+    opt_get_val MD ${2}
+    opt_get_val GE ${2}
+    opt_get_val MR ${2}
     for i in $(seq ${nframes}); do echo ; done
-    for i in $(seq ${niter}); do option_get_value MI ${2}; done
+    for i in $(seq ${niter}); do opt_get_val MI ${2}; done
     echo 0
     #  Assign new star IDs? 
     echo y

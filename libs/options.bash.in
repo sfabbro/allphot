@@ -1,28 +1,17 @@
 # -*-bash-*-
 
-ALLPHOT_OPT_DIR=@DATADIR@/@NAME@/options
+# where the default install options will reside
+ALLPHOT_OPTDIR=@DATADIR@/@NAME@/options
+
+# names of program option file per default
 DAOPHOT_OPT=daophot.opt
 PHOTO_OPT=photo.opt
 ALLSTAR_OPT=allstar.opt
+ALLFRAME_OPT=allframe.opt
 
-calc() {
-    echo "scale=4; $1" | bc ;
-}
-
-# return the value of a FITS keyword
-fits_get_key() {
-    [[ ! -r ${2} ]] && die -q "get key: FITS file ${2} not found"
-    local value=$(listhead ${2} 2> /dev/null \
-	| grep "^${1}.*=" \
-	| cut -d '=' -f 2 \
-	| awk '{print $1}' \
-	| sed -e "s:'::g")
-    [[ -z ${value} ]] && die -q "get_key: FITS keyword ${1} not found"
-    echo ${value}
-}
-
-# option_get_value <option name> <option file>
-option_get_value() {
+# opt_get_val <option name> <option file>
+# return the value of an option from an option file
+opt_get_val() {
     local value=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
     if [[ -z ${value} ]]; then
 	write_warning_msg "Option ${1} unknown in ${2}"
@@ -31,29 +20,31 @@ option_get_value() {
     fi
 }
 
-# option_set_value <option name>=<option value> <option file>
-option_set_value() {
+# opt_set_val <option name>=<option value> <option file>
+# set the value of an option in an option file
+opt_set_val() {
     if [[ -n $(grep ${1%=*} ${2}) ]]; then
-	option_update_value ${1} ${2}
+	opt_update_val ${1} ${2}
     else
 	echo "${1}" >> ${2}
     fi
 }
 
-# only update the value if the option is present
-# option_update_value <option name>=<new option value> <option file>
-option_update_value() {
+# opt_update_val <option name>=<new option value> <option file>
+# update the value if the option is present in the option file
+opt_update_val() {
     [[ -w ${2} ]] || die -q "File ${2} not found"
     sed -i -e "s/\b${1%=*}=.*/${1}/" ${2} || \
 	die -q "set_value: Could not change option ${1} in ${2}"
 }
 
-# option_update_from_dict  <dictionary table> <option file> [<FITS file>] 
+# opt_update_dict  <dictionary table> <option file> [<FITS file>] 
+# update an option file from a dictionary translation table
 # dictionary table should be in the following format:
 # <daophot option name>=<value> 
 #     or
 # <daophot option name>=fits(<key>)
-option_update_from_dict() {
+opt_update_dict() {
     local rhs= optname= optval=
     while read line; do
 	optname=${line%=*}
@@ -65,42 +56,85 @@ option_update_from_dict() {
 	    optval=${rhs}
 	fi
 	[[ -n ${optval} ]] && \
-	    option_set_value ${optname}=${optval} ${2}
+	    opt_set_val ${optname}=${optval} ${2}
     done < ${1}
 }
 
-# option_update_from_fwhm <fwhm>
-option_update_from_fwhm() {
-    local fwhm=${1}
-    [[ -z ${fwhm} ]] && return
-    if [[ -r ${DAOPHOT_OPT} ]]; then
-	option_update_value FW=${fwhm} ${DAOPHOT_OPT}
-	option_update_value PS=$(calc "${fwhm}*4.5") ${DAOPHOT_OPT}
-	option_update_value FI=$(calc "${fwhm}*1.4") ${DAOPHOT_OPT}
-    fi
-    if [[ -r ${ALLSTAR_OPT} ]]; then
-	option_update_value FI=$(calc "${fwhm}*1.4") ${ALLSTAR_OPT}
-	option_update_value IS=$(calc "${fwhm}*0.5") ${ALLSTAR_OPT}
-	option_update_value OS=$(calc "${fwhm}*7")   ${ALLSTAR_OPT}
-    fi
-}
-
-option_update_photo_from_fwhm() {
-    local fwhm=${1}
-    [[ -z ${fwhm} ]] && return
-    # update aperture radii
-    local rad=1
-    for i in $(seq 9) A B C; do
-	[[ -n $(option_get_value A${i} ${PHOTO_OPT}) ]] && \
-	    option_set_value A${i}=$(calc "${fwhm}*${rad}*0.8") ${PHOTO_OPT}
-	(( rad = ${rad} + 1 ))
+# opt_file_path [<command>]
+# return the file path of the used option file (given a command)
+# the path order is .:${HOME}/.allphot:${ALLPHOT_OPTDIR}
+opt_file_path() {
+    local cmd=${1:=daophot}
+    local optfile=${cmd}.opt
+    for dir in "." "${HOME}/.allphot" "${ALLPHOT_OPTDIR}"; do
+	[[ -r ${dir}/${optfile} ]] && canonicalise ${dir}/${optfile} && return
     done
-    # update sky annulus radii
-    option_set_value IS=$(calc "${fwhm}*${rad}") ${PHOTO_OPT}
-    option_set_value OS=$(calc "${fwhm}*${rad}+20") ${PHOTO_OPT}
+    echo "none"
+    die -q "Could not find a option file for ${cmd}"
 }
 
-option_update_psf_model() {
-    option_set_value AN=-6 ${DAOPHOT_OPT}
-    option_set_value VA=2 ${DAOPHOT_OPT}
+# opt_update_fwhm <fwhm> [option file]
+# update an option file give an FWHM of a star
+opt_update_fwhm() {
+    local fwhm=${1}
+    local optfile=${2:=$(opt_file_path)}
+    [[ -z ${fwhm} ]] && write_warning_msg "Missing FWHM for updating options" && return
+    
+    if is_daophot_opt ${optfile}; then
+	opt_update_val FI=$(calc "${fwhm}*1.2") ${optfile}
+	opt_update_val FW=${fwhm} ${optfile}
+	opt_update_val PS=$(calc "${fwhm}*4.5") ${optfile}
+	return
+    fi
+
+    if is_allstar_opt ${optfile}; then
+	opt_update_val FI=$(calc "${fwhm}*1.2") ${optfile}
+	opt_update_val IS=$(calc "${fwhm}*0.5") ${optfile}
+	opt_update_val OS=$(calc "${fwhm}*5")   ${optfile}
+	return
+    fi
+
+    if is_photo_opt ${optfile}; then
+	# update aperture radii
+	local rad=1
+	for i in $(seq 9) A B C; do
+	    [[ -n $(opt_get_va A${i} ${optfile}) ]] && \
+		opt_set_val A${i}=$(calc "${fwhm}*${rad}*0.8") ${optfile}
+	    (( rad = ${rad} + 1 ))
+	done
+	# update sky annulus radii
+	opt_set_val IS=$(calc "${fwhm}*${rad}") ${optfile}
+	opt_set_val OS=$(calc "${fwhm}*${rad}+20") ${optfile}
+	return
+    fi
 }
+
+# opt_is_daophot <option file>
+# true if it is a DAOPHOT standard option file
+opt_is_daophot() {
+    [[ ${1} == ${DAOPHOT_OPT} ]] && return
+    grep -q GA ${1}
+}
+
+# opt_is_allstar <option file>
+# true if it is a ALLSTAR standard option file
+opt_is_allstar() {
+    [[ ${1} == ${ALLSTAR_OPT} ]] && return
+    grep -q FI ${1} && grep -q IS ${1}
+}
+
+# opt_is_photo <option file>
+# true if it is a DAOPHOT PHOT aperture radius option file
+opt_is_photo() {
+    [[ ${1} == ${PHOTO_OPT} ]] && return
+    grep -q A1 ${1}
+}
+
+# opt_allframe <option file>
+# true if it is a ALLFRAME standard option file
+opt_is_allframe() {
+    [[ ${1} == ${ALLFRAME_OPT} ]] && return
+    grep -q FI ${1} && grep -q GE ${1}
+}
+
+export ALLPHOT_OPTDIR DAOPHOT_OPT ALLSTAR_OPT PHOTO_OPT ALLFRAME_OPT

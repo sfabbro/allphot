@@ -1,0 +1,124 @@
+# -*-shell-script-*-
+# vim: ft=bash
+
+DESCRIPTION="Utilities to operate on DAOPHOT catalogues"
+VERSION="4"
+
+inherit qa options
+
+### header 
+describe_header() {
+    echo "Insert a DAOPHOT header file in a catalogue"
+}
+
+describe_header_parameters() {
+    echo "<daophot option> <FITS> <file>"
+}
+
+describe_header_options() {
+    echo "--out=<file>  : Output file name (default: same as input)"
+    echo "--opt=<file>  : Option file as input (default: $(opt_file_path daophot))"
+}
+
+do_header() {    
+    local outfile="" optfile=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --out=*) outfile="${1##*=}" ;;
+	    --opt=*) optfile="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    [[ -r ${1} ]] || die -q "File ${1} not readable"
+    [[ -r ${2} ]] || die -q "File ${2} not readable"
+    [[ -w ${3} ]] || die -q "File ${3} not writeable"
+    echo " >>> Insert a header into ${3}"
+    insert_cat_header ${1} ${2} ${3} || die -q "Could not insert header"
+}
+
+### merge
+describe_merge() {
+    echo "Merge two catalogues with offsetting id numbers"
+}
+
+describe_merge_options() {
+    echo "--out=<file>  : Output file name (default: <file1>)"
+}
+
+describe_merge_parameters() {
+    echo "<file1> <file2>"
+}
+
+do_merge() {
+    local outfile=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --out=*) outfile="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    
+    allphot_setup --optfile="${infile}" daophot "${1}"
+    daophot_sort 1 "${1}" tmpmerge.srt Y
+    daophot_offset "${2}" $(tail -n 1 tmpmerge.srt | awk '{print $1+1}') 0 0 0 tmpmerge.off
+    daophot_append "${1}" tmpmerge.off tmpmerge.app
+    daophot_sort 1 tmpmerge.app ${outfile:-${1}} Y
+    allphot do
+    rm -f tmpmerge.*
+}
+
+### sex
+describe_sex() {
+    echo "Run SExtractor and convert into a DAOPHOT catalogue"
+}
+
+describe_sex_options() {
+    echo "--out=<file>  : Output file name (default: <FITS>.cat)"
+    echo "--opt=<file>  : Option file as input (default: ${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT})"
+    echo "[sex option]: pass over a SExtractor option to the sex exec."
+}
+
+describe_sex_parameters() {
+    echo "<FITS>"
+}
+
+do_sex() {
+    local outfile="" optfile=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --out=*) outfile="${1##*=}" ;;
+	    --opt=*) optfile="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+
+    local fitsfile=${1}
+    echo " >>> Running SExtractor"
+    sex -c ${ALLPHOT_DATA_DIR}/sexdefault.sex \
+	-CATALOG_NAME ${outfile:=${1%.*}.cat} \
+	-SATUR_LEVEL $(opt_get_val HI ${optfile:=$(opt_file_path daophot)}) \
+	-GAIN $(opt_get_val GA ${optfile}) \
+	-DETECT_THRESH $(opt_get_val TH ${optfile}) \
+	$@ ${fitsfile}
+    echo " >>> Insert a DAOPHOT header to ${sexcat}"
+    cat_insert_header ${optfile} ${outfile} ${sexcat} || die
+}
+
+### filter
+describe_filter() {
+    echo "Filter a DAOPHOT catalogue on its columns"
+}
+
+describe_filter_parameters() {
+    echo "<catalogue> <col n cut>...<col x cut>"
+}
+
+do_filter() {    
+    echo "Not implemented yet :("
+}

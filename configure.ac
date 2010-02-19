@@ -1,9 +1,10 @@
-AC_INIT([allphot], [0.2.2], [sfabbro@uvic.ca], allphot)
+AC_INIT([allphot], [0.3.8], [sfabbro@uvic.ca], allphot)
 AC_PREREQ(2.59)
 AC_CONFIG_SRCDIR([bin/allphot.in])
 AC_CONFIG_AUX_DIR([config])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE
+
 
 # BASH may already be set in the shell, if the admin then changes the
 # the /bin/sh symlink to a non-bash shell, all hell will break lose.
@@ -49,6 +50,25 @@ AC_PATH_PROGS(DAOPHOT, daophot)
 if test x$DAOPHOT = "x" ; then
     AC_MSG_ERROR([daophot is required])
 fi
+
+AC_PATH_PROGS(ALLSTAR, allstar)
+if test x$ALLSTAR = "x" ; then
+    AC_MSG_ERROR([allstar is required])
+fi
+
+AC_PATH_PROGS(BC, bc)
+if test x$BC = "x" ; then
+    AC_MSG_ERROR([bc calculator is required])
+fi
+
+AC_PATH_PROGS(DAOMATCH, daomatch)
+if test x$DAOMATCH = "x" ; then
+    AC_MSG_ERROR([daomatch is required])
+fi
+AC_PATH_PROGS(DAOMASTER, daomaster)
+if test x$DAOMASTER = "x" ; then
+    AC_MSG_ERROR([daomaster is required])
+fi
 AC_PATH_PROGS(ALLFRAME, allframe)
 if test x$ALLFRAME = "x" ; then
     AC_MSG_ERROR([allframe is required])
@@ -59,6 +79,7 @@ AC_CONFIG_FILES([Makefile
 		tests/Makefile
 		bin/Makefile
 		libs/Makefile
+		misc/Makefile
 		modules/Makefile
 		examples/Makefile])
 AC_OUTPUT

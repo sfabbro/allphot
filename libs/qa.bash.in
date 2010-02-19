@@ -1,19 +1,90 @@
-# return false if a catalog has less than 5 lines
-check_catalog() {
-    [[ $(wc -l ${1} | cut -d ' ' -f1) -gt 5  ]] && return
-    [[ -e ${1}.old ]]  && mv -f ${1}.old ${1}
-    die -q "${1} is not a valid catalog"
-}
 
-# get_psf_fwhm <psf file>
-get_psf_fwhm() {
+inherit options daophot process
+
+# psf_fwhm <psf file>
+psf_fwhm() {
     awk 'NR==2 {print ($1+$2)*1.176; exit}' ${1} 2> /dev/null
 }
 
+# psf_profile <psf file>
+psf_profile() {
+    local psfname=$(awk 'NR==1 {print $1; exit}' ${1})
+    case ${psfname} in
+	GAUSSIAN) echo 1 ;;
+	MOFFAT15) echo 2 ;;
+	MOFFAT25) echo 3 ;;
+	MOFFAT35) echo 4 ;;
+	LORENTZ)  echo 5 ;;
+	PENNY1)   echo 6 ;;
+	PENNY2)   echo 7 ;;
+	*) die -q "Bad PSF name: ${psfname}" ;;
+    esac
+}
+
 # return false if fwhm of the psf file is not between 0.5 and 20
-check_psf() {
+psf_check() {
     local ifwhm10=$(awk 'NR==2 {print int(($1+$2)*11.76); exit}' ${1} 2> /dev/null)    
     if [[ -z ${ifwhm10} ]] || [[ ${ifwhm10} -lt 5 ]] || [[ ${ifwhm10} -gt 200 ]]; then
 	die -q "${1} is not a valid PSF file, ${ifwhm10}" >&2
     fi
+}
+
+
+# opt_update_psf <psf file> [option file]
+opt_update_psf() {
+    [[ -z ${1} ]] && write_warning_msg "Missing PSF file for updating options" && return 
+    [[ ! -e ${1} ]] && write_warning_msg "${1} not found for updating options" && return 
+    opt_update_fwhm $(psf_fwhm ${1}) ${2}
+}
+
+# fits_sky_rms <fits file>
+# return sky mode and rms using daophot sky
+fits_sky_rms() {
+    allphot_setup daophot ${1} > /dev/null
+    daophot_attach ${1} > /dev/null
+    daophot_sky > /dev/null
+    allphot_do | awk '/Sky/ {print $7" "$8}'
+}
+
+# insert_daophot_header <daophot opt file> <FITS image> <file>
+# unfortunately uses a temporary file
+cat_insert_header() {
+    local optfile=${1} fitsfile=${2} catfile=${3} nl=1
+    local filetype=${3##*.}
+    case ${filetype} in
+	ap) nl=2 ;;
+	lst|nei|grp) nl=3 ;;
+	*) nl=1 ;;
+    esac
+    #coo|nst|pk|als|mag ) nl=1 ;;
+
+    # set useless AP1 to FWHM
+    # compute low and high bad values from sky and rms    
+    local skyrms=$(fits_sky_rms ${fitsfile})
+    local lobad=$(echo "$(opt_get_val LO ${optfile}) ${skyrms}" | awk '{print $2 - $1 * $3}')
+    local thresh=$(echo "$(opt_get_val TH ${optfile}) ${skyrms}" | awk '{print $1 * $3}')
+    {
+	printf " NL    NX    NY  LOWBAD HIGHBAD  THRESH     AP1  PH/ADU  RNOISE"
+	[[ ${filetype} == grp ]] ||	printf "    FRAD"
+	printf "\n"
+	printf "%3d %5d %5d" ${nl} $(fits_get_key NAXIS1 ${fitsfile}) $(fits_get_key NAXIS2 ${fitsfile})
+	printf "%8.1f"  ${lobad} $(opt_get_val HI ${optfile})
+	printf "%8.2f" ${thresh} $(opt_get_val FW ${optfile}) $(opt_get_val GA ${optfile}) $(opt_get_val RE ${optfile})
+	[[ ${filetype} == grp ]] || printf "%8.2f" $(opt_get_val FI ${optfile})
+	printf "\n\n"
+    } > ${catfile}.tmp
+    cat ${catfile} >> ${catfile}.tmp
+    mv -f ${catfile}{.tmp,}
+}
+
+# cat_nstars <daophot catalogue>
+# return the number of stars of a DAOPHOT catalogue
+cat_nstars() {
+    wc -l ${1} | awk '{print $1 - 3}'
+}
+
+# return false if a catalogue has less than 5 lines
+cat_check() {
+    [[ $(wc -l ${1} | cut -d ' ' -f1) -gt 5  ]] || \
+	die -q "${1} is not a valid catalogue"
 }

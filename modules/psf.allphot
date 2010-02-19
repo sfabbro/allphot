@@ -1,18 +1,14 @@
 # -*-shell-script-*-
 # vim: ft=bash
 
-DESCRIPTION="Apply some filter recipes on DAOPHOT catalogs"
+DESCRIPTION="Various recipes for DAOPHOT PSF"
 VERSION="4"
 
 inherit qa
 
-get_nstars() {
-    wc -l ${1} | awk '{print $1 - 3}'
-}
-
 ### chisharp action
 describe_chisharp() {
-    echo "Filter stars on a catalog for chi and sharp outliers value"
+    echo "Filter PSF stars on a catalog with cuts on chi and sharp parameters"
 }
 
 describe_chisharp_options() {
@@ -48,30 +44,13 @@ do_chisharp() {
 	    '{ if ( $1 == vid  && $8< vcmax && $9<vsmax && $9>-vsmax ) { print } }' \
 	    ${profcat} >> ${pickcat}.filtered
     done < ${pickcat}
-    echo " >>> Removed $(( $(get_nstars ${pickcat}) - $(get_nstars ${pickcat}.filtered) )) objects with chi > ${cmax} and |sharp| > ${smax}"
+    echo " >>> Removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) )) objects with chi > ${cmax} and |sharp| > ${smax}"
     mv -f ${pickcat}.filtered ${pickcat}
-}
-
-### get 
-describe_header() {
-    echo "Make a header file for a catalog"
-}
-
-describe_header_parameters() {
-    echo "<daophot option> <FITS> <file>"
-}
-
-do_header() {    
-    [[ -r ${1} ]] || die -q "File ${1} not readable"
-    [[ -r ${2} ]] || die -q "File ${2} not readable"
-    [[ -w ${3} ]] || die -q "File ${3} not writeable"
-    insert_catalog_header ${1} ${2} ${3} || die
-    echo " >>> Inserted a header to ${3}"
 }
 
 ### neighbours action
 describe_neighbours() {
-    echo "Filter neighbours on a PSF star catalog (from a neighbour file)"
+    echo "Filter neighbours on a PSF star catalog (with a PSF neighbour file)"
 }
 
 describe_neighbours_parameters() {
@@ -79,37 +58,13 @@ describe_neighbours_parameters() {
 }
 
 do_neighbours() {
-
     [[ -r ${1} ]] || die -q "File ${1} not readable"
     [[ -w ${2} ]] || die -q "File ${2} not writeable"
     
-    local nstars=$(get_nstars ${2}) nnei=$(grep -c [\*\?] ${1})
+    local nnei=$(grep -c [\*\?] ${1})
     [[ ${nnei} -gt 0 ]] && \
 	sed -i \
 	    $(grep [\*\?] ${1} | awk '{printf "-e /^[[:space:]]*"$1"/d "}') \
 	    ${2}
     echo " >>> Removed ${nnei} neighbours to PSF stars"
-}
-
-describe_sex() {
-    echo "run sextractor"
-}
-
-describe_sex_parameters() {
-    echo "<FITS> [SEx parameters]"
-}
-do_sex() {
-    local fitsfile=${1}
-    shift
-    local sexcat=${fitsfile%.*}.cat
-    local optfile=daophot.opt
-    echo " >>> Running SExtractor"
-    sex -c ${ALLPHOT_DATA_DIR}/sexdefault.sex \
-	-CATALOG_NAME ${sexcat} \
-	-SATUR_LEVEL $(option_get_value HI ${optfile}) \
-	-GAIN $(option_get_value GA ${optfile}) \
-	-DETECT_THRESH $(option_get_value TH ${optfile}) \
-	$@ ${fitsfile}
-    echo " >>> Insert a DAOPHOT header to ${sexcat}"
-    insert_catalog_header ${optfile} ${fitsfile} ${sexcat} || die
 }

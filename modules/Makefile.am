@@ -5,7 +5,8 @@ modules_DATA = \
 	allstar.allphot \
 	daophot.allphot \
 	modules.allphot \
-	filters.allphot
+	psf.allphot \
+	cat.allphot
 
 
 EXTRA_DIST = $(modules_DATA)

@@ -9,7 +9,6 @@ TESTS = $(check_SCRIPTS)
 EXTRA_DIST= \
 	$(check_SCRIPTS) \
 	generate.py \
-	sky.assoc \
 	sky00.fits \
 	sky00.list \
 	sky01.fits \
@@ -19,17 +18,7 @@ EXTRA_DIST= \
 	sky03.fits \
 	sky03.list \
 	sky04.fits \
-	sky04.list \
-	sky05.fits \
-	sky05.list \
-	sky06.fits \
-	sky06.list \
-	sky07.fits \
-	sky07.list \
-	sky08.fits \
-	sky08.list \
-	sky09.fits \
-	sky09.list
+	sky04.list
 
 clean-local:
-	-rm -rf daophot_*
+	-rm -rf process_*

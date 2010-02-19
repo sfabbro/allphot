@@ -1,4 +1,4 @@
-# -*-bash-*-  vim: ft=bash
+# -*-shell-script-*-  vim: ft=bash
 
 DESCRIPTION="A module for querying modules. By default, it lists all available modules"
 DEFAULT_ACTION="list"

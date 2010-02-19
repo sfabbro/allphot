@@ -1,5 +1,5 @@
-#@BASH@
 # -*-bash-*-
+#@BASH@
 
 ALLPHOT_NAME="image"
 
@@ -163,13 +163,16 @@ daophot_substar() {
 	$(setup_input ${1})
 	$(setup_input ${2})
 EOF
-    if [[ $# -eq 4 ]]; then
+    if [[ $# -eq 4 ]] && [[ -n ${3} ]]; then
 	echo >> ${ALLPHOT_CMDFILE} "Y"
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
+    elif [[ $# -eq 4 ]] && [[ -z ${3} ]]; then
+	echo >> ${ALLPHOT_CMDFILE} "N"
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
     else
 	echo >> ${ALLPHOT_CMDFILE} "N"
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3})"
+	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
     fi
     echo " >>> Will run DAOPHOT SUBSTAR"
 }

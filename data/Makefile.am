@@ -4,7 +4,11 @@ options_DATA = \
 	photo.opt \
 	allstar.opt \
 	daomaster.opt \
-	allframe.opt
+	allframe.opt \
+	daosex.sex \
+	daosex.param \
+	daosex.nnw \
+	daosex.conv
 
 EXTRA_DIST = $(options_DATA)
 

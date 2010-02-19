@@ -1,0 +1,42 @@
+# -*- mode: sh; indent-tabs-mode: nil; -*-  vim: set ft=sh tw=80 sw=4 et :
+# bash command-line completion for allphot
+
+_allphot() {
+    local cur sedcmd sedcmd3 possibles
+    local options="--brief --no-colour"
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    sedcmd2='s/^  \([[:alnum:]-][[:alnum:]_-]*\)[[:space:],].*$/\1/p'
+    sedcmd3='s/^  \[[[:digit:]][[:digit:]]*\] *\([[:graph:]]*\).*$/\1/p'
+
+    set - "${COMP_WORDS[@]:1}"
+    # skip global options
+    while [[ $# -gt 1 && $1 == -* ]]; do
+        shift
+    done
+    # skip any subaction options
+    while [[ $# -gt 3 && $3 == -* ]]; do
+        set - "${@:1:2}" "${@:4}"
+    done
+
+    case $# in
+        1) possibles="${options} $(allphot --brief modules list 2>/dev/null)"
+            ;;
+        2) possibles=$(allphot --brief "$1" usage 2>/dev/null \
+            | sed -n -e "${sedcmd2}") ;;
+        3)
+            case $2 in
+                set|enable|disable)
+                    possibles=$(allphot "$1" list 2>/dev/null \
+                        | sed -n -e "${sedcmd3}") ;;
+            esac
+            ;;
+    esac
+
+    [[ -n "${possibles}" ]] && \
+        COMPREPLY=( $(compgen -W "${possibles}" -- ${cur}) )
+
+    return 0
+}
+
+complete -F _allphot allphot

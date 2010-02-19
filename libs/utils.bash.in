@@ -1,0 +1,19 @@
+# -*-bash-*-  vim: ft=bash
+
+# simple calculator using bc
+calc() {
+    echo "scale=4; $1" | bc ;
+}
+
+# return the value of a FITS keyword
+fits_get_key() {
+    [[ ! -r ${2} ]] && die -q "get key: FITS file ${2} not found"
+    local value=$(listhead ${2} 2> /dev/null \
+	| grep "^${1}.*=" \
+	| cut -d '=' -f 2 \
+	| awk '{print $1}' \
+	| sed -e "s:'::g")
+    [[ -z ${value} ]] && die -q "get_key: FITS keyword ${1} not found"
+    echo ${value}
+}
+

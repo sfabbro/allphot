@@ -1,23 +1,10 @@
-# -*-bash-*-
+# -*-shell-script-*-
 #  vim: ft=bash
 
 DESCRIPTION="Run DAOMATCH, DAOMASTER and ALLFRAME on a bunch of FITS images"
 VERSION="4"
 
 inherit options paths allframe qa
-
-# allframe_process_init <field>
-# create a directory and prepare it for ALLFRAME runs
-allframe_process_init() {
-    [[ $# -lt 1 ]] && die -q "missing field name"
-    local procdir="${PWD}/allframe_${1}"
-    mkdir -p ${procdir}
-    pushd ${procdir} &> /dev/null
-}
-
-allframe_process_end() {
-    popd &> /dev/null
-}
 
 ### match action
 describe_match() {
@@ -153,7 +140,7 @@ do_allframe() {
 
     # closing up
     for im in ${imlist}; do
-    	check_catalog ${im}
+    	cat_check ${im}
 	rm -f ${im}.alf.old
     done
     rm -f ${field}.allframe.in

@@ -6,7 +6,7 @@ VERSION="4"
 inherit options paths daophot process
 
 daophot_options_description() {
-    echo "--opt=<file>        : Option file as input (default: ${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT})"
+    echo "--opt=<file>        : Option file as input (default: $(opt_file_path daophot))"
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
 }
 
@@ -20,17 +20,18 @@ describe_opt_parameters() {
 }
 
 describe_opt_options() {
-    daophot_options_description
+    echo "--in=<file>         : Option file as input (default: ${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT})"
+    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
     echo "--dict=<file> : Dictionary to set options from FITS keywords"
     echo "--out=<file>  : DAOPHOT option file as output (default: input)"
 }
 
 do_opt() {
-    local dictfile="" optfile="" outfile="" options=""
+    local dictfile="" infile="" outfile="" options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --dict=*) dictfile="${1##*=}" ;;
-	    --opt=*)  optfile="${1##*=}" ;;
+	    --in=*)   infile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --out=*)  outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '$1'" ;;
@@ -39,21 +40,21 @@ do_opt() {
 	shift
     done
 
-    allphot_setup --optfile="${optfile}" daophot "${1}"
+    allphot_setup --optfile="${infile}" daophot "${1}"
     # update option from dictionnary
     local cmdoptfile="${ALLPHOT_PROCDIR}/${DAOPHOT_OPT}"
     if [[ -r ${dictfile} ]]; then
 	[[ -z ${1} ]] && die -q "missing input FITS file for directory"
-	option_update_from_dict ${dictfile} "${optfile:-${cmdoptfile}}" "${1}"
+	opt_update_dict ${dictfile} "${optfile:-${cmdoptfile}}" "${1}"
     fi
     if [[ -n ${options} ]]; then
 	for opt in ${options}; do
-	    option_set_value "${opt}" "${optfile:-${cmdoptfile}}"
+	    opt_set_val "${opt}" "${infile:-${cmdoptfile}}"
 	done
     fi
-    daophot_opt "${optfile}"
+    daophot_opt "${infile}"
     allphot_do
-    [[ -n ${outfile} ]] && cp -f "${optfile:-${cmdoptfile}}" "${outfile}"
+    [[ -n ${outfile} ]] && cp -f "${infile:-${cmdoptfile}}" "${outfile}"
 }
 
 ### sky action
@@ -148,14 +149,13 @@ do_phot() {
     fi
     if [[ -n ${radii} ]]; then
 	for rad in ${radii}; do
-	    option_set_value "${rad}" ${radfile}
+	    opt_set_val "${rad}" ${radfile}
 	done
     fi
     daophot_attach "${1}"
     local im=$(basename ${1%.*})
     if [[ -n ${neifile} ]]; then
-	psffile="${psffile:-${im}.psf}"
-	[[ -r ${psffile} ]] || die -q "could not read psf file: '${psffile}'"
+	[[ -r ${psffile:=${im}.psf} ]] || die -q "could not read psf file: '${psffile}'"
 	daophot_phot "${radfile}" "${neifile}" "${infile:-${neifile}}" "${outfile:-${im}.ap}"
     else
 	daophot_phot "${radfile}" "${infile:-${im}.coo}" "${outfile:-${im}.ap}"
@@ -279,7 +279,7 @@ do_substar() {
     daophot_attach "${1}"
     daophot_substar \
 	"${psffile:-${im}.psf}" "${infile:-${im}.nei}" \
-	"${keepfile:-${im}.lst}" "${subfits:-${im}s.fits}"
+	"${keepfile}" "${subfits:-${im}s.fits}"
     allphot_do
 }
 
@@ -349,7 +349,7 @@ do_offset() {
     done
 
     allphot_setup daophot "${1}"
-    daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-$(basename {1%.*}).off}"
+    daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-$(basename ${1%.*}).off}"
     allphot_do
 }
 
@@ -359,7 +359,7 @@ describe_append() {
 }
 
 describe_append_options() {
-    echo "--out=<file>  : Output file name (default <input1>.cmb)"
+    echo "--out=<file>  : Output file name (default: <input1>.cmb)"
 }
 
 describe_append_parameters() {
@@ -378,7 +378,7 @@ do_append() {
     done
 
     allphot_setup daophot "${1}"
-    daophot_append "${1}" "${2}" "${outfile:-$(basename {1%.*}).cmb}"
+    daophot_append "${1}" "${2}" "${outfile:-$(basename ${1%.*}).cmb}"
     allphot_do
 }
 
@@ -411,6 +411,6 @@ do_recipe() {
     
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
-    source  "${infile:-$(basename {1%.*}).allphot}" >> ${ALLPHOT_CMDFILE}
+    source  "${infile:-$(basename ${1%.*}).allphot}" >> ${ALLPHOT_CMDFILE}
     allphot_do
 }
