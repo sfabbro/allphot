@@ -3,48 +3,48 @@
 # check_do function args
 # Check that function exists, and call it with args.
 check_do() {
-    local fcn="${1}"
-    shift
-    if is_function "${fcn}" ; then
-	${fcn} "$@"
-    else
-	die "No function ${fcn}"
-    fi
+	local function="${1}"
+	shift
+	if is_function "${function}" ; then
+		${function} "$@"
+	else
+		die "No function ${function}"
+	fi
 }
 
 # die [-q] "Message" PUBLIC
 # Display "Message" as an error. If -q is not provided, gives a stacktrace.
 die() {
-    local item funcname="" sourcefile="" lineno="" n errfun dostack="yes"
-    
-    # do we have a working write_error_msg?
-    if is_function "write_error_msg" ; then
-	errfun="write_error_msg"
-    else
-	errfun="echo"
-    fi
-    
-    # quiet?
-    if [[ ${1} == "-q" ]] ; then
-	dostack=""
-	shift
-    fi
+	local item funcname="" sourcefile="" lineno="" n e s="yes"
 
-    ${errfun} "${@:-(no message)}"
+	# do we have a working write_error_msg?
+	if is_function "write_error_msg" ; then
+		e="write_error_msg"
+	else
+		e="echo"
+	fi
 
-    if [[ -n "${dostack}" ]] ; then
-	echo "Call stack:" 1>&2
-	for (( n = 1 ; n < ${#FUNCNAME[@]} ; ++n )) ; do
-	    funcname=${FUNCNAME[${n}]}
-	    sourcefile=$(basename ${BASH_SOURCE[${n}]})
-	    lineno=${BASH_LINENO[$(( n - 1 ))]}
-	    echo "    * ${funcname} (${sourcefile}:${lineno})" 1>&2
-	done
-    fi
-	
-    # Evil, but effective.
-    kill ${ALLPHOT_KILL_TARGET}
-    exit 249
+	# quiet?
+	if [[ ${1} == "-q" ]] ; then
+		s=""
+		shift
+	fi
+
+	$e "${@:-(no message)}"
+
+	if [[ -n "${s}" ]] ; then
+		echo "Call stack:" 1>&2
+		for (( n = 1 ; n < ${#FUNCNAME[@]} ; ++n )) ; do
+			funcname=${FUNCNAME[${n}]}
+			sourcefile=$(basename ${BASH_SOURCE[${n}]})
+			lineno=${BASH_LINENO[$(( n - 1 ))]}
+			echo "    * ${funcname} (${sourcefile}:${lineno})" 1>&2
+		done
+	fi
+
+	# Evil, but effective.
+	kill ${ESELECT_KILL_TARGET}
+	exit 249
 }
 
 # do_action action args...
@@ -54,13 +54,13 @@ do_action() {
     [[ -z ${action} ]] && die "Usage: do_action <action> <args>"
     shift; shift
     
-    ALLPHOT_ACTION_NAME="${action}"
+    ALLPHOT_MODULE_NAME="${action}"
     ALLPHOT_COMMAND="${ALLPHOT_PROGRAM_NAME} ${ALLPHOT_MODULE_NAME}"
     
     [[ ${ALLPHOT_BINARY_NAME##*/} != ${ALLPHOT_PROGRAM_NAME} ]] && \
 	ALLPHOT_COMMAND="${ALLPHOT_BINARY_NAME##*/}"
     
-    modfile=$( allphot_find_module "${action}" )
+    modfile=$( ap_find_module "${action}" )
     (
 	source "${ALLPHOT_DEFAULT_ACTIONS}" 2>/dev/null \
 	    || die "Couldn't source ${ALLPHOT_DEFAULT_ACTIONS}"
@@ -91,4 +91,45 @@ inherit() {
 # GNU sed wrapper (real path to GNU sed determined by configure)
 sed() {
     @SED@ "$@"
+}
+
+# do_smp action args...
+# Load and do 'action' with the specified args
+do_smp() {
+    local cmd="${1##--}" optcmd="" argcmd=""
+    [[ -z ${action} ]] && die "Usage: do_smp <command> [command options] <command args>"
+    shift; shift
+    
+    ALLPHOT_CMD_NAME="${cmd}"
+    ALLPHOT_COMMAND="${ALLPHOT_PROGRAM_NAME} ${ALLPHOT_CMD_NAME}"
+    
+    [[ ${ALLPHOT_BINARY_NAME##*/} != ${ALLPHOT_PROGRAM_NAME} ]] && \
+	ALLPHOT_COMMAND="${ALLPHOT_BINARY_NAME##*/}"
+    
+    modfile=$( ap_find_module "${action}" )
+    (
+	source "${ALLPHOT_DEFAULT_ACTIONS}" 2>/dev/null \
+	    || die "Couldn't source ${ALLPHOT_DEFAULT_ACTIONS}"
+	source "${modfile}" 2>/dev/null \
+	    || die "Couldn't source ${modfile}"
+	if [[ -z ${subaction} ]] ; then
+	    check_do "do_${DEFAULT_ACTION:-usage}" "$@"
+	else
+	    is_function "do_${subaction}" \
+		|| die -q "Action ${subaction} unknown"
+	    check_do "do_${subaction}" "$@"
+	fi
+   )
+    ## OLD CODE TO INTEGRATE ##
+    j=1
+    while test $# -gt 0; do
+	echo " >>> Starting job ${j} on ${1}"
+	"${action}" ${1}
+	shift
+	(( j += 1 ))
+	while [[ $(jobs -r | wc -l) -ge ${njobs} ]]; do 
+	    sleep 0.4
+	    j=1
+	done
+    done
 }

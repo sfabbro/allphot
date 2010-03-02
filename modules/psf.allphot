@@ -1,7 +1,7 @@
 # -*-shell-script-*-
 # vim: ft=bash
 
-DESCRIPTION="Various recipes for DAOPHOT PSF"
+DESCRIPTION="Various tools for manipulating DAOPHOT PSF derivatives"
 VERSION="4"
 
 inherit qa

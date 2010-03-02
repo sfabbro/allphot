@@ -4,11 +4,19 @@ options_DATA = \
 	photo.opt \
 	allstar.opt \
 	daomaster.opt \
-	allframe.opt \
-	daosex.sex \
-	daosex.param \
-	daosex.nnw \
-	daosex.conv
+	allframe.opt
+
+sexdir = $(datadir)/@PACKAGE_NAME@/sextractor
+sex_DATA = \
+	default.sex \
+	default.param \
+	default.nnw \
+	default.conv
+
+
+dictdir = $(datadir)/@PACKAGE_NAME@/dict
+dict_DATA = \
+	macho.dict
 
 EXTRA_DIST = $(options_DATA)
 

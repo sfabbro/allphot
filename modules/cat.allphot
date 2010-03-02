@@ -1,7 +1,7 @@
 # -*-shell-script-*-
 # vim: ft=bash
 
-DESCRIPTION="Utilities to operate on DAOPHOT catalogues"
+DESCRIPTION="Various tools for manipulating DAOPHOT catalogues"
 VERSION="4"
 
 inherit qa options

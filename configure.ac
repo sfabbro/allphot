@@ -74,6 +74,9 @@ if test x$ALLFRAME = "x" ; then
     AC_MSG_ERROR([allframe is required])
 fi
 
+PACKAGE_UPNAME=`echo $PACKAGE_NAME | tr '[:lower:]' '[:upper:]'`
+AC_SUBSTR(PACKAGE_UPNAME)
+
 AC_CONFIG_FILES([Makefile 
 		data/Makefile
 		tests/Makefile

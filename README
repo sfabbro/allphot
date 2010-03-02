@@ -1,4 +1,9 @@
-ALLPHOT is a package designed to automate the ALLFRAME suite. The idea was to create a friendly way of automating all ALLFRAME programs.
+ALLPHOT is a package designed to automate the ALLFRAME stellar
+photometry package. The idea was to create a fairly friendly interface
+for all ALLFRAME programs to be run unattended. It was developed with
+the CANFAR project to re-run photometry on MACHO data in the hope it
+can be applied to other big data sets.
+
 It could be used for other command line programs, its API is fairly
 generic. The code is inspired by the "eselect" tool used on Gentoo,
 and shamefully borrows a lot of code from it.

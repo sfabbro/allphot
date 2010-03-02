@@ -2,36 +2,122 @@
 # -*-bash-*-
 #  vim: ft=bash
 
-jobs=auto
-while test $# -gt 0; do
-    case "${1}" in
-	-j=* | --jobs=*) jobs="${1##*=}" ;;
-	--) shift; break ;;
-	*) break ;;
-    esac
-    shift
-done
+# Where are our data?
+ALLPHOT_DATA_PATH="@DATADIR@/@NAME@"
 
-action="$@"
+# Look in this place for libraries
+ALLPHOT_CORE_PATH="${ALLPHOT_DATA_PATH}/libs"
 
-if test -x "${action}"; then
-    echo "*** Error: ${1} is not a valid action to process" >&2
-    return -1
+# Our program name and version
+ALLPHOT_VERSION="@VERSION@"
+ALLPHOT_PROGRAM_NAME="parallel"
+
+# Invocation information
+ALLPHOT_BINARY_NAME="${0}"
+ALLPHOT_KILL_TARGET="$$"
+
+# Global options
+ALLPHOT_OPTIONS=""
+
+# Remove all alias definitions. Unset functions and variables that are
+# known to cause trouble.
+"unalias" -a
+unset -f rm
+unset CDPATH GLOBIGNORE
+IFS=$' \t\n'
+
+shopt -s extglob
+shopt -s expand_aliases
+
+# Load core functions
+source "${ALLPHOT_CORE_PATH}/core.bash" || exit 255
+# Load necessary functions for the main script
+inherit output paths tests
+
+# Sneaky trick to make die in subshells work. If you don't get
+# it, don't ask...
+trap 'echo "exiting" >&2; exit 250' 15
+
+smp_do_usage() {
+    echo "Usage: ${ALLPHOT_PROGRAM_NAME} [global options] <command> [command options] <command parameters>"
+}
+
+# Display help
+smp_do_help() {
+    set_output_mode default
+    smp_do_usage
+    echo
+    smp_do_list_options
+}
+
+# Display version
+smp_do_version() {
+    echo "${ALLPHOT_PROGRAM_NAME} ${ALLPHOT_VERSION}"
+    echo "Distributed under the terms of the GNU GPL version 2 or later."
+}
+
+# Display all recognized global options
+smp_do_list_options() {
+    write_list_start "Global options:"
+    write_kv_list_entry "--brief"    "Make output shorter"
+    write_kv_list_entry "--no-color,--no-colour"    "Disable coloured output"
+    write_kv_list_entry "--jobs=<n>"    "Specify the number of jobs (default: number of processors)"
+    write_kv_list_entry "--log"    "Log the output of each job in a <command>-<pid>.log file"
+}
+
+
+# very simple automatic process (not portable on some *nix)
+jobs=$(grep -c processor /proc/cpuinfo)
+
+# enable colour output and get width of terminal iff stdout is a tty
+if [[ -t 1 ]]; then
+    colours
+    init_columns
+else
+    nocolours
 fi
 
-# very simple automatic process (not portable)
-[[ ${jobs} == auto ]] && jobs=$(grep -c processor /proc/cpuinfo)
-[[ ${jobs} -gt $# ]]  && jobs=$#
-[[ ${jobs} -gt 2 ]]   && echo " >>> Will run ${jobs} jobs simultaneously"
-
-j=1
-while test $# -gt 0; do
-    echo " >>> Starting job ${j} on ${1}"
-    "${action}" ${1} &> allphot.job.$j.log &
-    shift
-    j=$(( ${j} + 1))
-    while [[ $(ps auxwww | grep -c "${action}") -ge ${jobs} ]]; do 
-	sleep 0.4
-	j=1
+if [[ -n ${1##--} ]] ; then
+    while [[ ${1##--} != ${1} ]] ; do
+	case ${1##--} in
+	    brief)
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} brief"
+		set_output_mode brief
+		;;
+	    no-colour|no-color)
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} no-colour"
+		nocolours
+		;;
+	    jobs=*)
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} jobs"
+		jobs="${1##*=}"
+		;;
+	    log)
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} log"
+		logging
+		;;
+	    help|version)
+		action=${1##--}
+		;;
+	    *)
+		die -q "Unknown option ${1}"
+		;;
+	esac
+	shift
     done
-done
+    if [[ -z ${action} ]]; then
+	action=${1}
+	shift
+    fi
+fi
+
+if [[ -n ${action} ]] ; then
+    if is_function "smp_do_${action//-/_}" ; then
+	[[ $# -gt 0 ]] && die -q "Too many parameters"
+	smp_do_${action//-/_}
+    else
+	do_smp "${action}" "$@"
+    fi
+else
+    smp_do_help
+fi

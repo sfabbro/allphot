@@ -1,9 +1,0 @@
-CATALOG_TYPE ASCII
-PARAMETERS_NAME  sexdefault.param  # name of the file containing catalog contents
-FILTER_NAME      sexdefault.conv   # name of the file containing the filter
-STARNNW_NAME     sexdefault.nnw    # Neural-Network_Weight table filename
-DETECT_TYPE CCD
-BACK_SIZE  256
-BACKPHOTO_TYPE GLOBAL
-PIXEL_SCALE 0
-MAG_ZEROPOINT 25.0

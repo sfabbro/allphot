@@ -1,6 +1,6 @@
 # -*-shell-script-*-  vim: ft=bash
 
-DESCRIPTION="A module for querying modules. By default, it lists all available modules"
+DESCRIPTION="Query ALLPHOT modules"
 DEFAULT_ACTION="list"
 VERSION="4"
 

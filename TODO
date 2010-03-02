@@ -4,10 +4,9 @@
 
 # features
 * split daophot_run into others making it recyclable
-* peak, select, list, help exit, group, nstar, addstar, dump, fudge
+* peak, select, list, help, group, nstar, addstar, dump, fudge
 * calibration/daogrow
 * iraf i/o
 * automate daomatch
 * rewrite shorter help
-* bash completion
 * more recipes

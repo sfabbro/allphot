@@ -5,6 +5,7 @@ modules_DATA = \
 	allstar.allphot \
 	daophot.allphot \
 	modules.allphot \
+	recipe.allphot \
 	psf.allphot \
 	cat.allphot
 

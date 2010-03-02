@@ -1,7 +1,7 @@
 # -*-shell-script-*-
 #  vim: ft=bash
 
-DESCRIPTION="Run DAOMATCH, DAOMASTER and ALLFRAME on a bunch of FITS images"
+DESCRIPTION="Run DAOMATCH, DAOMASTER and ALLFRAME on FITS images"
 VERSION="4"
 
 inherit options paths allframe qa

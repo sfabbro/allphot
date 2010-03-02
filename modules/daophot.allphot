@@ -1,6 +1,6 @@
 # -*-shell-script-*-
 
-DESCRIPTION="Run DAOPHOT actions"
+DESCRIPTION="Run DAOPHOT actions on FITS images and catalogues"
 VERSION="4"
 
 inherit options paths daophot process
@@ -20,7 +20,7 @@ describe_opt_parameters() {
 }
 
 describe_opt_options() {
-    echo "--in=<file>         : Option file as input (default: ${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT})"
+    echo "--in=<file>         : Option file as input (default: $(opt_file_path daophot))"
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
     echo "--dict=<file> : Dictionary to set options from FITS keywords"
     echo "--out=<file>  : DAOPHOT option file as output (default: input)"
@@ -42,7 +42,7 @@ do_opt() {
 
     allphot_setup --optfile="${infile}" daophot "${1}"
     # update option from dictionnary
-    local cmdoptfile="${ALLPHOT_PROCDIR}/${DAOPHOT_OPT}"
+    local cmdoptfile="$(opt_file_path daophot)"
     if [[ -r ${dictfile} ]]; then
 	[[ -z ${1} ]] && die -q "missing input FITS file for directory"
 	opt_update_dict ${dictfile} "${optfile:-${cmdoptfile}}" "${1}"
@@ -382,35 +382,32 @@ do_append() {
     allphot_do
 }
 
-### recipe action
-describe_recipe() {
-    echo "Run your own DAOPHOT recipe for a FITS file"
+
+### append action
+describe_help() {
+    echo "Concatenate two stellar data files"
 }
 
-describe_recipe_options() {
-    daophot_options_description
-    echo "--in=<file> : Specify the recipe file (default: <input>.allphot)" 
+describe_append_options() {
+    echo "--out=<file>  : Output file name (default: <input1>.cmb)"
 }
 
-describe_recipe_parameters() {
-    echo "<FITS image>"
+describe_append_parameters() {
+    echo "<file 1> <file 2>"
 }
 
-do_recipe() {
-    local options="" optfile="" infile=""
+do_append() {
+    local outfile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --opt=*)  optfile="${1##*=}" ;;
-	    --option) shift; options="${options} ${1/ //}" ;;
-    	    --in=*) infile="${1##*=}" ;;
+	    --out=*) outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
     done
-    
-    allphot_setup --optfile="${optfile}" daophot "${1}"
-    [[ -n ${options} ]] && daophot_opt "${options}"
-    source  "${infile:-$(basename ${1%.*}).allphot}" >> ${ALLPHOT_CMDFILE}
+
+    allphot_setup daophot "${1}"
+    daophot_append "${1}" "${2}" "${outfile:-$(basename ${1%.*}).cmb}"
     allphot_do
 }

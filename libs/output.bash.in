@@ -236,3 +236,4 @@ space() {
     done
     echo -n "${ret}"
 }
+

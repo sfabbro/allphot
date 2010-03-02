@@ -3,32 +3,32 @@
 #  vim: ft=bash
 
 # Where are our data?
-@UPNAME@_DATA_PATH="@DATADIR@/@NAME@"
+ALLPHOT_DATA_PATH="@DATADIR@/@NAME@"
 
 # Where are modules installed by default?
-@UPNAME@_DEFAULT_MODULES_PATH="${@UPNAME@_DATA_PATH}/modules"
+ALLPHOT_DEFAULT_MODULES_PATH="${ALLPHOT_DATA_PATH}/modules"
 
 # Look in these places for modules
-@UPNAME@_MODULES_PATH=( \
-	"${HOME}/.@NAME@/modules" \
-	"${@UPNAME@_DEFAULT_MODULES_PATH}" )
+ALLPHOT_MODULES_PATH=( \
+    "${HOME}/.@NAME@/modules" \
+    "${ALLPHOT_DEFAULT_MODULES_PATH}" )
 
 # Look in this place for libraries
-@UPNAME@_CORE_PATH="${@UPNAME@_DATA_PATH}/libs"
+ALLPHOT_CORE_PATH="${ALLPHOT_DATA_PATH}/libs"
 
 # Look here for the default contents of a module
-@UPNAME@_DEFAULT_ACTIONS="${@UPNAME@_CORE_PATH}/default.@NAME@"
+ALLPHOT_DEFAULT_ACTIONS="${ALLPHOT_CORE_PATH}/default.@NAME@"
 
 # Our program name and version
-@UPNAME@_VERSION="@VERSION@"
-@UPNAME@_PROGRAM_NAME="@NAME@"
+ALLPHOT_VERSION="@VERSION@"
+ALLPHOT_PROGRAM_NAME="allphot"
 
 # Invocation information
-@UPNAME@_BINARY_NAME="${0}"
-@UPNAME@_KILL_TARGET="$$"
+ALLPHOT_BINARY_NAME="${0}"
+ALLPHOT_KILL_TARGET="$$"
 
 # Global options
-@UPNAME@_OPTIONS=""
+ALLPHOT_OPTIONS=""
 
 # Remove all alias definitions. Unset functions and variables that are
 # known to cause trouble.
@@ -41,20 +41,20 @@ shopt -s extglob
 shopt -s expand_aliases
 
 # Load core functions
-source "${@UPNAME@_CORE_PATH}/core.bash" || exit 255
+source "${ALLPHOT_CORE_PATH}/core.bash" || exit 255
 # Load necessary functions for the main script
 inherit output paths tests
 
 # Sneaky trick to make die in subshells work. If you don't get
 # it, don't ask...
-trap 'echo "exit 250' 15
+trap 'echo "exiting" >&2; exit 250' 15
 
 # Find and echo the filename of the foo module. If there's no foo module,
 # die.
-@NAME@_find_module() {
+ap_find_module() {
     local modname="$1" modpath="" modfile=""
     [[ -z ${modname} ]] && die "Usage: ${FUNCNAME} <module>"
-    for modpath in "${@UPNAME@_MODULES_PATH[@]}" ; do
+    for modpath in "${ALLPHOT_MODULES_PATH[@]}" ; do
 	[[ -f ${modpath}/${modname}.@NAME@ ]] && break
     done
     
@@ -64,33 +64,34 @@ trap 'echo "exit 250' 15
 }
 
 # Display usage
-@NAME@_do_usage() {
-    echo "Usage: ${PROGRAM_NAME} <global options> <module name> <module options>"
+ap_do_usage() {
+    echo "Usage: ${ALLPHOT_PROGRAM_NAME} [global options] <module name> [module options] <module parameters>"
 }
 
 # Display help
-@NAME@_do_help() {
+ap_do_help() {
     set_output_mode default
-    @NAME@_do_usage
+    ap_do_usage
     echo
-    @NAME@_do_list_options
+    ap_do_list_options
     echo
-    @NAME@_do_list_modules
+    ap_do_list_modules
 }
 
 # Display version
-@NAME@_do_version() {
-    echo "@NAME@ ${@UPNAME@_VERSION}"
+ap_do_version() {
+    echo "${ALLPHOT?_PROGRAM_NAME} ${ALLPHOT_VERSION}"
 }
 
 # Display all recognized global options
-@NAME@_do_list_options() {
+ap_do_list_options() {
     write_list_start "Global options:"
+    write_kv_list_entry "--brief"    "Make output shorter"
     write_kv_list_entry "--no-color,--no-colour"    "Disable coloured output"
 }
 
 # Display all available modules DEPRECATED
-@NAME@_do_list_modules() {
+ap_do_list_modules() {
     do_action modules list "$@"
 }
 
@@ -107,6 +108,7 @@ fi
 # figure out what the action is. we need to know whether we're
 # invoked as a something-config/something-update.
 action=""
+
 for suffix in config update{,r} tool manager reader ; do
     if [[ ${0%%-${suffix}} != ${0} ]] ; then
 	action=$(basename "${0}" )
@@ -132,11 +134,11 @@ if [[ -z ${action} ]] && [[ -n ${1##--} ]] ; then
     while [[ ${1##--} != ${1} ]] ; do
 	case ${1##--} in
 	    brief)
-		@UPNAME@_OPTIONS="${@UPNAME@_OPTIONS} brief"
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} brief"
 		set_output_mode brief
 		;;
 	    no-colour|no-color)
-		@UPNAME@_OPTIONS="${@UPNAME@_OPTIONS} no-colour"
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} no-colour"
 		nocolours
 		;;
 	    help|version)
@@ -155,12 +157,12 @@ if [[ -z ${action} ]] && [[ -n ${1##--} ]] ; then
 fi
 
 if [[ -n ${action} ]] ; then
-    if is_function "@NAME@_do_${action//-/_}" ; then
+    if is_function "ap_do_${action//-/_}" ; then
 	[[ $# -gt 0 ]] && die -q "Too many parameters"
-	@NAME@_do_${action//-/_}
+	ap_do_${action//-/_}
     else
 	do_action "${action}" "$@"
     fi
 else
-    @NAME@_do_help
+    ap_do_help
 fi

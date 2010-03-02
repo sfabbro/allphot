@@ -1,0 +1,39 @@
+# -*-shell-script-*-
+
+DESCRIPTION="Recipe of DAOPHOT actions"
+VERSION="4"
+
+inherit options paths daophot process
+
+### recipe action
+describe_recipe() {
+    echo "Run your own DAOPHOT recipe for a FITS file"
+}
+
+describe_recipe_options() {
+    daophot_options_description
+    echo "--in=<file> : Specify the recipe file (default: <input>.allphot)" 
+}
+
+describe_recipe_parameters() {
+    echo "<FITS image>"
+}
+
+do_recipe() {
+    local options="" optfile="" infile=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --opt=*)  optfile="${1##*=}" ;;
+	    --option) shift; options="${options} ${1/ //}" ;;
+    	    --in=*) infile="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    
+    allphot_setup --optfile="${optfile}" daophot "${1}"
+    [[ -n ${options} ]] && daophot_opt "${options}"
+    source  "${infile:-$(basename ${1%.*}).allphot}" >> ${ALLPHOT_CMDFILE}
+    allphot_do
+}
