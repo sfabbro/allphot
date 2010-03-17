@@ -3,8 +3,6 @@
 * configure to make the *.inc hardcoded parameters
 
 # features
-* split daophot_run into others making it recyclable
-* peak, select, list, help, group, nstar, addstar, dump, fudge
 * calibration/daogrow
 * iraf i/o
 * automate daomatch

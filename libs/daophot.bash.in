@@ -24,8 +24,8 @@ setup_output() {
     fi
 }
 
-# daophot_opt <input option file> or
-# daophot_opt <OP1>=<value1>...<OPn>=<valuen>
+# daophot_options <input option file> or
+# daophot_options <OP1>=<value1>...<OPn>=<valuen>
 daophot_opt() {
     # no arguments: don't change anything
     [[ -z ${1} ]] && return 0
@@ -175,6 +175,123 @@ EOF
 	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
     fi
     echo " >>> Will run DAOPHOT SUBSTAR"
+}
+
+# daophot_peak <input phot file> <input psf file> <output file>
+daophot_peak() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	PEAK
+	$(setup_input ${1})
+	$(setup_input ${2})
+	$(setup_output ${3})
+EOF
+    echo " >>> Will run DAOPHOT PEAK"
+}
+
+# daophot_group <input photometry file> <input psf file> <critical overlay> <output group file>
+daophot_group() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	GROUP
+	$(setup_input ${1})
+	$(setup_input ${2})
+	${3}
+	$(setup_output ${4})
+EOF
+    echo " >>> Will run DAOPHOT GROUP"
+}
+
+# daophot_nstar <input psf file> <input group file> <output file>
+daophot_nstar() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	NSTAR
+	$(setup_input ${1})
+	$(setup_input ${2})
+	$(setup_output ${3})
+EOF
+    echo " >>> Will run DAOPHOT NSTAR"
+}
+
+# daophot_select <input group file> <min group file> <max group> <output group file>
+daophot_select() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	SELECT
+	$(setup_input ${1})
+	${2},${3}
+	$(setup_output ${4})
+EOF
+    echo " >>> Will run DAOPHOT SELECT"
+}
+
+# daophot_dump <box size> <x center> <y center>
+daophot_dump() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	DUMP
+	${1}
+	${2},${3}
+EOF
+    echo " >>> Will run DAOPHOT DUMP"
+}
+
+# daophot_addstar <input psf file> <seed> <gain> <minmag> <maxmag> <nstars> <nframes> <prefix>
+# or
+# daophot_addstar <input psf file> <seed> <gain> <input> <output>
+daophot_addstar() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	ADDSTAR
+	$(setup_input ${1})
+	${2}
+	${3}
+EOF
+    if [[ $# -eq 8 ]]; then
+	cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	    
+	    ${4},${5}
+	    ${6}
+	    ${7}
+	    ${8}
+EOF
+	for i in $(seq -w 1 ${7}); do
+	    setup_output "${8}${i}.fits" > /dev/null
+	    setup_output "${8}${i}.add"  > /dev/null
+	done
+    elif [[ $# -eq 5 ]]; then
+	cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	    $(setup_input ${4})
+	    $(setup_output ${5})
+
+EOF
+    else
+	die -q "Incorrect number of parameters in addstar"
+    fi
+    echo " >>> Will run DAOPHOT ADDSTAR"
+}
+
+# daophot_fudge <output> <first col> <last col> <first row> <last row> <brightness>
+# or 
+# daophot_fudge <output> <border> <order> <first col> <last col> <first row> <last row>
+daophot_fudge() {
+    echo >> ${ALLPHOT_CMDFILE} FUDGE
+    echo >> ${ALLPHOT_CMDFILE} $(setup_output ${1})
+    if [[ $# -eq 6 ]]; then
+	cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	    0
+	    ${2},${3}
+	    ${4},${5}
+	    ${6}
+	    e
+EOF
+    elif [[ $# -eq 7 ]]; then
+	cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	    ${2}
+	    ${3}
+	    ${4},${5}
+	    ${6},${7}
+	    e
+EOF
+    else
+	die -q "Incorrect number of parameters in fudge"
+    fi
+    echo " >>> Will run DAOPHOT FUDGE"
 }
 
 # allstar_standard <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub>

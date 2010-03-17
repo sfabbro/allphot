@@ -7,6 +7,8 @@
 .libs
 stamp-h*
 config.h
+\#*
+.#*
 *~
 Makefile
 Makefile.in
