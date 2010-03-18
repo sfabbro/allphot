@@ -1,15 +1,14 @@
-#!@BASH@
-# -*-bash-*-
-#  vim: ft=bash
+#!%BASH%
+# -*-bash-*- vim: ft=bash
 
 # Where are our data?
-ALLPHOT_DATA_PATH="@DATADIR@/@NAME@"
+ALLPHOT_LIBEXEC_PATH="%LIBEXECDIR%/%NAME%"
 
 # Look in this place for libraries
-ALLPHOT_CORE_PATH="${ALLPHOT_DATA_PATH}/libs"
+ALLPHOT_CORE_PATH="${ALLPHOT_LIBEXEC_PATH}/libs"
 
 # Our program name and version
-ALLPHOT_VERSION="@VERSION@"
+ALLPHOT_VERSION="%VERSION%"
 ALLPHOT_PROGRAM_NAME="parallel"
 
 # Invocation information

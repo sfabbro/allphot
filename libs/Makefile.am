@@ -1,5 +1,7 @@
-allphotlibsdir = $(datadir)/@PACKAGE_NAME@/libs
-allphotlibs_DATA = \
+allphotlibsdir = $(libexecdir)/@PACKAGE_NAME@/libs
+
+allphotlibs_SCRIPTS = \
+	default.allphot \
 	core.bash \
 	config.bash \
         output.bash \
@@ -9,10 +11,10 @@ allphotlibs_DATA = \
 	options.bash \
 	daophot.bash \
 	allframe.bash \
-	process.bash \
-	default.allphot
+	process.bash
 
 EXTRA_DIST = \
+	default.allphot.in \
 	core.bash.in \
 	config.bash.in \
         output.bash.in \
@@ -23,22 +25,19 @@ EXTRA_DIST = \
 	process.bash.in \
 	daophot.bash.in \
 	allframe.bash.in \
-	process.bash.in \
-	default.allphot.in
+	process.bash.in
+
+dosed = @SED@ \
+	-e 's,%BASH%,$(BASH),g' \
+	-e 's,%SED%,@SED@,g' \
+	-e 's,%CANONICALISE%,@CANONICALISE@,g' \
+	-e 's,%NAME%,$(PACKAGE_NAME),g' \
+	-e "s,%DATADIR%,$(datadir),g"
 
 SUFFIXES = .in
-dosed = @SED@ \
-	-e 's,\@BASH\@,$(BASH),g' \
-	-e 's,\@SED\@,@SED@,g' \
-	-e 's,\@CANONICALISE\@,@CANONICALISE@,g' \
-	-e 's,\@NAME\@,$(PACKAGE_NAME),g' \
-	-e "s,\@DATADIR\@,$(datadir),g"
-
-%.bash : %.bash.in
+.in:
+	@echo "Building $@..."
 	@$(dosed) $< > $@
 
-%.allphot : %.allphot.in
-	cp $? $@
-
 MAINTAINERCLEANFILES = Makefile.in
-CLEANFILES = $(allphotlibs_DATA)
+CLEANFILES = $(allphotlibs_SCRIPTS)

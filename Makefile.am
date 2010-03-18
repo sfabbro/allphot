@@ -10,4 +10,4 @@ MAINTAINERCLEANFILES = \
 CLEANFILES = *~
 
 SUBDIRS = bin data examples libs modules tests
-EXTRA_DIST = NEWS ChangeLog INSTALL COPYING README allphot.bashcomp
+EXTRA_DIST = TODO NEWS ChangeLog INSTALL COPYING README allphot.bashcomp

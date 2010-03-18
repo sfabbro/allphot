@@ -2,15 +2,17 @@ bin_SCRIPTS = allphot parallel
 EXTRA_DIST = allphot.in parallel.in
 
 dosed = @SED@ \
-	-e 's,\@BASH\@,$(BASH),g' \
-	-e 's,\@DATADIR\@,$(datadir),g' \
-	-e 's,\@VERSION\@,$(PACKAGE_VERSION),g' \
-	-e 's,\@NAME\@,$(PACKAGE_NAME),g'
+	-e 's,%BASH%,$(BASH),g' \
+	-e 's,%DATADIR%,$(datadir),g' \
+	-e 's,%LIBEXECDIR%,$(libexecdir),g' \
+	-e 's,%VERSION%,$(PACKAGE_VERSION),g' \
+	-e 's,%NAME%,$(PACKAGE_NAME),g'
 
-% : %.in
+SUFFIXES = .in
+.in:
 	@echo "Building $@..."
 	@$(dosed) $< > $@
-	@if test $@ = $(bin_SCRIPTS) ; then \
+	@if test `expr match "$(bin_SCRIPTS)" .*$@.*` != 0 ; then \
 		chmod +x $@ ; \
 	fi
 

@@ -1,7 +1,7 @@
 # -*-bash-*-
 
 # where the default install options will reside
-ALLPHOT_OPTDIR=@DATADIR@/@NAME@/options
+[[ -z ${ALLPHOT_OPTDIR} ]] && ALLPHOT_OPTDIR=%DATADIR%/%NAME%/options
 
 # names of program option file per default
 DAOPHOT_OPT=daophot.opt

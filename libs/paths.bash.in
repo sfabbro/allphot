@@ -47,7 +47,7 @@ dirname() {
 }
 
 canonicalise() {
-    @CANONICALISE@ "$@"
+    %CANONICALISE% "$@"
 }
 
 # relative_name

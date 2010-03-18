@@ -1,26 +1,28 @@
-#!@BASH@
-# -*-bash-*-
-#  vim: ft=bash
+#!%BASH%
+# -*-bash-*- vim: ft=bash
 
 # Where are our data?
-ALLPHOT_DATA_PATH="@DATADIR@/@NAME@"
+[[ -z ${ALLPHOT_LIBEXEC_PATH} ]] && ALLPHOT_LIBEXEC_PATH="%LIBEXECDIR%/%NAME%"
+[[ -z ${ALLPHOT_DATA_PATH} ]] && ALLPHOT_DATA_PATH="%DATADIR%/%NAME%"
 
 # Where are modules installed by default?
 ALLPHOT_DEFAULT_MODULES_PATH="${ALLPHOT_DATA_PATH}/modules"
 
 # Look in these places for modules
-ALLPHOT_MODULES_PATH=( \
-    "${HOME}/.@NAME@/modules" \
-    "${ALLPHOT_DEFAULT_MODULES_PATH}" )
+ALLPHOT_MODULES_PATH=(
+    "${HOME}/.%NAME%/modules"
+    "${ALLPHOT_DEFAULT_MODULES_PATH}"
+    "${ALLPHOT_LIBEXEC_PATH}/modules"
+)
 
 # Look in this place for libraries
-ALLPHOT_CORE_PATH="${ALLPHOT_DATA_PATH}/libs"
+ALLPHOT_CORE_PATH="${ALLPHOT_LIBEXEC_PATH}/libs"
 
 # Look here for the default contents of a module
-ALLPHOT_DEFAULT_ACTIONS="${ALLPHOT_CORE_PATH}/default.@NAME@"
+ALLPHOT_DEFAULT_ACTIONS="${ALLPHOT_CORE_PATH}/default.%NAME%"
 
 # Our program name and version
-ALLPHOT_VERSION="@VERSION@"
+ALLPHOT_VERSION="%VERSION%"
 ALLPHOT_PROGRAM_NAME="allphot"
 
 # Invocation information
@@ -55,10 +57,10 @@ ap_find_module() {
     local modname="$1" modpath="" modfile=""
     [[ -z ${modname} ]] && die "Usage: ${FUNCNAME} <module>"
     for modpath in "${ALLPHOT_MODULES_PATH[@]}" ; do
-	[[ -f ${modpath}/${modname}.@NAME@ ]] && break
+	[[ -f ${modpath}/${modname}.%NAME% ]] && break
     done
     
-    modfile="${modpath}/${modname}.@NAME@"
+    modfile="${modpath}/${modname}.%NAME%"
     [[ -r ${modfile} ]] || die -q "Can't load module ${modname}"
     echo ${modfile}
 }

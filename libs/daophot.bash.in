@@ -1,6 +1,4 @@
 # -*-bash-*-
-#@BASH@
-
 ALLPHOT_NAME="image"
 
 # prepare input file names

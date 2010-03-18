@@ -90,7 +90,7 @@ inherit() {
 
 # GNU sed wrapper (real path to GNU sed determined by configure)
 sed() {
-    @SED@ "$@"
+    %SED% "$@"
 }
 
 # do_smp action args...
