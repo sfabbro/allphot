@@ -1,15 +1,24 @@
+#!/bin/bash
+
 # psf analytical profile 
 prof=1
-# name of the dictionary 
-field=sky
 
-for i in sky*.fits; do
+# name of the dictionary 
+dict=sky.dict
+
+ALLPHOT_EXE=../bin/allphot
+
+for i in sky00.fits; do
     im=${i%.*}
-    allphot daophot opt --dict=${field}.dict ${im}.fits
-    allphot daophot psf ${im}.fits
-    allphot filters neighbours daophot_${im%.*}/${im}.{nei,lst}
-    allphot daophot psf --prof=${prof} ${im}.fits
-    allphot filters neighbours daophot_${im%.*}/${im}.{nei,lst}
-    allphot daophot psf --var=2 ${im}.fits
-    allphot daophot allstar ${im}.fits
+    ${ALLPHOT_EXE} daophot opt --dict=${dict} ${im}.fits
+    ${ALLPHOT_EXE} daophot find ${im}.fits
+    ${ALLPHOT_EXE} daophot phot ${im}.fits
+    ${ALLPHOT_EXE} daophot pick ${im}.ap
+    ${ALLPHOT_EXE} daophot psf ${im}.fits
+    ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${im}.fits
+    ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${im}.fits
+    #${ALLPHOT_EXE} daophot peak ${im}.fits
+    #${ALLPHOT_EXE} daophot allstar ${im}.fits
 done

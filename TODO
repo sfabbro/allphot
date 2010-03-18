@@ -1,10 +1,14 @@
 # bugs
+* remove the process_* directory
 * check if some of daophot actions need the daophot.opt (such as substar)
 * configure to make the *.inc hardcoded parameters
 
 # features
+* rewrite match/master/allframe
+* montage2
 * calibration/daogrow
 * iraf i/o
-* automate daomatch
 * rewrite shorter help
-* more recipes
+* faster allstar recipe
+* more recipes (automate match/master)
+* more QA stuff

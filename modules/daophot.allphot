@@ -567,6 +567,56 @@ do_dump() {
     allphot_do
 }
 
+### FUDGE ###
+describe_fudge() {
+    echo "Fudge with image pixels (not recommended)"
+}
+
+describe_fudge_options() {    
+    echo "--out=<fits file>  : Output picture name (default: <input>s.fits)"
+    echo "--border=<number>  : Border outside region (default: 0)"
+    echo "--region=[x0:x1,y0:y1] : Image region to fudge, FITS coordinates "
+    echo "--brightness=<value> : Value to replace with"
+    echo "--order=<number>     : Order of the polynomial for extrapolation (default: 1)"
+}
+
+describe_fudge_parameters() {
+    echo "<FITS image>"
+}
+
+do_fudge() {
+    local outfits="" border=0 region="" brightness="" order=1
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --border=*)  border="${1##*=}"    ;;
+	    --region=*)  region="${1##*=}"  ;;
+	    --brightness=*) brightness="${1##*=}"  ;;
+	    --order=*)  order="${1##*=}"  ;;
+	    --out=*)     outfits="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+
+    local x0=$(expr ${a} : '\[\([[:digit:]]*\):')
+    local x1=$(expr ${a} : '.*:\([[:digit:]]*\),')
+    local y0=$(expr ${a} : '.*,\([[:digit:]]*\):')
+    local y1=$(expr ${a} : '.*:.*,.*:\([[:digit:]]*\)\]')
+
+    local im=$(basename ${1%.*})
+    allphot_setup daophot "${1}"
+    daophot_attach "${1}"
+    if [[ -n ${brightness} ]]; then
+	daophot_fudge \
+	    "${outfits:-${im}f.fits}" ${x0} ${x1} ${y0} ${y1} ${brightness}
+    else
+	daophot_fudge \
+	    "${outfits:-${im}f.fits}" ${border} ${order} ${x0} ${x1} ${y0} ${y1}
+    fi
+    allphot_do
+}
+
 ### ADDSTAR ###
 describe_addstar() {
     echo "Add stars to an image from a scaled PSF"
@@ -620,51 +670,6 @@ do_addstar() {
 	daophot_addstar \
 	    "${psffile:-${im}.psf}" ${seed} ${gain} \
 	    "${infile}" "${outfits:-${im}a.fits}"
-    fi
-    allphot_do
-}
-
-### FUDGE ###
-describe_fudge() {
-    echo "Fudge with image pixels (not recommended)"
-}
-
-describe_fudge_options() {    
-    echo "--out=<fits file>  : Output picture name (default: <input>s.fits)"
-    echo "--border=<number>  : Border outside region (default: 0)"
-    echo "--region=[x0:x1,y0:y1] : Image region to fudge"
-    echo "--brightness=<value> : Value to replace with"
-    echo "--order=<number>     : Order of the polynomial for extrapolation (default: 1)"
-}
-
-describe_fudge_parameters() {
-    echo "<FITS image>"
-}
-
-do_fudge() {
-    local outfits="" border=0 region="" brightness="" order=1
-    while [[ $# -gt 0 ]]; do
-	case "${1}" in
-	    --border=*)  border="${1##*=}"    ;;
-	    --region=*)  region="${1##*=}"  ;;
-	    --brightness=*) brightness="${1##*=}"  ;;
-	    --order=*)  order="${1##*=}"  ;;
-	    --out=*)     outfits="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '${1}'" ;;
-              *) break ;;
-        esac
-	shift
-    done
-
-    local im=$(basename ${1%.*})
-    allphot_setup daophot "${1}"
-    daophot_attach "${1}"
-    if [[ -n ${brightness} ]]; then
-	daophot_fudge \
-	    "${outfits:-${im}f.fits}" ${region} ${region} ${region} ${region} ${brightness}
-    else
-	daophot_fudge \
-	    "${outfits:-${im}f.fits}" ${border} ${order} ${region} ${region} ${region} ${region}
     fi
     allphot_do
 }

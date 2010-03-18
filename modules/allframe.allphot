@@ -1,119 +1,17 @@
 # -*-shell-script-*-
 #  vim: ft=bash
 
-DESCRIPTION="Run DAOMATCH, DAOMASTER and ALLFRAME on FITS images"
+DESCRIPTION="Run ALLFRAME on FITS images"
 VERSION="4"
 
 inherit options paths allframe qa
-
-### match action
-describe_match() {
-    echo "Make combinatorial match between catalogues of stars"
-}
-
-describe_match_parameters() {
-    echo "<ref> <file with list of files>"
-}
-
-describe_match_options() {
-    echo "--field=<name>   :     Name of the field (default: myfield)"
-}
-
-do_match() {
-    # check arguments
-    local field=myfield
-    while [[ $# -gt 0 ]]; do
-	case "${1}" in
-	    --field=*) field="${1##*=}";;
-	    --*) die -q "Unrecognized option '${1}'" ;;
-              *) break ;;
-        esac
-	shift
-    done
-    [[ -z ${1} ]] && die -q "missing input reference file"
-    [[ -r ${1} ]] || die -q "${1} not readable"
-    [[ -z ${2} ]] && die -q "missing input list of files"
-    [[ -r ${2} ]] || die -q "${2} not readable"
-    
-    # init
-    local flist="${PWD}/match$$.list" fcat line
-    local refcat="$(canonicalise ${1})"
-    while read line; do
-	fcat="$(canonicalise ${line})"
-	[[ -r ${fcat} ]] || die -q "file ${fcat} not found"
-	echo ${fcat} >> ${flist}
-    done < ${2}
-    
-    allframe_process_init ${field}
-    ln -sfn ${refcat} ${field}ref.${refcat##*.}
-    refcat=${field}ref.${refcat##*.}
-    local fcatlist=match.list
-    while read fcat; do	
-	ln -sfn "${fcat}" .
-	echo $(basename ${fcat}) >> ${fcatlist}
-    done < ${flist}
-    rm -f ${flist}
-    
-    # process
-    daophot_match ${refcat} ${field}.mch ${fcatlist} > ${field}_match.in
-    daomatch < ${field}_match.in
-    
-    # closing up
-    #rm -f ${field}_match.in
-    allframe_process_end
-}
-
-
-### master action
-describe_master() {
-    echo "Refine an initial match between catalogues of stars"
-}
-
-describe_master_parameters() {
-    echo "<match file>"
-}
-
-do_master() {
-    [[ -z ${1} ]] && die -q "missing initial match"
-    [[ -r ${1} ]] || die -q "${1} not readable"
-    
-    # init
-    local field="$(basename ${1%.*})"
-    local fmch="$(canonicalise ${1})"
-    local flist="${PWD}/master$$.list" fcat line
-    rm -f ${flist}
-
-    pushd $(dirname ${fmch}) &> /dev/null
-    while read line; do
-	fcat="$(canonicalise $(echo ${line} | awk '{print substr($1,2)}'))"
-	[[ -r ${fcat} ]] || die -q "file ${fcat} not found"
-	echo ${fcat} >> ${flist}
-    done < ${fmch}
-    popd &> /dev/null
-
-    allframe_process_init ${field}
-    [[ -r ${DAOMASTER_OPT} ]] || cp -f ${ALLPHOT_OPT_DIR}/${DAOMASTER_OPT} ${DAOMASTER_OPT}
-    ln -sfn ${fmch} ${field}.mch 
-    while read fcat; do
-	ln -sfn "${fcat}" .
-    done < ${flist}
-    rm -f ${flist}
-
-    # process
-    daophot_master ${field}.mch ${DAOMASTER_OPT} > ${field}_master.in
-    daomaster < ${field}_master.in
-
-    # closing up
-    rm -f ${field}_master.in
-    allframe_process_end
-}
 
 check_and_link() {
     [[ -r ${field}.mch ]] && ln -sfn ${mchfile} ${field}.mch
     [[ -r ${field}.mag ]] && ln -sfn ${magfile} ${field}.mag
 }
 
-### allframe action
+### ALLFRAME ###
 describe_allframe() {
     echo "Perform multi-frame profile fitting photometry"
 }

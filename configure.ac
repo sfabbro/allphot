@@ -75,14 +75,13 @@ if test x$ALLFRAME = "x" ; then
 fi
 
 PACKAGE_UPNAME=`echo $PACKAGE_NAME | tr '[:lower:]' '[:upper:]'`
-AC_SUBSTR(PACKAGE_UPNAME)
+AC_SUBST(PACKAGE_UPNAME)
 
 AC_CONFIG_FILES([Makefile 
 		data/Makefile
 		tests/Makefile
 		bin/Makefile
 		libs/Makefile
-		misc/Makefile
 		modules/Makefile
 		examples/Makefile])
 AC_OUTPUT

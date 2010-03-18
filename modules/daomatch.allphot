@@ -1,0 +1,63 @@
+# -*-shell-script-*-
+
+DESCRIPTION="Run DAOMATCH on star catalogues"
+VERSION="4"
+
+inherit options daophot process qa
+
+### MATCH ###
+describe_do() {
+    echo "Make combinatorial match between catalogues of stars"
+}
+
+describe_match_parameters() {
+    echo "<ref> <file with list of files>"
+}
+
+describe_match_options() {
+    echo "--field=<name>   :     Name of the field (default: myfield)"
+}
+
+do_match() {
+    # check arguments
+    local field=myfield
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --field=*) field="${1##*=}";;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    [[ -z ${1} ]] && die -q "missing input reference file"
+    [[ -r ${1} ]] || die -q "${1} not readable"
+    [[ -z ${2} ]] && die -q "missing input list of files"
+    [[ -r ${2} ]] || die -q "${2} not readable"
+    
+    # init
+    local flist="${PWD}/match$$.list" fcat line
+    local refcat="$(canonicalise ${1})"
+    while read line; do
+	fcat="$(canonicalise ${line})"
+	[[ -r ${fcat} ]] || die -q "file ${fcat} not found"
+	echo ${fcat} >> ${flist}
+    done < ${2}
+    
+    allframe_process_init ${field}
+    ln -sfn ${refcat} ${field}ref.${refcat##*.}
+    refcat=${field}ref.${refcat##*.}
+    local fcatlist=match.list
+    while read fcat; do	
+	ln -sfn "${fcat}" .
+	echo $(basename ${fcat}) >> ${fcatlist}
+    done < ${flist}
+    rm -f ${flist}
+    
+    # process
+    daophot_match ${refcat} ${field}.mch ${fcatlist} > ${field}_match.in
+    daomatch < ${field}_match.in
+    
+    # closing up
+    #rm -f ${field}_match.in
+    allframe_process_end
+}

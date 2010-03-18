@@ -3,8 +3,8 @@
 
 ALLPHOT_NAME="image"
 
+# prepare input file names
 setup_input() {
-    # prepare input file names
     [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
     local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
     if [[ ! ${procfile} -ef ${1} ]]; then
@@ -14,6 +14,7 @@ setup_input() {
     echo $(basename ${procfile})
 }
 
+# prepare outputs
 setup_output() {
     [[ -r ${1} ]] && mv -f ${1}{,.old}
     local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"

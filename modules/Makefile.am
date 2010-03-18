@@ -4,9 +4,10 @@ modules_DATA = \
 	allframe.allphot \
 	allstar.allphot \
 	daophot.allphot \
+	daomatch.allphot \
+	daomaster.allphot \
 	modules.allphot \
 	recipe.allphot \
-	psf.allphot \
 	cat.allphot
 
 
