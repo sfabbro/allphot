@@ -35,7 +35,7 @@ do_header() {
     [[ -r ${2} ]] || die -q "File ${2} not readable"
     [[ -w ${3} ]] || die -q "File ${3} not writeable"
     echo " >>> Insert a header into ${3}"
-    insert_cat_header ${1} ${2} ${3} || die -q "Could not insert header"
+    cat_insert_header ${1} ${2} ${3} || die -q "Could not insert header"
 }
 
 ### MERGE ###

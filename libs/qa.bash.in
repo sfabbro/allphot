@@ -1,6 +1,23 @@
 
 inherit options daophot process
 
+# simple calculator using bc
+calc() {
+    echo "scale=4; $1" | bc ;
+}
+
+# return the value of a FITS keyword
+fits_get_key() {
+    [[ ! -r ${2} ]] && die -q "fits_get_key: FITS file ${2} not found"
+    local value=$(listhead ${2} 2> /dev/null \
+	| grep "^${1}.*=" \
+	| cut -d '=' -f 2 \
+	| awk '{print $1}' \
+	| sed -e "s:'::g")
+    [[ -z ${value} ]] && die -q "fits_get_key: FITS keyword ${1} not found"
+    echo ${value}
+}
+
 # psf_fwhm <psf file>
 psf_fwhm() {
     awk 'NR==2 {print ($1+$2)*1.176; exit}' ${1} 2> /dev/null
@@ -17,7 +34,7 @@ psf_profile() {
 	LORENTZ)  echo 5 ;;
 	PENNY1)   echo 6 ;;
 	PENNY2)   echo 7 ;;
-	*) die -q "Bad PSF name: ${psfname}" ;;
+	*) die -q "psf_profile: bad PSF name ${psfname}" ;;
     esac
 }
 
@@ -25,7 +42,7 @@ psf_profile() {
 psf_check() {
     local ifwhm10=$(awk 'NR==2 {print int(($1+$2)*11.76); exit}' ${1} 2> /dev/null)    
     if [[ -z ${ifwhm10} ]] || [[ ${ifwhm10} -lt 5 ]] || [[ ${ifwhm10} -gt 200 ]]; then
-	die -q "${1} is not a valid PSF file, ${ifwhm10}" >&2
+	die -q "psf_check: ${1} is not a valid PSF file, ${ifwhm10}" >&2
     fi
 }
 

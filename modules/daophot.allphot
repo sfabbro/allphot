@@ -145,7 +145,7 @@ do_phot() {
     allphot_setup daophot "${1}"
     if [[ ! -e ${radfile} ]]; then
 	radfile=${ALLPHOT_PROCDIR}/${PHOTO_OPT}
-	cp -f ${ALLPHOT_OPT_DIR}/${PHOTO_OPT} ${radfile}
+	cp -f ${ALLPHOT_OPTDIR}/${PHOTO_OPT} ${radfile}
     fi
     if [[ -n ${radii} ]]; then
 	for rad in ${radii}; do

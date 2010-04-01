@@ -1,7 +1,7 @@
 # -*-bash-*-
 ALLPHOT_NAME="image"
 
-# prepare input file names
+# prepare input files
 setup_input() {
     [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
     local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
@@ -12,15 +12,18 @@ setup_input() {
     echo $(basename ${procfile})
 }
 
-# prepare outputs
+# prepare output files
 setup_output() {
-    [[ -r ${1} ]] && mv -f ${1}{,.old}
-    local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
+    local outfile="$(canonicalise ${1})"
+    [[ -r ${outfile} ]] && mv -f ${outfile}{,.old}
+    local procfile="${ALLPHOT_PROCDIR}/$(basename ${outfile})"
     rm -f ${procfile} && echo $(basename ${procfile})
-    if [[ ! ${procfile} -ef ${1} ]]; then
-	echo >> ${ALLPHOT_PROCDIR}/output.bash "mv -f ${procfile} $(canonicalise ${1})"
-	echo >> ${ALLPHOT_PROCDIR}/output.bash "rm -f $(canonicalise ${1}).old"
-    fi
+    cat >> ${ALLPHOT_PROCDIR}/output.bash <<-EOF
+	if [[ ! ${procfile} -ef ${outfile} ]]; then
+	    mv -f ${procfile} ${outfile}
+	    rm -f ${outfile}.old
+	fi
+EOF
 }
 
 # daophot_options <input option file> or

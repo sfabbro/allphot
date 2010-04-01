@@ -7,7 +7,7 @@ prof=1
 dict=sky.dict
 
 ALLPHOT_EXE=../bin/allphot
-export ALLPHOT_DATA_PATH=".." ALLPHOT_LIBEXEC_PATH=".." 
+export ALLPHOT_DATA_PATH=".." ALLPHOT_LIBEXEC_PATH=".."  ALLPHOT_OPTDIR="../data"
 
 for i in sky00.fits; do
     im=${i%.*}
@@ -20,6 +20,6 @@ for i in sky00.fits; do
     ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${im}.fits
     ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
     ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${im}.fits
-    #${ALLPHOT_EXE} daophot peak ${im}.fits
-    #${ALLPHOT_EXE} daophot allstar ${im}.fits
+    ${ALLPHOT_EXE} daophot peak ${im}.fits
+    ${ALLPHOT_EXE} allstar do ${im}.fits
 done

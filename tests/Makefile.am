@@ -21,4 +21,4 @@ EXTRA_DIST= \
 	sky04.list
 
 clean-local:
-	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst
+	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst *.pk

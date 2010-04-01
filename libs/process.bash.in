@@ -1,6 +1,6 @@
 # -*-bash-*-
 
-ALLPHOT_PROCDIR=""
+ALLPHOT_PROCDIR="${ALLPHOT_PROCDIR:=.}"
 ALLPHOT_CMDFILE=""
 
 # allphot_setup <command> [<FITS file>]
@@ -16,13 +16,13 @@ allphot_setup() {
 	shift
     done
     local cmd=${1:-daophot}
-    if [[ -n ${2} ]]; then
-	echo " >>> Setting up $(basename ${2}) for ${cmd}"
-	ALLPHOT_PROCDIR="${PWD}/process_$(basename ${2%.*})"
-    else
-	echo " >>> Setting up ${cmd}"
-	ALLPHOT_PROCDIR="${PWD}/process_$$"
-    fi
+#    if [[ -n ${2} ]]; then
+#	echo " >>> Setting up $(basename ${2}) for ${cmd}"
+#	ALLPHOT_PROCDIR="${PWD}/process_$(basename ${2%.*})"
+#    else
+#	echo " >>> Setting up ${cmd}"
+#	ALLPHOT_PROCDIR="${PWD}/process_$$"
+#    fi
     mkdir -p ${ALLPHOT_PROCDIR}
     ALLPHOT_CMDFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.in"
     touch ${ALLPHOT_CMDFILE}
