@@ -18,11 +18,9 @@ setup_output() {
     [[ -r ${outfile} ]] && mv -f ${outfile}{,.old}
     local procfile="${ALLPHOT_PROCDIR}/$(basename ${outfile})"
     rm -f ${procfile} && echo $(basename ${procfile})
-    cat >> ${ALLPHOT_PROCDIR}/output.bash <<-EOF
-	if [[ ! ${procfile} -ef ${outfile} ]]; then
-	    mv -f ${procfile} ${outfile}
-	    rm -f ${outfile}.old
-	fi
+    cat >> ${ALLPHOT_PROCDIR}/cleanup.bash <<-EOF
+	[[ ! ${procfile} -ef ${outfile} ]] && mv -f ${procfile} ${outfile}
+	rm -f ${outfile}.old
 EOF
 }
 

@@ -1,15 +1,14 @@
 # -*-bash-*-
 
-# daophot_match <input reference star file> <output mch file> <list of star files>
+# daophot_match <input reference star file> <output mch file> <file of list of star files>
 daophot_match() {
-    # Master input file
     echo ${1}
-    # Output file name
     echo ${2}
-    # Next input files
-    cat ${3}
+    for im in $(cat ${3}); do
+	echo ${im}
+	echo y
+    done
     echo
-    echo y
 }
 
 # daomaster_standard <field name> <daomaster option file>

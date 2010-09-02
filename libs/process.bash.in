@@ -46,6 +46,7 @@ allphot_do() {
     [[ -x $(type -P ${cmd}) ]] || die -q "${cmd} is not a known executable"
     echo " >>> Running ${cmd}"
 
+    [[ -e ${ALLPHOT_PROCDIR}/cleanup.bash ]] && chmod 755 ${ALLPHOT_PROCDIR}/cleanup.bash
     # process
     pushd ${ALLPHOT_PROCDIR} &> /dev/null
     $(type -P ${cmd}) < ${ALLPHOT_CMDFILE} || die -q "${cmd} failed"
@@ -53,9 +54,9 @@ allphot_do() {
 
     # clean up
     rm -f ${ALLPHOT_CMDFILE}
-    [[ -e ${ALLPHOT_PROCDIR}/output.bash ]] && \
-	bash ${ALLPHOT_PROCDIR}/output.bash && \
-	rm -f ${ALLPHOT_PROCDIR}/output.bash
+    [[ -x ${ALLPHOT_PROCDIR}/cleanup.bash ]] && \
+	${ALLPHOT_PROCDIR}/cleanup.bash && \
+	rm -f ${ALLPHOT_PROCDIR}/cleanup.bash
 
     # real dirty hack in the case of phot
     for f in ${ALLPHOT_PROCDIR}/*.bck; do

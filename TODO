@@ -1,9 +1,8 @@
-# bugs
-* remove the process_* directory
+# fix bugs
 * check if some of daophot actions need the daophot.opt (such as substar)
 * configure to make the *.inc hardcoded parameters
 
-# features
+# add features
 * rewrite match/master/allframe
 * montage2
 * calibration/daogrow

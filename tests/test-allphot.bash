@@ -7,7 +7,10 @@ prof=1
 dict=sky.dict
 
 ALLPHOT_EXE=../bin/allphot
-export ALLPHOT_DATA_PATH=".." ALLPHOT_LIBEXEC_PATH=".."  ALLPHOT_OPTDIR="../data"
+ALLPHOT_DATA_PATH=".."
+ALLPHOT_LIBEXEC_PATH=".."
+ALLPHOT_OPTDIR="../data"
+export ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH  ALLPHOT_OPTDIR
 
 for i in sky00.fits; do
     im=${i%.*}

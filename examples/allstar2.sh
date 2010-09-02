@@ -22,7 +22,7 @@ get_psf_profile() {
 
 make_psf_als() {
     local im=$(basename ${1%.*})
-
+    export ALLPHOT_PROCDIR=process_${im}
     # 1) make psf with high S/N stars
     allphot daophot opt --dict=${dict} --out=${im}.opt ${1}
     allphot daophot find --option TH=15 ${1}
@@ -129,6 +129,7 @@ make_psf_als() {
 	--psf=${im}.psf --in=${im}s.ap ${im}s.fits
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot allstar do --in=${im}.cmb ${1}
+    unset ALLPHOT_PROCDIR
 }
 
 dict=""
