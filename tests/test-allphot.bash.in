@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# psf analytical profile 
+prof=1
+
+# name of the dictionary 
+dict=sky.dict
+
+ALLPHOT_EXE=%BUILDDIR%/bin/allphot
+ALLPHOT_DATA_PATH=%BUILDDIR%
+ALLPHOT_LIBEXEC_PATH=%BUILDDIR%
+ALLPHOT_DEFAULT_MODULES_PATH=%SRCDIR%/modules
+ALLPHOT_OPTDIR=%SRCDIR%/data
+ALLPHOT_TESTDIR=%SRCDIR%/tests
+
+export ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
+
+for i in ${ALLPHOT_TESTDIR}/sky00.fits; do
+    im=$(basename ${i%.*})
+    ${ALLPHOT_EXE} daophot opt --dict=${dict} ${i}
+    ${ALLPHOT_EXE} daophot find ${i}
+    ${ALLPHOT_EXE} daophot phot ${i}
+    ${ALLPHOT_EXE} daophot pick ${im}.ap
+    ${ALLPHOT_EXE} daophot psf ${i}
+    ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${i}
+    ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${i}
+    ${ALLPHOT_EXE} daophot peak ${i}
+    ${ALLPHOT_EXE} allstar do ${i}
+done
+
+unset  ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR

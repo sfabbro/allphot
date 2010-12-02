@@ -6,8 +6,13 @@ check_PROGRAMS =
 
 TESTS = $(check_SCRIPTS)
 
+dosed = @SED@ \
+	-e 's,%BUILDDIR%,$(top_builddir),g' \
+	-e 's,%CANONICALISE%,$(CANONICALISE),g' \
+	-e 's,%SRCDIR%,$(top_srcdir),g'
+
 EXTRA_DIST= \
-	$(check_SCRIPTS) \
+	test-allphot.bash.in \
 	generate.py \
 	sky00.fits \
 	sky00.list \
@@ -20,5 +25,13 @@ EXTRA_DIST= \
 	sky04.fits \
 	sky04.list
 
+SUFFIXES = .in
+.in:
+	@echo "Building $@..."
+	@$(dosed) $< > $@
+	@if test `expr match "$(check_SCRIPTS)" .*$@.*` != 0 ; then \
+		chmod +x $@ ; \
+	fi
+
 clean-local:
-	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst *.pk
+	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst *.pk $(check_SCRIPTS)

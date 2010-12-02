@@ -6,7 +6,7 @@
 [[ -z ${ALLPHOT_DATA_PATH} ]] && ALLPHOT_DATA_PATH="%DATADIR%/%NAME%"
 
 # Where are modules installed by default?
-ALLPHOT_DEFAULT_MODULES_PATH="${ALLPHOT_DATA_PATH}/modules"
+[[ -z ${ALLPHOT_DEFAULT_MODULES_PATH} ]] && ALLPHOT_DEFAULT_MODULES_PATH="${ALLPHOT_DATA_PATH}/modules"
 
 # Look in these places for modules
 ALLPHOT_MODULES_PATH=(

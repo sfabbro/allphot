@@ -1,8 +1,7 @@
-AC_INIT([allphot], [0.3.8], [sfabbro@uvic.ca], allphot)
+AC_INIT([allphot], [0.3.9], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
 AC_CONFIG_SRCDIR([bin/allphot.in])
-AC_CONFIG_AUX_DIR([config])
-AC_CANONICAL_HOST
+AC_CONFIG_AUX_DIR([autoconf])
 AM_INIT_AUTOMAKE
 
 
@@ -14,11 +13,9 @@ if test x$BASH = "x" ; then
     AC_MSG_ERROR([bash is required])
 fi
 
-sinclude(acx_gnu_sed.m4)
-ACX_PROG_GNU_SED
-if test x$SED = "x" ; then
-    AC_MSG_ERROR([GNU sed is required])
-fi
+dnl AC_PROG_SED is available only in autoconf 2.60 and later.
+dnl With older autoconf, assume that 'sed' is ok.
+ifdef([AC_PROG_SED], [AC_PROG_SED], [SED=sed AC_SUBST(SED)])
 
 AC_PATH_PROG(READLINK, greadlink)
 if test x$READLINK = "x" ; then

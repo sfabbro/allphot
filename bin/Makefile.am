@@ -1,5 +1,5 @@
-bin_SCRIPTS = allphot parallel 
-EXTRA_DIST = allphot.in parallel.in
+bin_SCRIPTS = allphot
+EXTRA_DIST = allphot.in
 
 dosed = @SED@ \
 	-e 's,%BASH%,$(BASH),g' \

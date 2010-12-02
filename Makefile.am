@@ -4,8 +4,7 @@ MAINTAINERCLEANFILES = \
 	Makefile.in \
 	config.h \
 	config.h.in \
-	config/* \
-	autom4te.cache*
+	autoconf/*
 
 CLEANFILES = *~
 

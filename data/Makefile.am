@@ -18,7 +18,7 @@ dictdir = $(datadir)/@PACKAGE_NAME@/dict
 dict_DATA = \
 	macho.dict
 
-EXTRA_DIST = $(options_DATA)
+EXTRA_DIST = $(options_DATA) $(sex_DATA) $(dict_DATA)
 
 MAINTAINERCLEANFILES = Makefile.in
 CLEANFILES = *~
