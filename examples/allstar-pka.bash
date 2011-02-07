@@ -21,30 +21,26 @@ get_psf_profile() {
 }
 
 make_psf_als() {
-    local im=$(basename ${1%.*})
-    export ALLPHOT_PROCDIR=process_${im}
+    export ALLPHOT_PROCDIR=daoprocess_${1}
+    daosetup -d ${ALLPHOT_PROCDIR} ${1}
     # 1) make psf with high S/N stars
-    allphot daophot opt --dict="${ALLSTAR_DICT}" --out=${im}.opt ${1}
+    allphot 
     allphot daophot find --option TH=15 ${1}
     allphot daophot phot ${1}
     allphot daophot pick --nstars=50 --magfaint=13 ${im}.ap
     allphot daophot psf \
 	--option VA=-1 \
 	--option AN=1 ${1}
-    allphot cat neighbours ${im}.nei ${im}.lst
-    allphot daophot psf \
-	--option VA=-1 \
-	--option AN=1 ${1}
+    allphot filters neighbours ${im}.nei ${im}.lst
 
     # 2) subtract stars neighbours and rebuild
     allphot allstar do \
 	--option WA=0 \
 	--option IS=0 \
 	--option OS=0 ${1}
-
     allphot daophot sort --index=3 ${im}.als
     allphot daophot substar --in=${im}.srt --keep=${im}.lst ${1}
-    allphot daophot opt --opt=${im}.opt ${im}s.fits
+    allphot daophot opt --in=${im}.opt ${im}s.fits
     allphot daophot psf \
 	--option VA=-1 \
 	--option AN=-7 \
@@ -58,7 +54,7 @@ make_psf_als() {
     # 3) detect all faint stars on residuals
     local fwhm=$(get_psf_fwhm ${im}.psf)
     allphot daophot opt \
-	--dict="${ALLSTAR_DICT}" \
+	--dict=${dict} \
 	--option AN=$(get_psf_profile ${im}.psf) \
 	--option FW=${fwhm} \
 	--option FI=${fwhm} \
@@ -66,7 +62,7 @@ make_psf_als() {
 	--option VA=2 \
 	--option TH=3 \
 	--out=${im}.opt ${1}
-    allphot daophot opt --opt=${im}.opt ${im}s.fits 
+    allphot daophot opt --in=${im}.opt ${im}s.fits 
     allphot daophot find ${im}s.fits
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.coo | awk '{print $1+1}') \
@@ -77,12 +73,12 @@ make_psf_als() {
     allphot daophot sort --renum --index=4 --out=${im}.all ${im}.cmb
 
     # 4) Make psf fully variable with best profile and subtracted neighbours
-    allphot daophot opt --opt=${im}.opt ${im}s.fits
+    allphot daophot opt --in=${im}.opt ${im}s.fits
     allphot daophot pick --magfaint=15 --nstars=200 ${im}.all
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${1}
 	allphot daophot psf --in=${im}.lst --pho=${im}.all --out=${im}.psf --nei=${im}.nei ${im}s.fits
-	allphot cat neighbours ${im}.nei ${im}.lst
+	allphot filters neighbours ${im}.nei ${im}.lst
     done
     allphot allstar do 	\
 	--option FI=${fwhm} \
@@ -114,7 +110,7 @@ make_psf_als() {
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${1}
 	allphot daophot psf --in=${im}.lst --pho=${im}.all --out=${im}.psf --nei=${im}.nei ${im}s.fits
-	allphot cat neighbours ${im}.nei ${im}.lst
+	allphot filters neighbours ${im}.nei ${im}.lst
     done
     allphot allstar do 	\
 	--option FI=${fwhm} \
@@ -135,17 +131,6 @@ make_psf_als() {
     allphot allstar do --in=${im}.cmb ${1}
     unset ALLPHOT_PROCDIR
 }
-
-ALLSTAR_DICT=""
-
-while [[ $# -gt 0 ]]; do
-    case "${1}" in
-	--dict=*) ALLSTAR_DICT="${1##*=}" ;;
-	--*) echo "Unrecognized option '$1'"; exit ;;
-        *) break ;;
-    esac
-    shift
-done
 
 for i in $@; do
     make_psf_als ${i}

@@ -3,48 +3,48 @@
 # check_do function args
 # Check that function exists, and call it with args.
 check_do() {
-	local function="${1}"
-	shift
-	if is_function "${function}" ; then
-		${function} "$@"
-	else
-		die "No function ${function}"
-	fi
+    local function="${1}"
+    shift
+    if is_function "${function}" ; then
+	${function} "$@"
+    else
+	die "no function ${function}"
+    fi
 }
 
 # die [-q] "Message" PUBLIC
 # Display "Message" as an error. If -q is not provided, gives a stacktrace.
 die() {
-	local item funcname="" sourcefile="" lineno="" n e s="yes"
+    local item funcname="" sourcefile="" lineno="" n e s="yes"
+    
+    # do we have a working write_error_msg?
+    if is_function "write_error_msg" ; then
+	e="write_error_msg"
+    else
+	e="echo"
+    fi
 
-	# do we have a working write_error_msg?
-	if is_function "write_error_msg" ; then
-		e="write_error_msg"
-	else
-		e="echo"
-	fi
+    # quiet?
+    if [[ ${1} == "-q" ]] ; then
+	s=""
+	shift
+    fi
+    
+    ${e} "${@:-(no message)}"
+    
+    if [[ -n "${s}" ]] ; then
+	echo "call stack:" 1>&2
+	for (( n = 1 ; n < ${#FUNCNAME[@]} ; ++n )) ; do
+	    funcname=${FUNCNAME[${n}]}
+	    sourcefile=$(basename ${BASH_SOURCE[${n}]})
+	    lineno=${BASH_LINENO[$(( n - 1 ))]}
+	    echo "    * ${funcname} (${sourcefile}:${lineno})" 1>&2
+	done
+    fi
 
-	# quiet?
-	if [[ ${1} == "-q" ]] ; then
-		s=""
-		shift
-	fi
-
-	$e "${@:-(no message)}"
-
-	if [[ -n "${s}" ]] ; then
-		echo "Call stack:" 1>&2
-		for (( n = 1 ; n < ${#FUNCNAME[@]} ; ++n )) ; do
-			funcname=${FUNCNAME[${n}]}
-			sourcefile=$(basename ${BASH_SOURCE[${n}]})
-			lineno=${BASH_LINENO[$(( n - 1 ))]}
-			echo "    * ${funcname} (${sourcefile}:${lineno})" 1>&2
-		done
-	fi
-
-	# Evil, but effective.
-	kill ${ESELECT_KILL_TARGET}
-	exit 249
+    # Evil, but effective.
+    kill ${ALLPHOT_KILL_TARGET}
+    exit 249
 }
 
 # do_action action args...
@@ -73,11 +73,11 @@ do_action() {
 		|| die -q "Action ${subaction} unknown"
 	    check_do "do_${subaction}" "$@"
 	fi
-   )
+    )
 }
 
 # inherit module PUBLIC
-# Sources a given eselect library file
+# Sources a given allphot library file
 inherit() {
     local x
     for x in "$@"; do
@@ -93,43 +93,7 @@ sed() {
     %SED% "$@"
 }
 
-# do_smp action args...
-# Load and do 'action' with the specified args
-do_smp() {
-    local cmd="${1##--}" optcmd="" argcmd=""
-    [[ -z ${action} ]] && die "Usage: do_smp <command> [command options] <command args>"
-    shift; shift
-    
-    ALLPHOT_CMD_NAME="${cmd}"
-    ALLPHOT_COMMAND="${ALLPHOT_PROGRAM_NAME} ${ALLPHOT_CMD_NAME}"
-    
-    [[ ${ALLPHOT_BINARY_NAME##*/} != ${ALLPHOT_PROGRAM_NAME} ]] && \
-	ALLPHOT_COMMAND="${ALLPHOT_BINARY_NAME##*/}"
-    
-    modfile=$( ap_find_module "${action}" )
-    (
-	source "${ALLPHOT_DEFAULT_ACTIONS}" 2>/dev/null \
-	    || die "Couldn't source ${ALLPHOT_DEFAULT_ACTIONS}"
-	source "${modfile}" 2>/dev/null \
-	    || die "Couldn't source ${modfile}"
-	if [[ -z ${subaction} ]] ; then
-	    check_do "do_${DEFAULT_ACTION:-usage}" "$@"
-	else
-	    is_function "do_${subaction}" \
-		|| die -q "Action ${subaction} unknown"
-	    check_do "do_${subaction}" "$@"
-	fi
-   )
-    ## OLD CODE TO INTEGRATE ##
-    j=1
-    while test $# -gt 0; do
-	echo " >>> Starting job ${j} on ${1}"
-	"${action}" ${1}
-	shift
-	(( j += 1 ))
-	while [[ $(jobs -r | wc -l) -ge ${njobs} ]]; do 
-	    sleep 0.4
-	    j=1
-	done
-    done
+# simple calculator using bc
+calc() {
+    echo "scale=4; $1" | bc ;
 }

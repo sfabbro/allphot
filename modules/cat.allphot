@@ -2,7 +2,6 @@
 # vim: ft=bash
 
 DESCRIPTION="Various tools for manipulating DAOPHOT catalogues"
-VERSION="4"
 
 inherit qa options
 
@@ -67,7 +66,7 @@ do_merge() {
     daophot_offset "${2}" $(tail -n 1 tmpmerge.srt | awk '{print $1+1}') 0 0 0 tmpmerge.off
     daophot_append "${1}" tmpmerge.off tmpmerge.app
     daophot_sort 1 tmpmerge.app ${outfile:-${1}} Y
-    allphot do
+    allphot_run
     rm -f tmpmerge.*
 }
 
@@ -154,11 +153,11 @@ do_chisharp() {
 
 ### NEIGHBOURS ###
 describe_neighbours() {
-    echo "Filter neighbours on a PSF star catalog (with a PSF neighbour file)"
+    echo "Filter neighbours on a star catalogue thanks to with a PSF neighbour file"
 }
 
 describe_neighbours_parameters() {
-    echo "<neighbor file> <file to remove stars>"
+    echo "<nei file> <cat to filter>"
 }
 
 do_neighbours() {
@@ -171,17 +170,4 @@ do_neighbours() {
 	    $(grep [\*\?] ${1} | awk '{printf "-e /^[[:space:]]*"$1"/d "}') \
 	    ${2}
     echo " >>> Removed ${nnei} neighbours to PSF stars"
-}
-
-### FILTER ###
-describe_filter() {
-    echo "Filter a DAOPHOT catalogue on its columns"
-}
-
-describe_filter_parameters() {
-    echo "<catalogue> <col n cut>...<col x cut>"
-}
-
-do_filter() {    
-    echo "Not implemented yet :("
 }

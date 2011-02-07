@@ -15,7 +15,7 @@ ALLPHOT_TESTDIR=%SRCDIR%/tests
 
 export ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
 
-for i in ${ALLPHOT_TESTDIR}/sky00.fits; do
+for i in ${ALLPHOT_TESTDIR}/sky??.fits; do
     im=$(basename ${i%.*})
     ${ALLPHOT_EXE} daophot opt --dict=${dict} ${i}
     ${ALLPHOT_EXE} daophot find ${i}
@@ -26,8 +26,10 @@ for i in ${ALLPHOT_TESTDIR}/sky00.fits; do
     ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${i}
     ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
     ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${i}
-    ${ALLPHOT_EXE} daophot peak ${i}
     ${ALLPHOT_EXE} allstar do ${i}
 done
+${ALLPHOT_EXE} daomatch do --out=sky.mch sky??.als
+#${ALLPHOT_EXE} daomaster do sky.mch
+#${ALLPHOT_EXE} allframe do sky.mch
 
 unset  ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR

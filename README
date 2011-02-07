@@ -1,9 +1,47 @@
 ALLPHOT is a package designed to automate the ALLFRAME stellar
-photometry package. The idea was to create a fairly friendly interface
-for all ALLFRAME programs to be run unattended. It was developed with
-the CANFAR project to re-run photometry on MACHO data in the hope it
-can be applied to other big data sets.
+photometry package. 
+
+The idea was to create scripts to run all ALLFRAME (DAOPHOT, DAOMATCH,
+DAOMASTER, ALLFRAME) programs to be run unattended, but at the same
+using a friendly command line interface that allows to write scripts
+quickly .
+It was originally developed with the CANFAR project to re-run photometry on MACHO
+data in the hope it can be applied to other big data sets.
 
 It could be used for other command line programs, its API is fairly
-generic. The code is inspired by the "eselect" tool used on Gentoo,
+generic. The code is inspired by the "eselect" tool used on Gentoo Linux,
 and shamefully borrows a lot of code from it.
+
+Most commands are just wrappers around allframe commands. For example
+a typical DAOPHOT FIND command would sum up as follow:
+
+-------
+% daophot
+
+
+-------
+
+This can be done in two command lines using allphot:
+% allphot daophot opt
+% allphot daophot find 
+
+
+There is a very basic dictionnary generator to grab some values from a
+FITS header that will allow to build options files. Example:
+
+
+To get a list of available modules, just run:
+
+% allphot help
+
+The command line for each module is shown running:
+
+% allphot <module> usage
+
+
+
+
+Most modules have default arguments that you can overwrite with
+command line options.
+
+There are also some example scripts in the directory examples/.

@@ -1,3 +1,24 @@
+ALLPHOT Installation Instructions
+=====================================================================
+
+ALLPHOT follows the standard GNU installation procedure. To install
+it, you will a few packages described below.  After unpacking the
+distribution the Makefiles can be prepared using the configure command.
+./configure && make install
+
+Dependencies:
+
+* cfitsio (with execs such as listhead): most likely your distribution
+  supports it. If not, get a fully working cfitsio and execs from
+  http://astrowww.phys.uvic.ca/~seb/cfitsio-3.250.tar.gz
+
+* allframe: to get allframe you have to ask the author Peter
+  Stetson.
+
+Note ALLPHOT has only been tested on Linux.
+Below are the standard autotools installation instructions.
+
+-----------------------------------------------------------
 Installation Instructions
 *************************
 

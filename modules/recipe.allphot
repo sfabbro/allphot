@@ -1,7 +1,6 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Recipe of DAOPHOT actions"
-VERSION="4"
 
 inherit options paths daophot process
 
@@ -35,5 +34,5 @@ do_recipe() {
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
     source  "${infile:-$(basename ${1%.*}).allphot}" >> ${ALLPHOT_CMDFILE}
-    allphot_do
+    allphot_run
 }

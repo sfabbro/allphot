@@ -1,7 +1,6 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run DAOMASTER on star catalogues"
-VERSION="4"
 
 inherit options daophot process qa
 
@@ -10,67 +9,31 @@ describe_do() {
     echo "Refine an initial match among catalogues of stars"
 }
 
-describe_do_options() {
-    echo "--opt=<file>        : Option file as input (default: $(opt_file_path allstar))"
-    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
-    echo "--in=<file>      : Input photometry (default: <input>.ap)"
-    echo "--psf=<file>     : Input PSF file (default: <input>.psf)"
-    echo "--out=<file>     : Output photometry file (default: <input>.nei)"
-    echo "--sub=<FITS>     : Output residual image (default: <input>s.fits)"
-}
-
 describe_do_parameters() {
     echo "<match file>"
 }
 
+describe_do_options() {
+
+}
+
 do_do() {
-    local infile="" psffile="" outfile="" subfits="" options="" optfile=""
+    local 
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --opt=*)  optfile="${1##*=}" ;;
-	    --option) shift; options="${options} ${1/ //}" ;;
 	    --in=*)   infile="${1##*=}" ;;
-	    --psf=*)  psffile="${1##*=}" ;;
-	    --out=*)  outfile="${1##*=}" ;;
-	    --sub=*)  subfits="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
     done
-    local im=$(basename ${1%.*})
 
-    [[ -z ${1} ]] && die -q "missing initial match"
-    [[ -r ${1} ]] || die -q "${1} not readable"
-    
-    # init
-    local field="$(basename ${1%.*})"
-    local fmch="$(canonicalise ${1})"
-    local flist="${PWD}/master$$.list" fcat line
-    rm -f ${flist}
+    local field=${1%.*}
+    local nframes=$(wc -l ${field}.mch | cut -d ' ' -f 1)
+    awk '{print "rm -f "substr($1,2,match($1,/\./)-2)".{coo,mtr}"}' ${field}.mch | sh
+    rm -f ${field}.{mag,cor,raw,tfr}
 
-    pushd $(dirname ${fmch}) &> /dev/null
-    while read line; do
-	fcat="$(canonicalise $(echo ${line} | awk '{print substr($1,2)}'))"
-	[[ -r ${fcat} ]] || die -q "file ${fcat} not found"
-	echo ${fcat} >> ${flist}
-    done < ${fmch}
-    popd &> /dev/null
-
-    allframe_process_init ${field}
-    [[ -r ${DAOMASTER_OPT} ]] || \
-	cp -f ${ALLPHOT_OPT_DIR}/${DAOMASTER_OPT} ${DAOMASTER_OPT}
-    ln -sfn ${fmch} ${field}.mch 
-    while read fcat; do
-	ln -sfn "${fcat}" .
-    done < ${flist}
-    rm -f ${flist}
-
-    # process
-    daophot_master ${field}.mch ${DAOMASTER_OPT} > ${field}_master.in
-    daomaster < ${field}_master.in
-
-    # closing up
-    rm -f ${field}_master.in
-    allframe_process_end
+    allphot_setup daomaster
+    dao_master "${1}" 
+    allphot_run daomaster
 }

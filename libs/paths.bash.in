@@ -11,7 +11,7 @@ basename() {
 	return
     fi
 
-   # remove any trailing slashes
+    # remove any trailing slashes
     path=${path%%*(/)}
 
     # remove everything up to and including the last slash

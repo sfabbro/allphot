@@ -1,43 +1,23 @@
 # -*-bash-*-
+
+inherit process
+
 ALLPHOT_NAME="image"
 
-# prepare input files
-setup_input() {
-    [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
-    local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
-    if [[ ! ${procfile} -ef ${1} ]]; then
-	rm -f ${procfile}
-	ln -s $(relative_name "${1}" "${ALLPHOT_PROCDIR}") ${procfile}
-    fi
-    echo $(basename ${procfile})
-}
-
-# prepare output files
-setup_output() {
-    local outfile="$(canonicalise ${1})"
-    [[ -r ${outfile} ]] && mv -f ${outfile}{,.old}
-    local procfile="${ALLPHOT_PROCDIR}/$(basename ${outfile})"
-    rm -f ${procfile} && echo $(basename ${procfile})
-    cat >> ${ALLPHOT_PROCDIR}/cleanup.bash <<-EOF
-	[[ ! ${procfile} -ef ${outfile} ]] && mv -f ${procfile} ${outfile}
-	rm -f ${outfile}.old
-EOF
-}
-
-# daophot_options <input option file> or
-# daophot_options <OP1>=<value1>...<OPn>=<valuen>
+# daophot_opt <input option file> or
+# daophot_opt <OP1>=<value1>...<OPn>=<valuen>
 daophot_opt() {
     # no arguments: don't change anything
     [[ -z ${1} ]] && return 0
     echo >> ${ALLPHOT_CMDFILE} "OPTION"
     # option file
     if  [[ -e ${1} ]]; then
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${1})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_input ${1})"
 	return 0
     fi
     # option command
-    local opt
     echo >> ${ALLPHOT_CMDFILE}
+    local opt
     for opt in $@; do
 	if [[ ${opt} =~ = ]]; then
 	    echo >> ${ALLPHOT_CMDFILE} "${opt}"
@@ -49,51 +29,54 @@ daophot_opt() {
 
 # daophot_exit
 daophot_exit() {
-    echo  >> ${ALLPHOT_CMDFILE} "EXIT"
+    echo >> ${ALLPHOT_CMDFILE} "EXIT"
 }
 
 # daophot_attach <FITS file>
 daophot_attach() {    
-    local fitsname="$(setup_input ${1})"
+    local fitsname="$(allphot_input ${1})"
     ALLPHOT_NAME="${fitsname%.*}"    
-    echo  >> ${ALLPHOT_CMDFILE} "ATTACH ${fitsname}"
+    echo >> ${ALLPHOT_CMDFILE} "ATTACH ${fitsname}"
 }
 
 # daophot_sky
 daophot_sky() {
-    echo  >> ${ALLPHOT_CMDFILE} "SKY"
+    echo >> ${ALLPHOT_CMDFILE} "SKY"
     echo " >>> Will run DAOPHOT SKY"
 }
 
 # daophot_find <output coordinate file>
 daophot_find() {
     rm -f ${ALLPHOT_PROCDIR}/*jnk.*
-    cat  >> ${ALLPHOT_CMDFILE} <<-EOF
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	FIND
 	1,1
-	$(setup_output ${1})
+	$(allphot_output ${1})
 	y
 EOF
     echo " >>> Will run DAOPHOT FIND"
 }
 
 # daophot_phot <input phot options file> <input coordinate file> <output file>
-# or
-# daophot_opt <input phot options file> <psf phot file> <input id file> <output file>
+#   or
+# daophot_phot <input phot options file> <psf phot file> <input id file> <output file>
 daophot_phot() {
     echo >> ${ALLPHOT_CMDFILE}	"PHOT"
     # might have to do the option stuff 
-    echo >> ${ALLPHOT_CMDFILE} $(setup_input ${1})
+    echo >> ${ALLPHOT_CMDFILE} $(allphot_input ${1})
     echo >> ${ALLPHOT_CMDFILE}
-    echo >> ${ALLPHOT_CMDFILE} $(setup_input ${2})
+    echo >> ${ALLPHOT_CMDFILE} $(allphot_input ${2})
     if [[ $# -eq 4 ]]; then
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_input ${3})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${4})"
     else
 	# hack to avoid doing the psf subtracted photometry
-	[[ -e ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf ]] && \
+	if [[ -e ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf ]]; then
 	    mv -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf{,.bck}
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${3})"
+	    echo >> ${ALLPHOT_POSTPROC} \
+		"mv -f ${ALLPHOT_PROCDIR}/${ALLPHOT_NAME}.psf{.bck,}"
+	fi
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${3})"
     fi
     echo " >>> Will run DAOPHOT PHOT"
 }
@@ -102,22 +85,21 @@ daophot_phot() {
 daophot_pick() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PICK
-	$(setup_input ${1})
+	$(allphot_input ${1})
 	${2} ${3}
-	$(setup_output ${4})
+	$(allphot_output ${4})
 EOF
     echo " >>> Will run DAOPHOT PICK"
 }
 
 # daophot_psf <input mag file> <input psf stars file> <output psf file>  <output neihbour file>
-# do two rounds
 daophot_psf() {
-    $(setup_output ${4}) &> /dev/null
+    $(allphot_output ${4}) &> /dev/null
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PSF
-	$(setup_input ${1})
-	$(setup_input ${2})
-	$(setup_output ${3})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
+	$(allphot_output ${3})
 EOF
     echo " >>> Will run DAOPHOT PSF"
 }
@@ -126,9 +108,9 @@ EOF
 daophot_append() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	APPEND
-	$(setup_input ${1})
-	$(setup_input ${2})
-	$(setup_output ${3})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
+	$(allphot_output ${3})
 EOF
     echo " >>> Will run DAOPHOT APPEND"
 }
@@ -137,9 +119,9 @@ EOF
 daophot_offset() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	OFFSET
-	$(setup_input ${1})
+	$(allphot_input ${1})
 	${2} ${3} ${4} ${5}
-	$(setup_output ${6})
+	$(allphot_output ${6})
 EOF
     echo " >>> Will run DAOPHOT OFFSET"
 }
@@ -149,8 +131,8 @@ daophot_sort() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	SORT
 	${1}
-	$(setup_input ${2})
-	$(setup_output ${3})
+	$(allphot_input ${2})
+	$(allphot_output ${3})
 	${4}
 EOF
     echo " >>> Will run DAOPHOT SORT"
@@ -160,19 +142,19 @@ EOF
 daophot_substar() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	SUBSTAR
-	$(setup_input ${1})
-	$(setup_input ${2})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
 EOF
     if [[ $# -eq 4 ]] && [[ -n ${3} ]]; then
 	echo >> ${ALLPHOT_CMDFILE} "Y"
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_input ${3})"
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_input ${3})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${4})"
     elif [[ $# -eq 4 ]] && [[ -z ${3} ]]; then
 	echo >> ${ALLPHOT_CMDFILE} "N"
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${4})"
     else
 	echo >> ${ALLPHOT_CMDFILE} "N"
-	echo >> ${ALLPHOT_CMDFILE} "$(setup_output ${4})"
+	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${4})"
     fi
     echo " >>> Will run DAOPHOT SUBSTAR"
 }
@@ -181,9 +163,9 @@ EOF
 daophot_peak() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PEAK
-	$(setup_input ${1})
-	$(setup_input ${2})
-	$(setup_output ${3})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
+	$(allphot_output ${3})
 EOF
     echo " >>> Will run DAOPHOT PEAK"
 }
@@ -192,10 +174,10 @@ EOF
 daophot_group() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	GROUP
-	$(setup_input ${1})
-	$(setup_input ${2})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
 	${3}
-	$(setup_output ${4})
+	$(allphot_output ${4})
 EOF
     echo " >>> Will run DAOPHOT GROUP"
 }
@@ -204,9 +186,9 @@ EOF
 daophot_nstar() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	NSTAR
-	$(setup_input ${1})
-	$(setup_input ${2})
-	$(setup_output ${3})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
+	$(allphot_output ${3})
 EOF
     echo " >>> Will run DAOPHOT NSTAR"
 }
@@ -215,9 +197,9 @@ EOF
 daophot_select() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	SELECT
-	$(setup_input ${1})
+	$(allphot_input ${1})
 	${2},${3}
-	$(setup_output ${4})
+	$(allphot_output ${4})
 EOF
     echo " >>> Will run DAOPHOT SELECT"
 }
@@ -233,12 +215,12 @@ EOF
 }
 
 # daophot_addstar <input psf file> <seed> <gain> <minmag> <maxmag> <nstars> <nframes> <prefix>
-# or
+#   or
 # daophot_addstar <input psf file> <seed> <gain> <input> <output>
 daophot_addstar() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	ADDSTAR
-	$(setup_input ${1})
+	$(allphot_input ${1})
 	${2}
 	${3}
 EOF
@@ -250,14 +232,15 @@ EOF
 	    ${7}
 	    ${8}
 EOF
+	local i
 	for i in $(seq -w 1 ${7}); do
-	    setup_output "${8}${i}.fits" > /dev/null
-	    setup_output "${8}${i}.add"  > /dev/null
+	    allphot_output "${8}${i}.fits" > /dev/null
+	    allphot_output "${8}${i}.add"  > /dev/null
 	done
     elif [[ $# -eq 5 ]]; then
 	cat >> ${ALLPHOT_CMDFILE} <<-EOF
-	    $(setup_input ${4})
-	    $(setup_output ${5})
+	    $(allphot_input ${4})
+	    $(allphot_output ${5})
 
 EOF
     else
@@ -267,11 +250,11 @@ EOF
 }
 
 # daophot_fudge <output> <first col> <last col> <first row> <last row> <brightness>
-# or 
+#   or 
 # daophot_fudge <output> <border> <order> <first col> <last col> <first row> <last row>
 daophot_fudge() {
     echo >> ${ALLPHOT_CMDFILE} FUDGE
-    echo >> ${ALLPHOT_CMDFILE} $(setup_output ${1})
+    echo >> ${ALLPHOT_CMDFILE} $(allphot_output ${1})
     if [[ $# -eq 6 ]]; then
 	cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	    0
@@ -294,15 +277,15 @@ EOF
     echo " >>> Will run DAOPHOT FUDGE"
 }
 
-# allstar_standard <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub>
+# daophot_allstar <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub>
 daophot_allstar() {
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 
-	$(setup_input ${1})
-	$(setup_input ${2})
-	$(setup_input ${3})
-	$(setup_output ${4})
-	$(setup_output ${5})
+	$(allphot_input ${1})
+	$(allphot_input ${2})
+	$(allphot_input ${3})
+	$(allphot_output ${4})
+	$(allphot_output ${5})
 EOF
     echo " >>> Will run ALLSTAR"
 }

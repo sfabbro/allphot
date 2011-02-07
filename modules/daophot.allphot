@@ -1,12 +1,12 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run DAOPHOT actions on FITS images and catalogues"
-VERSION="4"
 
-inherit options paths daophot process
+inherit options paths daophot process fits
 
+# common to a lot of routines
 daophot_options_description() {
-    echo "--opt=<file>        : Option file as input (default: $(opt_file_path daophot))"
+    echo "--opt=<file>        : Initial option file (default: $(opt_file_path daophot))"
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
 }
 
@@ -20,18 +20,17 @@ describe_opt_parameters() {
 }
 
 describe_opt_options() {
-    echo "--in=<file>         : Option file as input (default: $(opt_file_path daophot))"
-    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
+    daophot_options_description
     echo "--dict=<file> : Dictionary to set options from FITS keywords"
     echo "--out=<file>  : DAOPHOT option file as output (default: input)"
 }
 
 do_opt() {
-    local dictfile="" infile="" outfile="" options=""
+    local dictfile="" optfile="" outfile="" options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --dict=*) dictfile="${1##*=}" ;;
-	    --in=*)   infile="${1##*=}" ;;
+	    --opt=*)   optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --out=*)  outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '$1'" ;;
@@ -40,21 +39,24 @@ do_opt() {
 	shift
     done
 
-    allphot_setup --optfile="${infile}" daophot "${1}"
-    # update option from dictionnary
-    local cmdoptfile="$(opt_file_path daophot)"
+    allphot_setup --optfile="${optfile}" daophot "${1}"
+
+    # update option file from dictionnary
     if [[ -r ${dictfile} ]]; then
-	[[ -z ${1} ]] && die -q "missing input FITS file for directory"
-	opt_update_dict ${dictfile} "${optfile:-${cmdoptfile}}" "${1}"
+	grep -q "fits(" ${dictfile} && [[ -z ${1} ]] && die -q "missing input FITS file for directory"
+	opt_update_from_dict ${dictfile} "${ALLPHOT_OPTFILE}" "${1}"
     fi
+
+    # update option file from single command options
     if [[ -n ${options} ]]; then
 	for opt in ${options}; do
-	    opt_set_val "${opt}" "${infile:-${cmdoptfile}}"
+	    opt_set_val "${opt}" "${ALLPHOT_OPTFILE}"
 	done
     fi
-    daophot_options "${infile}"
-    allphot_do
-    [[ -n ${outfile} ]] && cp -f "${infile:-${cmdoptfile}}" "${outfile}"
+
+    daophot_opt "${optfile}"
+    allphot_run daophot
+    [[ -n ${outfile} ]] && cp -f "${ALLPHOT_OPTFILE}" "${outfile}"
 }
 
 ### SKY ###
@@ -75,7 +77,7 @@ do_sky() {
     allphot_setup daophot "${1}"
     daophot_attach "${1}"
     daophot_sky
-    allphot_do
+    allphot_run daophot
 }
 
 ### FIND ###
@@ -93,7 +95,7 @@ describe_find_parameters() {
 }
 
 do_find() {
-    local dictfile="" infile="" outfile="" options=""
+    local optfile="" infile="" outfile="" options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --opt=*)  optfile="${1##*=}" ;;
@@ -109,7 +111,7 @@ do_find() {
    [[ -n ${options} ]] && daophot_opt "${options}"
    daophot_attach "${1}"
    daophot_find "${outfile:-$(basename ${1%.*}).coo}"
-   allphot_do
+   allphot_run daophot
 }
 
 ### PHOT ###
@@ -121,7 +123,7 @@ describe_phot_options() {
     echo "--in=<file>         : Input star list file (default: <input>.coo)"
     echo "--out=<file>        : Output star list file (default: <input>.ap)"
     echo "--radius <RAD>=<val>: Set a aperture radius <RAD>"
-    echo "--radfile=<file>    : Specifiy aperture radii file"
+    echo "--radfile=<file>    : Specifiy aperture radii file (default $(opt_file_path photo))"
     echo "--nei=<file>        : Subtract neighbour stars from this file"
     echo "--psf=<file>        : PSF to subtract neighbours (default: <input>.psf)"
 }
@@ -165,7 +167,7 @@ do_phot() {
     else
 	daophot_phot "${radfile}" "${infile:-${im}.coo}" "${outfile:-${im}.ap}"
     fi
-    allphot_do
+    allphot_run daophot
 }
 
 ### PICK ###
@@ -202,7 +204,7 @@ do_pick() {
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
     daophot_pick "${1}" ${nstars} ${magfaint} "${outfile:-$(basename ${1%.*}).lst}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### PSF ###
@@ -247,7 +249,7 @@ do_psf() {
     daophot_psf \
 	"${phofile:-${im}.ap}" "${lstfile:-${im}.lst}" \
 	"${psffile:-${im}.psf}" "${neifile:-${im}.nei}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### PEAK ###
@@ -283,7 +285,7 @@ do_peak() {
     local im=$(basename ${1%.*})
     daophot_attach "${1}"
     daophot_peak "${infile:-${im}.ap}" "${psffile:-${im}.psf}" "${outfile:-$(basename ${1%.*}).pk}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### GROUP ###
@@ -323,7 +325,7 @@ do_group() {
     [[ -n ${options} ]] && daophot_opt "${options}"
     daophot_attach "${1}"
     daophot_group  "${infile:-${im}.ap}" "${psffile:-${im}.psf}" ${overlap} "${outfile:-$(basename ${1%.*}).grp}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### NSTAR ###
@@ -361,7 +363,7 @@ do_nstar() {
     [[ -n ${options} ]] && daophot_opt "${options}"
     daophot_attach "${1}"
     daophot_nstar  "${infile:-${im}.grp}" "${psffile:-${im}.psf}" "${outfile:-$(basename ${1%.*}).nst}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### SUBSTAR ###
@@ -400,7 +402,7 @@ do_substar() {
     daophot_substar \
 	"${psffile:-${im}.psf}" "${infile:-${im}.nei}" \
 	"${keepfile}" "${subfits:-${im}s.fits}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### SORT ###
@@ -433,7 +435,7 @@ do_sort() {
 
     allphot_setup daophot "${1}"
     daophot_sort ${idx} "${1}" "${outfile:-$(basename ${1%.*}).srt}" ${renum}
-    allphot_do
+    allphot_run daophot
 }
 
 ### SELECT ###
@@ -467,7 +469,7 @@ do_select() {
     allphot_setup daophot "${1}"
     local im=$(basename ${1%.*})
     daophot_select "${1}" ${mingrp} ${maxgrp} "${outfile:-$(basename ${1%.*}).sel}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### OFFSET ###
@@ -504,7 +506,7 @@ do_offset() {
 
     allphot_setup daophot "${1}"
     daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-$(basename ${1%.*}).off}"
-    allphot_do
+    allphot_run daophot
 }
 
 ### APPEND ###
@@ -533,7 +535,7 @@ do_append() {
 
     allphot_setup daophot "${1}"
     daophot_append "${1}" "${2}" "${outfile:-$(basename ${1%.*}).cmb}"
-    allphot_do
+    allphot_run daophot
 }
 
 
@@ -569,7 +571,7 @@ do_dump() {
     allphot_setup daophot "${1}"
     daophot_attach "${1}"
     daophot_dump ${sz} ${xc} ${yc}
-    allphot_do
+    allphot_run daophot
 }
 
 ### FUDGE ###
@@ -619,7 +621,7 @@ do_fudge() {
 	daophot_fudge \
 	    "${outfits:-${im}f.fits}" ${border} ${order} ${x0} ${x1} ${y0} ${y1}
     fi
-    allphot_do
+    allphot_run daophot
 }
 
 ### ADDSTAR ###
@@ -676,5 +678,5 @@ do_addstar() {
 	    "${psffile:-${im}.psf}" ${seed} ${gain} \
 	    "${infile}" "${outfits:-${im}a.fits}"
     fi
-    allphot_do
+    allphot_run daophot
 }

@@ -2,45 +2,40 @@
 #  vim: ft=bash
 
 DESCRIPTION="Run ALLFRAME on FITS images"
-VERSION="4"
 
-inherit options paths allframe qa
+inherit options paths allframe process qa
 
-check_and_link() {
-    [[ -r ${field}.mch ]] && ln -sfn ${mchfile} ${field}.mch
-    [[ -r ${field}.mag ]] && ln -sfn ${magfile} ${field}.mag
-}
-
-### ALLFRAME ###
-describe_allframe() {
+describe_do() {
     echo "Perform multi-frame profile fitting photometry"
 }
 
-describe_allframe_parameters() {
-    echo "<match file> <mag file>"
+describe_do_parameters() {
+    echo "--opt=<file>        : Option file as input (default: $(opt_file_path allframe))"
+    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: GE=20)"
+    echo "--stars=<file>      : File with list of stars (default: <input>.mag)"
 }
 
-do_allframe() {
-    # check arguments
-    [[ $# -lt 2 ]] && die -q "missing arguments"
-    local mchfile=${1} magfile=${2}
-    [[ ! -r ${mchfile} ]] || die -q "file ${mchfile} not found"
-    [[ ! -r ${magfile} ]] || die -q "file ${magfile} not found"
-
-    # init
-    local field="$(basename ${mchfile%.*})"
-    allframe_process_init ${field}
-    [[ ! -r ${ALLFRAME_OPT} ]] && cp -f ${ALLPHOT_OPT_DIR}/${ALLFRAME_OPT} ${ALLFRAME_OPT}
-
-    # process
-    daophot_allframe ${field}.mch ${field}.mag > ${field}.allframe.in
-    allframe < ${field}.allframe.in
-
-    # closing up
-    for im in ${imlist}; do
-    	cat_check ${im}
-	rm -f ${im}.alf.old
+do_do() {
+    local starfile="" options="" optfile=""
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --opt=*)  optfile="${1##*=}" ;;
+	    --option) shift; options="${options} ${1/ //}" ;;
+	    --stars=*) starfile="${1##*=}" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
     done
-    rm -f ${field}.allframe.in
-    allframe_process_end
+    local im=$(basename ${1%.*})
+    
+    if [[ -n ${options} ]]; then
+	for opt in ${options}; do
+	    opt_set_val "${opt}" "${ALLPHOT_PROCDIR}/${ALLFRAME_OPT}"
+	done
+    fi
+
+    allphot_setup --optfile="${optfile}" allframe
+    dao_allframe "${1}"
+    allphot_run allframe
 }

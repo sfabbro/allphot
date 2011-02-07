@@ -1,9 +1,8 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run DAOMATCH on star catalogues"
-VERSION="4"
 
-inherit options allframe process qa
+inherit allframe process paths
 
 ### MATCH ###
 describe_do() {
@@ -15,45 +14,42 @@ describe_do_parameters() {
 }
 
 describe_do_options() {
-    echo "--field=<name>      :     Name of the field (default: myfield)"
-    echo "--ref=<catalogue>   :     Name of the reference (default: first of the list)"
+    echo "--out=<name>      :     Name of the output file name (default: <first>.mch)"
+    echo "--ref=<list>      :     Name of the reference (default: first)"
 }
 
 do_do() {
-    local field="myfield" refcat
+    local fieldname="myfield" refcat=
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --field=*) field="${1##*=}";;
+	    --out=*) fieldname="${1##*=}";;
 	    --ref=*) refcat="${1##*=}";;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
     done
-    [[ -z ${1} ]] && die -q "missing input list of files"
-    [[ -r ${1} ]] || die -q "${1} not readable"
-    local flist="${PWD}/daomatch$$.list" fcat line
-    if [[ -z ${refcat} ]]; then
-	refcat="$(head -n1 $(canonicalise ${1}))"
-	sed -i 1d ${1}
-    fi
 
-    while read line; do
-	fcat="$(canonicalise ${line})"
+    [[ $# -lt 1 ]] && die -q "missing input star lists"
+    if [[ -z ${refcat} ]]; then
+	refcat="$(canonicalise ${1})"
+	shift
+    fi
+    [[ $# -lt 1 ]] && die -q "missing input star lists"
+
+    ln -sfn ${refcat} ${fieldname}ref.${refcat##*.}
+    refcat=${fieldname}ref.${refcat##*.}
+
+    local fcat
+    declare -a cats
+    for fcat in $*; do
+	fcat="$(canonicalise ${fcat})"
 	[[ -r ${fcat} ]] || die -q "file ${fcat} not found"
-	echo ${fcat} >> ${flist}
-    done < ${1}
-    
-    ln -sfn ${refcat} ${field}ref.${refcat##*.}
-    refcat=${field}ref.${refcat##*.}
-    local fcatlist=match.list
-    while read fcat; do	
 	[[ ! ${fcat} -ef $(basename ${fcat}) ]] && ln -sfn "${fcat}" .
-	echo $(basename ${fcat}) >> ${fcatlist}
-    done < ${flist}    
-    rm -f ${flist}
-    
-    # process
-    daophot_match ${refcat} ${field}.mch ${fcatlist} > ${field}_match.in
-    daomatch < ${field}_match.in    
+	cats+=( "$(basename ${fcat})" )
+    done
+
+    allphot_setup daomatch
+    dao_match ${refcat} ${fieldname} "${cats[@]}"
+    allphot_run daomatch
 }

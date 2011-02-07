@@ -15,7 +15,7 @@ do_usage() {
 show_usage_message() {
     echo "Usage: ${ALLPHOT_COMMAND} <action> <options>"
     echo
-    
+    local action
     write_list_start "Standard actions:"
     for action in "help" "usage" "version" ; do
 	local desc=""
@@ -49,6 +49,7 @@ show_usage_message() {
 		
 		if is_function "describe_${action}_options" ; then
 		    IFS=$'\n'
+		    local line
 		    for line in $(describe_${action}_options) ; do
 			write_kv_list_entry -p \
 			    "  ${line%%*( ):*}" \

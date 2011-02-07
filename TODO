@@ -1,14 +1,7 @@
-# fix bugs
-* check if some of daophot actions need the daophot.opt (such as substar)
-* configure to make the *.inc hardcoded parameters
-
-# add features
-* rewrite match/master/allframe
-* montage2
-* calibration/daogrow
-* iraf i/o
+* write montage2
+* write daogrow
 * rewrite shorter help
+* test suite should be automatically generated (with addstar?)
+* test suite should check input files
 * faster allstar recipe
-* more recipes (automate match/master)
-* more QA stuff
-* make a better test suite
+* automate match/master/allframe

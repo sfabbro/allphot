@@ -1,68 +1,84 @@
 # -*-bash-*-
 
-ALLPHOT_PROCDIR="${ALLPHOT_PROCDIR:=.}"
+export ALLPHOT_PROCDIR="${ALLPHOT_PROCDIR:=.}"
 ALLPHOT_CMDFILE=""
+ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/.allphot_postproc.bash"
 
 # allphot_setup <command> [<FITS file>]
+# will make setup a directory for processing a fits file with <command>
+# - 
 allphot_setup() {
-    local optfile="" options=""
+    local optfile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --optfile=*) optfile="${1##*=}" ;;
-	    --options=*) options="${1#*=}" ;;
 	    --*) die -q "Unrecognized option '$1'" ;;
               *) break ;;
 	esac
 	shift
     done
     local cmd=${1:-daophot}
-#    if [[ -n ${2} ]]; then
-#	echo " >>> Setting up $(basename ${2}) for ${cmd}"
-#	ALLPHOT_PROCDIR="${PWD}/process_$(basename ${2%.*})"
-#    else
-#	echo " >>> Setting up ${cmd}"
-#	ALLPHOT_PROCDIR="${PWD}/process_$$"
-#    fi
     mkdir -p ${ALLPHOT_PROCDIR}
     ALLPHOT_CMDFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.in"
     touch ${ALLPHOT_CMDFILE}
+    export ALLPHOT_CMDFILE
  
-    # prepare option file which always has to be passed
-    local cmdoptfile="${ALLPHOT_PROCDIR}/${cmd}.opt"
-    if [[ -n ${optfile} ]]; then
-	[[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"
-	[[ -e ${optfile} ]] && [[ ! ${cmdoptfile} -ef ${optfile} ]] \
-	    && rm -f ${cmdoptfile} && \
-	    ln -s $(relative_name ${optfile} "${ALLPHOT_PROCDIR}") ${cmdoptfile}
-    else
-	[[ -e ${cmdoptfile} ]] || \
-	    cp ${ALLPHOT_OPTDIR}/$(basename ${cmdoptfile}) ${cmdoptfile}
+    # prepare option file which always has to be passed    
+    # should probably go to each command
+    if echo "daophot allstar allframe" | grep ${cmd}; then
+	ALLPHOT_OPTFILE="${ALLPHOT_PROCDIR}/${cmd}.opt"
+	if [[ -n ${optfile} ]]; then
+	    [[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"
+	    [[ ! ${ALLPHOT_OPTFILE} -ef ${optfile} ]] \
+		&& rm -f ${ALLPHOT_OPTFILE} && \
+		ln -s $(relative_name ${optfile} "${ALLPHOT_PROCDIR}") ${ALLPHOT_OPTFILE}
+	elif [[ ! -e ${ALLPHOT_OPTFILE} ]]; then	
+	    cp "$(opt_file_path ${cmd})" ${ALLPHOT_OPTFILE}
+	fi
+	export ALLPHOT_OPTFILE
     fi
+
 }
 
-# allphot_do [<cmd>]
-allphot_do() {
+# allphot_run [<cmd>]
+allphot_run() {
     local cmd="${1:-$(basename ${ALLPHOT_CMDFILE%_*})}"
     [[ -x $(type -P ${cmd}) ]] || die -q "${cmd} is not a known executable"
-    echo " >>> Running ${cmd}"
+    [[ -e ${ALLPHOT_POSTPROC} ]] && chmod 755 ${ALLPHOT_POSTPROC}
+    [[ -z ${ALLPHOT_CMDFILE} ]] && die -q "no process to run"
 
-    [[ -e ${ALLPHOT_PROCDIR}/cleanup.bash ]] && chmod 755 ${ALLPHOT_PROCDIR}/cleanup.bash
     # process
+    echo " >>> Running ${cmd}"
     pushd ${ALLPHOT_PROCDIR} &> /dev/null
-    $(type -P ${cmd}) < ${ALLPHOT_CMDFILE} || die -q "${cmd} failed"
+    $(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) || die -q "${cmd} failed"
     popd &> /dev/null
 
-    # clean up
+    # post process
     rm -f ${ALLPHOT_CMDFILE}
-    [[ -x ${ALLPHOT_PROCDIR}/cleanup.bash ]] && \
-	${ALLPHOT_PROCDIR}/cleanup.bash && \
-	rm -f ${ALLPHOT_PROCDIR}/cleanup.bash
+    [[ -x ${ALLPHOT_POSTPROC} ]] && ${ALLPHOT_POSTPROC} && rm -f ${ALLPHOT_POSTPROC}
 
-    # real dirty hack in the case of phot
-    for f in ${ALLPHOT_PROCDIR}/*.bck; do
-	[[ -e ${f} ]] && [[ ! -e ${f%.bck} ]] && mv -f ${f} ${f%.bck}
-    done
     echo " >>> Done."
 }
 
-export ALLPHOT_PROCDIR ALLPHOT_CMDFILE
+# prepare input files
+allphot_input() {
+    [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
+    local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
+    if [[ ! ${procfile} -ef ${1} ]]; then
+	rm -f ${procfile}
+	ln -s $(relative_name "${1}" "${ALLPHOT_PROCDIR}") ${procfile}
+    fi
+    echo $(basename ${procfile})
+}
+
+# prepare output files
+allphot_output() {
+    local outfile="$(canonicalise ${1})"
+    [[ -r ${outfile} ]] && mv -f ${outfile}{,.old}
+    local procfile="${ALLPHOT_PROCDIR}/$(basename ${outfile})"
+    rm -f ${procfile} && echo $(basename ${procfile})
+    cat >> ${ALLPHOT_POSTPROC} <<-EOF
+	[[ ${procfile} -ef ${outfile} ]] || mv -f ${procfile} ${outfile}
+	rm -f ${outfile}.old
+EOF
+}

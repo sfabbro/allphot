@@ -4,6 +4,7 @@ allphotlibs_SCRIPTS = \
 	default.allphot \
 	core.bash \
 	config.bash \
+	fits.bash \
         output.bash \
 	paths.bash \
 	tests.bash \
@@ -17,6 +18,7 @@ EXTRA_DIST = \
 	default.allphot.in \
 	core.bash.in \
 	config.bash.in \
+	fits.bash.in \
         output.bash.in \
 	paths.bash.in \
 	tests.bash.in \

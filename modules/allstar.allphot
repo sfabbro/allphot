@@ -1,7 +1,6 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run ALLSTAR on a FITS image"
-VERSION="4"
 
 inherit options daophot process qa
 
@@ -15,7 +14,7 @@ describe_do_options() {
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
     echo "--in=<file>      : Input photometry (default: <input>.ap)"
     echo "--psf=<file>     : Input PSF file (default: <input>.psf)"
-    echo "--out=<file>     : Output photometry file (default: <input>.nei)"
+    echo "--out=<file>     : Output photometry file (default: <input>.als)"
     echo "--sub=<FITS>     : Output residual image (default: <input>s.fits)"
 }
 
@@ -48,5 +47,5 @@ do_do() {
     fi
     daophot_allstar "${1}" "${psffile:-${im}.psf}" \
 	"${infile:-${im}.ap}" "${outfile:-${im}.als}" "${subfits:-${im}s.fits}"
-    allphot_do
+    allphot_run
 }

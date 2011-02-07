@@ -2,7 +2,6 @@
 
 DESCRIPTION="Query ALLPHOT modules"
 DEFAULT_ACTION="list"
-VERSION="4"
 
 inherit config
 

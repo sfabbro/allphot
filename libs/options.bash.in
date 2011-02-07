@@ -1,51 +1,57 @@
 # -*-bash-*-
-
-# where the default install options will reside
-[[ -z ${ALLPHOT_OPTDIR} ]] && ALLPHOT_OPTDIR=%DATADIR%/%NAME%/options
+inherit fits
 
 # names of program option file per default
 DAOPHOT_OPT=daophot.opt
 PHOTO_OPT=photo.opt
 ALLSTAR_OPT=allstar.opt
 ALLFRAME_OPT=allframe.opt
+ALLPHOT_OPTDIR="%DATADIR%/%NAME%/options"
 
 # opt_get_val <option name> <option file>
 # return the value of an option from an option file
 opt_get_val() {
-    local value=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
-    if [[ -z ${value} ]]; then
-	write_warning_msg "Option ${1} unknown in ${2}"
+    [[ -r ${2} ]] || die -q "option file ${2} impossible to read"
+    local val=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
+    if [[ -z ${val} ]]; then
+	write_warning_msg "option ${1} unknown in ${2}"
     else
-	echo ${value}
+	echo ${val}
     fi
 }
 
 # opt_set_val <option name>=<option value> <option file>
 # set the value of an option in an option file
 opt_set_val() {
+    [[ -w ${2} ]] || die -q "option file ${2} impossible to set"
     if [[ -n $(grep ${1%=*} ${2}) ]]; then
 	opt_update_val ${1} ${2}
     else
-	echo "${1}" >> ${2}
+	local key=$(echo ${1%=*}) val=$(echo ${1##*=})
+	[[ -z ${key} ]] && die -q "no option to set"
+	[[ -z ${val} ]] && die -q "no value to set for option ${key}"
+	echo "${key}=${val}" >> ${2}
     fi
 }
 
 # opt_update_val <option name>=<new option value> <option file>
 # update the value if the option is present in the option file
 opt_update_val() {
-    [[ -w ${2} ]] || die -q "File ${2} not found"
-    sed -i -e "s/\b${1%=*}=.*/${1}/" ${2} || \
-	die -q "set_value: Could not change option ${1} in ${2}"
+    [[ -w ${2} ]] || die -q "option file ${2} impossible to update"
+    local key=$(echo ${1%=*}) val=$(echo ${1##*=})
+    [[ -z ${key} ]] && die -q "no option to update"
+    [[ -z ${val} ]] && die -q "no value to update for option ${key}"
+    sed -i -e "s/\b${key}.*=.*/${key}=${val}/" ${2}
 }
 
-# opt_update_dict  <dictionary table> <option file> [<FITS file>] 
+# opt_update_from_dict  <dictionary table> <option file> [<FITS file>] 
 # update an option file from a dictionary translation table
 # dictionary table should be in the following format:
 # <daophot option name>=<value> 
 #     or
 # <daophot option name>=fits(<key>)
-opt_update_dict() {
-    local rhs= optname= optval=
+opt_update_from_dict() {
+    local rhs= optname= optval= line=
     while read line; do
 	optname=${line%=*}
 	rhs=${line#*=}
@@ -62,22 +68,24 @@ opt_update_dict() {
 
 # opt_file_path [<command>]
 # return the file path of the used option file (given a command)
-# the path order is .:${HOME}/.allphot:${ALLPHOT_OPTDIR}
+# the path order is .:${HOME}/.allphot
 opt_file_path() {
-    local cmd=${1:=daophot}
+    local cmd=${1:=daophot} d=
     local optfile=${cmd}.opt
-    for dir in "." "${HOME}/.allphot" "${ALLPHOT_OPTDIR}"; do
-	[[ -r ${dir}/${optfile} ]] && canonicalise ${dir}/${optfile} && return
+    for d in "." "${HOME}/.allphot" "${ALLPHOT_OPTDIR}"; do
+	if [[ -r ${d}/${optfile} ]]; then
+	    canonicalise ${d}/${optfile}
+	    return
+	fi
     done
     echo "none"
-    die -q "Could not find a option file for ${cmd}"
+    die -q "no default option file found for ${cmd}"
 }
 
-# opt_update_fwhm <fwhm> [option file]
+# opt_update_from_fwhm <fwhm> [option file]
 # update an option file give an FWHM of a star
-opt_update_fwhm() {
-    local fwhm=${1}
-    local optfile=${2:=$(opt_file_path)}
+opt_update_from_fwhm() {
+    local fwhm=${1} optfile=${2:=$(opt_file_path)}
     [[ -z ${fwhm} ]] && write_warning_msg "Missing FWHM for updating options" && return
     
     if is_daophot_opt ${optfile}; then
@@ -113,28 +121,28 @@ opt_update_fwhm() {
 # true if it is a DAOPHOT standard option file
 opt_is_daophot() {
     [[ ${1} == ${DAOPHOT_OPT} ]] && return
-    grep -q GA ${1}
+    grep -q ^GA ${1}
 }
 
 # opt_is_allstar <option file>
 # true if it is a ALLSTAR standard option file
 opt_is_allstar() {
     [[ ${1} == ${ALLSTAR_OPT} ]] && return
-    grep -q FI ${1} && grep -q IS ${1}
+    grep -q ^FI ${1} && grep -q ^IS ${1}
 }
 
 # opt_is_photo <option file>
 # true if it is a DAOPHOT PHOT aperture radius option file
 opt_is_photo() {
     [[ ${1} == ${PHOTO_OPT} ]] && return
-    grep -q A1 ${1}
+    grep -q ^A1 ${1}
 }
 
 # opt_allframe <option file>
 # true if it is a ALLFRAME standard option file
 opt_is_allframe() {
     [[ ${1} == ${ALLFRAME_OPT} ]] && return
-    grep -q FI ${1} && grep -q GE ${1}
+    grep -q ^FI ${1} && grep -q ^GE ${1}
 }
 
 export ALLPHOT_OPTDIR DAOPHOT_OPT ALLSTAR_OPT PHOTO_OPT ALLFRAME_OPT

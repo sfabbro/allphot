@@ -1,22 +1,4 @@
-
-inherit options daophot process
-
-# simple calculator using bc
-calc() {
-    echo "scale=4; $1" | bc ;
-}
-
-# return the value of a FITS keyword
-fits_get_key() {
-    [[ ! -r ${2} ]] && die -q "fits_get_key: FITS file ${2} not found"
-    local value=$(listhead ${2} 2> /dev/null \
-	| grep "^${1}.*=" \
-	| cut -d '=' -f 2 \
-	| awk '{print $1}' \
-	| sed -e "s:'::g")
-    [[ -z ${value} ]] && die -q "fits_get_key: FITS keyword ${1} not found"
-    echo ${value}
-}
+inherit options daophot process fits
 
 # psf_fwhm <psf file>
 psf_fwhm() {
@@ -47,11 +29,11 @@ psf_check() {
 }
 
 
-# opt_update_psf <psf file> [option file]
-opt_update_psf() {
+# opt_update_ <psf file> [option file]
+psf_update_opt() {
     [[ -z ${1} ]] && write_warning_msg "Missing PSF file for updating options" && return 
     [[ ! -e ${1} ]] && write_warning_msg "${1} not found for updating options" && return 
-    opt_update_fwhm $(psf_fwhm ${1}) ${2}
+    opt_update_from_fwhm $(psf_fwhm ${1}) ${2}
 }
 
 # fits_sky_rms <fits file>
@@ -60,7 +42,7 @@ fits_sky_rms() {
     allphot_setup daophot ${1} > /dev/null
     daophot_attach ${1} > /dev/null
     daophot_sky > /dev/null
-    allphot_do | awk '/Sky/ {print $7" "$8}'
+    allphot_run | awk '/Sky/ {print $7" "$8}'
 }
 
 # insert_daophot_header <daophot opt file> <FITS image> <file>
