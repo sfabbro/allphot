@@ -3,45 +3,76 @@ photometry package.
 
 The idea was to create scripts to run all ALLFRAME (DAOPHOT, DAOMATCH,
 DAOMASTER, ALLFRAME) programs to be run unattended, but at the same
-using a friendly command line interface that allows to write scripts
-quickly .
-It was originally developed with the CANFAR project to re-run photometry on MACHO
-data in the hope it can be applied to other big data sets.
+time using a friendly command line interface that allows to write scripts
+quickly.
+
+It was originally developed with the CANFAR project to re-run
+photometry on MACHO data in the hope it can be applied to other big
+data sets.
 
 It could be used for other command line programs, its API is fairly
-generic. The code is inspired by the "eselect" tool used on Gentoo Linux,
-and shamefully borrows a lot of code from it.
-
-Most commands are just wrappers around allframe commands. For example
-a typical DAOPHOT FIND command would sum up as follow:
-
--------
-% daophot
-
-
--------
-
-This can be done in two command lines using allphot:
-% allphot daophot opt
-% allphot daophot find 
-
-
-There is a very basic dictionnary generator to grab some values from a
-FITS header that will allow to build options files. Example:
-
-
-To get a list of available modules, just run:
-
-% allphot help
-
-The command line for each module is shown running:
-
-% allphot <module> usage
+generic. The code was originally inspired by the "eselect" tool used
+on Gentoo Linux, and shamefully borrows a lot of code from it, but it
+diverged from it significantly.
 
 
 
+Documentation
+=============
 
-Most modules have default arguments that you can overwrite with
-command line options.
+* All commands are fancy wrappers around the ALLFRAME commands, so you will
+  have to know how the original ALLFRAME commands work. Refer to the
+  original documentation for more details.
+  Typing "allphot <command> --help" will describe what you can do with
+  it.
 
-There are also some example scripts in the directory examples/.
+  For example, let's do a typical interactive DAOPHOT FIND command would sum
+  up as follow, assuming you have a daophot.opt file:
+ 
+	$ cat daophot.opt
+	GA=1.6
+	RE=5.5
+
+	$ daophot
+	[...snip...]
+	 Command: attach image.fits
+	[...snip...]
+	 Command: find
+	[...snip...]
+               Number of frames averaged, summed: 1,1
+          File for positions (default image.coo): 
+	[...snip...]
+		      Are you happy with this? Y
+	 Command: exit
+
+  You can get exactly the same result in two command lines using
+  allphot, without any option file:
+
+       $ allphot daophot opt --option GA=1.6 --option RE=5.5
+       [...snip...]
+
+       $ allphot daophot find image.fits
+       [...snip...]
+
+* There exists a very basic dictionnary generator to grab some values from a
+  FITS header that will allow to build options files. Example:
+
+       $ cat image.dict
+       GA=fits(GAIN)
+       RE=fits(RDNOISE)
+
+       $ allphot daophot option --dict=image.dict image.fits
+
+
+* To get a list of available modules, just run:
+
+       $ allphot help
+
+* The command line for each module is shown running:
+
+       $ allphot <module> usage
+
+* Most modules have default arguments that you can overwrite with
+  command line options.
+
+* There are also some example scripts in the directory "examples"

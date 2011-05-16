@@ -1,6 +1,7 @@
 # -*-bash-*-
 
-export ALLPHOT_PROCDIR="${ALLPHOT_PROCDIR:=.}"
+: ${ALLPHOT_PROCDIR:=.}
+export ALLPHOT_PROCDIR
 ALLPHOT_CMDFILE=""
 ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/.allphot_postproc.bash"
 
@@ -25,7 +26,7 @@ allphot_setup() {
  
     # prepare option file which always has to be passed    
     # should probably go to each command
-    if echo "daophot allstar allframe" | grep ${cmd}; then
+    if [[ "daophot allstar allframe" =~ ${cmd} ]]; then
 	ALLPHOT_OPTFILE="${ALLPHOT_PROCDIR}/${cmd}.opt"
 	if [[ -n ${optfile} ]]; then
 	    [[ -r ${optfile} ]] || die -q "could not read option file: '${optfile}'"

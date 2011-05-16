@@ -2,11 +2,11 @@
 inherit fits
 
 # names of program option file per default
-DAOPHOT_OPT=daophot.opt
-PHOTO_OPT=photo.opt
-ALLSTAR_OPT=allstar.opt
-ALLFRAME_OPT=allframe.opt
-ALLPHOT_OPTDIR="%DATADIR%/%NAME%/options"
+: ${DAOPHOT_OPT:=daophot.opt}
+: ${PHOTO_OPT:=photo.opt}
+: ${ALLSTAR_OPT:=allstar.opt}
+: ${ALLFRAME_OPT:=allframe.opt}
+: ${ALLPHOT_OPTDIR:="%DATADIR%/%NAME%/options"}
 
 # opt_get_val <option name> <option file>
 # return the value of an option from an option file
@@ -57,7 +57,7 @@ opt_update_from_dict() {
 	rhs=${line#*=}
 	fkey=$(expr "${rhs}" : 'fits(\(.*.\))')
 	if [[ -n ${fkey} ]]; then
-	    optval=$(fits_get_key ${fkey} ${3})
+	    optval=$(fitskey -n -p ${fkey} ${3})
 	else
 	    optval=${rhs}
 	fi
@@ -70,8 +70,7 @@ opt_update_from_dict() {
 # return the file path of the used option file (given a command)
 # the path order is .:${HOME}/.allphot
 opt_file_path() {
-    local cmd=${1:=daophot} d=
-    local optfile=${cmd}.opt
+    local d optfile=${1:-daophot}.opt
     for d in "." "${HOME}/.allphot" "${ALLPHOT_OPTDIR}"; do
 	if [[ -r ${d}/${optfile} ]]; then
 	    canonicalise ${d}/${optfile}
@@ -79,7 +78,7 @@ opt_file_path() {
 	fi
     done
     echo "none"
-    die -q "no default option file found for ${cmd}"
+    die -q "no default ${optfile} file found"
 }
 
 # opt_update_from_fwhm <fwhm> [option file]

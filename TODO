@@ -1,7 +1,7 @@
-* write montage2
-* write daogrow
-* rewrite shorter help
+* write montage2 module
+* write daogrow module
+* write shorter help
 * test suite should be automatically generated (with addstar?)
-* test suite should check input files
+* test suite should compare input files with outputs
 * faster allstar recipe
-* automate match/master/allframe
+* automate match/master/allframe/montage2/daogrow

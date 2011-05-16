@@ -1,5 +1,6 @@
-AC_INIT([allphot], [0.4.0], [sfabbro@uvic.ca])
+AC_INIT([allphot], [0.4.1], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])
 AC_CONFIG_AUX_DIR([autoconf])
 AM_INIT_AUTOMAKE
@@ -71,11 +72,14 @@ if test x$ALLFRAME = "x" ; then
     AC_MSG_ERROR([allframe is required])
 fi
 
+AX_CFITSIO
+
 PACKAGE_UPNAME=`echo $PACKAGE_NAME | tr '[:lower:]' '[:upper:]'`
 AC_SUBST(PACKAGE_UPNAME)
 
 AC_CONFIG_FILES([Makefile 
 		data/Makefile
+		src/Makefile
 		tests/Makefile
 		bin/Makefile
 		libs/Makefile

@@ -1,4 +1,12 @@
 
+allphot-0.4.1 released
+	
+2011-05-11 Sebastien Fabbro <sfabbro@uvic.ca>
+	
+	* C executables fitskey and fitshead calling CFITSIO routines
+	* cfitsio check with m4 macro
+	* Debugged daomatch
+	* More documentation
 	
 2009-06-11 Sebastien Fabbro <sfabbro@uvic.ca>
 	

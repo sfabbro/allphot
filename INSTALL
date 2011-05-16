@@ -8,14 +8,17 @@ distribution the Makefiles can be prepared using the configure command.
 
 Dependencies:
 
-* cfitsio (with execs such as listhead): most likely your distribution
-  supports it. If not, get a fully working cfitsio and execs from
-  http://astrowww.phys.uvic.ca/~seb/cfitsio-3.250.tar.gz
+* cfitsio: most likely your distribution supports it. 
+  If not, get a fully working cfitsio and execs from
+  http://astrowww.phys.uvic.ca/~seb/cfitsio-3.270.tar.gz
 
-* allframe: to get allframe you have to ask the author Peter
-  Stetson.
+* allframe: it is not public software. To get allframe you have to ask
+  the author Peter Stetson. I have an autotool'ed version of
+  allframe-4 which I can not put publically but I would be happy to
+  give you once you have asked Peter Stetson to give you the same software.
 
-Note ALLPHOT has only been tested on Linux.
+Note: ALLPHOT has only been tested on Linux.
+
 Below are the standard autotools installation instructions.
 
 -----------------------------------------------------------

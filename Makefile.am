@@ -7,6 +7,7 @@ MAINTAINERCLEANFILES = \
 	autoconf/*
 
 CLEANFILES = *~
+ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = bin data examples libs modules tests
+SUBDIRS = bin data examples libs modules tests src
 EXTRA_DIST = TODO NEWS ChangeLog INSTALL COPYING README allphot.bashcomp

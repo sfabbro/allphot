@@ -14,6 +14,7 @@ dosed = @SED@ \
 EXTRA_DIST= \
 	test-allphot.bash.in \
 	generate.py \
+	sky.dict \
 	sky00.fits \
 	sky00.list \
 	sky01.fits \
@@ -34,6 +35,6 @@ SUFFIXES = .in
 	fi
 
 clean-local:
-	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst *.pk \
-		*.raw *.mtr *.alf *j.fits *.tfr *.nmg *.mch *.cor *.mag \
+	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst \
+		*.pk *.raw *.mtr *.alf *j.fits *.tfr *.nmg *.mch *.cor *.mag \
 		allstar_*.in daophot_*.in $(check_SCRIPTS)

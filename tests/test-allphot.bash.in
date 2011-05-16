@@ -14,21 +14,25 @@ ALLPHOT_OPTDIR=%SRCDIR%/data
 ALLPHOT_TESTDIR=%SRCDIR%/tests
 
 export ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
+export PATH=%BUILDDIR%/src:${PATH}
 
-for i in ${ALLPHOT_TESTDIR}/sky??.fits; do
-    im=$(basename ${i%.*})
-    ${ALLPHOT_EXE} daophot opt --dict=${dict} ${i}
-    ${ALLPHOT_EXE} daophot find ${i}
-    ${ALLPHOT_EXE} daophot phot ${i}
+for fits in ${ALLPHOT_TESTDIR}/sky??.fits; do
+    im=$(basename ${fits%.*})
+    ${ALLPHOT_EXE} daophot opt --dict=${dict} ${fits}
+    ${ALLPHOT_EXE} daophot find ${fits}
+    ${ALLPHOT_EXE} daophot phot ${fits}
     ${ALLPHOT_EXE} daophot pick ${im}.ap
-    ${ALLPHOT_EXE} daophot psf ${i}
+    ${ALLPHOT_EXE} daophot psf ${fits}
     ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
-    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${i}
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${fits}
     ${ALLPHOT_EXE} cat neighbours ${im}.{nei,lst}
-    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${i}
-    ${ALLPHOT_EXE} allstar do ${i}
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${fits}
+    ${ALLPHOT_EXE} allstar do ${fits}
 done
+
 ${ALLPHOT_EXE} daomatch do --out=sky.mch sky??.als
+
+# not tested yet
 #${ALLPHOT_EXE} daomaster do sky.mch
 #${ALLPHOT_EXE} allframe do sky.mch
 

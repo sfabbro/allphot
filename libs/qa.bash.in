@@ -66,7 +66,7 @@ cat_insert_header() {
 	printf " NL    NX    NY  LOWBAD HIGHBAD  THRESH     AP1  PH/ADU  RNOISE"
 	[[ ${filetype} == grp ]] ||	printf "    FRAD"
 	printf "\n"
-	printf "%3d %5d %5d" ${nl} $(fits_get_key NAXIS1 ${fitsfile}) $(fits_get_key NAXIS2 ${fitsfile})
+	printf "%3d %5d %5d" ${nl} $(fitskey -n -p NAXIS1 ${fitsfile}) $(fitskey -n -p NAXIS2 ${fitsfile})
 	printf "%8.1f"  ${lobad} $(opt_get_val HI ${optfile})
 	printf "%8.2f" ${thresh} $(opt_get_val FW ${optfile}) $(opt_get_val GA ${optfile}) $(opt_get_val RE ${optfile})
 	[[ ${filetype} == grp ]] || printf "%8.2f" $(opt_get_val FI ${optfile})
