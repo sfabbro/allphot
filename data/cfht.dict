@@ -1,0 +1,5 @@
+GA=fits(GAIN)
+RE=fits(RDNOISE)
+HI=fits(SATURATE)
+AN=4
+
