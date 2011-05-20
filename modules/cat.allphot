@@ -70,45 +70,6 @@ do_merge() {
     rm -f tmpmerge.*
 }
 
-### SEX ###
-describe_sex() {
-    echo "Run SExtractor and convert into a DAOPHOT catalogue"
-}
-
-describe_sex_options() {
-    echo "--out=<file>  : Output file name (default: <FITS>.cat)"
-    echo "--opt=<file>  : Option file as input (default: ${ALLPHOT_OPT_DIR}/${DAOPHOT_OPT})"
-    echo "[sex option]: pass over a SExtractor option to the sex exec."
-}
-
-describe_sex_parameters() {
-    echo "<FITS>"
-}
-
-do_sex() {
-    local outfile="" optfile=""
-    while [[ $# -gt 0 ]]; do
-	case "${1}" in
-	    --out=*) outfile="${1##*=}" ;;
-	    --opt=*) optfile="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '${1}'" ;;
-              *) break ;;
-        esac
-	shift
-    done
-
-    local fitsfile=${1}
-    echo " >>> Running SExtractor"
-    sex -c ${ALLPHOT_DATA_DIR}/sexdefault.sex \
-	-CATALOG_NAME ${outfile:=${1%.*}.cat} \
-	-SATUR_LEVEL $(opt_get_val HI ${optfile:=$(opt_file_path daophot)}) \
-	-GAIN $(opt_get_val GA ${optfile}) \
-	-DETECT_THRESH $(opt_get_val TH ${optfile}) \
-	$@ ${fitsfile}
-    echo " >>> Insert a DAOPHOT header to ${sexcat}"
-    cat_insert_header ${optfile} ${outfile} ${sexcat} || die
-}
-
 ### CHISHARP ###
 describe_chisharp() {
     echo "Filter PSF stars on a catalog with cuts on chi and sharp parameters"
