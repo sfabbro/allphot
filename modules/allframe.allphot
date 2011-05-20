@@ -12,30 +12,29 @@ describe_do() {
 describe_do_parameters() {
     echo "--opt=<file>        : Option file as input (default: $(opt_file_path allframe))"
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: GE=20)"
-    echo "--stars=<file>      : File with list of stars (default: <input>.mag)"
+    echo "--magfile=<file>    : File with list of stars (default: <input>.mag)"
 }
 
 do_do() {
-    local starfile="" options="" optfile=""
+    local magfile="" options="" optfile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --opt=*)  optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
-	    --stars=*) starfile="${1##*=}" ;;
+	    --stars=*) magfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
     done
-    local im=$(basename ${1%.*})
-    
+
+    local field="${1%.*}"    
+    allphot_setup --optfile="${optfile}" allframe
     if [[ -n ${options} ]]; then
 	for opt in ${options}; do
 	    opt_set_val "${opt}" "${ALLPHOT_PROCDIR}/${ALLFRAME_OPT}"
 	done
     fi
-
-    allphot_setup --optfile="${optfile}" allframe
-    dao_allframe "${1}"
+    dao_allframe "${1}" "${magfile:-${field}.mag}"
     allphot_run allframe
 }

@@ -1,59 +1,90 @@
 # -*-bash-*-
 
+inherit process
+
+mch_getframes() {
+    echo "$(awk '{print substr($1,2,match($1,/\./)-2)}' ${1})"
+}
+
+mch_output() {    
+    local i f mchfile=${1}
+    shift
+    for i in $@; do
+	for f in $(mch_getframes ${mchfile}); do
+	    allphot_output ${f}.${i} > /dev/null
+	done
+    done
+}
+
 # dao_match <input reference star file> <output mch file> <star file 1>...<star file n>
 dao_match() {
     echo >> ${ALLPHOT_CMDFILE} $(allphot_input ${1})
     shift
     echo >> ${ALLPHOT_CMDFILE} $(allphot_output ${1})
     shift
-    local im
-    for im in $@; do
-	echo >> ${ALLPHOT_CMDFILE} ${im}
+    local frame
+    for frame in $@; do
+	echo >> ${ALLPHOT_CMDFILE} ${frame}
     done
     echo >> ${ALLPHOT_CMDFILE}
 }
 
-# dao_master <field name> <min frames>,<min frac frames>,<enough frames> 
-#            <max sigma> <degree> <critical rad>
-#            <assign stars IDs?> <mean mag file> <cor mag file> <raw mag file>
-#            <transfer table file> <coo files> <transfer star ids> 
+# dao_master 1:<input mch file> 2:<min frames>,<min frac frames>,<enough frames> 
+#            3:<max sigma> 4:<d.o.f.> 5:<critical rad> 6:<assign stars new IDs?> 
+#            7:<output mean mag file> 8:<output cor mag file> 9:<output raw mag file> 10:<output mch file>
+#            11:<output transfer table file> 12:<output coo files?> 13:<output mtr files?> 
 dao_master() {
+    [[ ${12} == y ]] && mch_output ${1} coo
+    [[ ${13} == y ]] && mch_output ${1} mtr
+    local mchfilein=$(allphot_input ${1})
+    local mchfileout=${10}
+    if [[ ${1} == ${10} ]]; then
+	mchfileout=$(allphot_output ${10}.out)
+	echo >> ${ALLPHOT_POSTPROC} "mv -f $(canonicalise ${10}.out) $(canonicalise ${10})"
+    else
+	mchfileout=$(allphot_output ${10})
+    fi
+
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
-	${1}
-	${2}, ${3}, ${4}
+	${mchfilein}
+	${2}
+	${3}
+	${4}
 	${5}
-	${6}
-	${7}
 EOF
-    local i
-    for i in $(seq ${nframes}); do echo >> ${ALLPHOT_CMDFILE}; done
-    local niter=10 minrad=1
-    for i in $(seq ${niter}); do echo >> ${ALLPHOT_CMDFILE} ${minrad}; done
+    local f
+    for f in ${frames}; do echo >> ${ALLPHOT_CMDFILE}; done
+    # loop from initial radius down to 1 pixel radius, do it twice each time
+    local -i irad=${5%.*}
+    while (( irad > 0 )); do 
+	echo >> ${ALLPHOT_CMDFILE} ${irad}
+	echo >> ${ALLPHOT_CMDFILE} ${irad}
+	irad=$(( ${irad} - 1 ))
+    done
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	0
+	${6}
 	y
+	$(allphot_output ${7})
 	y
-	${8}
+	$(allphot_output ${8})
 	y
-	${9}
+	$(allphot_output ${9})
 	y
-	${10}
+	${mchfileout}
 	y
-	${11}
-
-	y
+	$(allphot_output ${11})
 	${12}
-	y
-	y
+	${13}
 EOF
 }
 
-# dao_allframe <<mch file> <mag file>
+# dao_allframe <mch file> <mag file>
 dao_allframe() {
-    # assume allframe.opt correct
+    mch_output ${1} alf
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	
+	$(allphot_input ${1})
 	$(allphot_input ${2})
-	$(allphot_input ${3})
 EOF
 }

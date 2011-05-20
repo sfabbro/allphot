@@ -61,7 +61,8 @@ allphot_run() {
     echo " >>> Done."
 }
 
-# prepare input files
+# prepare an input file: no directory, filename only
+# allphot_input <input file>
 allphot_input() {
     [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
     local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
@@ -72,7 +73,8 @@ allphot_input() {
     echo $(basename ${procfile})
 }
 
-# prepare output files
+# prepare an output file: no directory, and remove if it exists as backup
+# allphot_output <output file>
 allphot_output() {
     local outfile="$(canonicalise ${1})"
     [[ -r ${outfile} ]] && mv -f ${outfile}{,.old}

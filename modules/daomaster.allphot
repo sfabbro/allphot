@@ -2,9 +2,8 @@
 
 DESCRIPTION="Run DAOMASTER on star catalogues"
 
-inherit options daophot process qa
+inherit options allframe process
 
-### MASTER ###
 describe_do() {
     echo "Refine an initial match among catalogues of stars"
 }
@@ -14,26 +13,53 @@ describe_do_parameters() {
 }
 
 describe_do_options() {
-
+    echo "--frames=<num>,<num>,<num> : Minimum number, minimum fraction, enough frames (default <nframes>/2,0.5,<nframes>)"
+    echo "--maxsigma=<num>        : Maximum magnitude error in sigma (default 0.2)"
+    echo "--dof=<num>        : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
+    echo "--radius=<num> : Critical match up radius in pixels  (default 2)"
+    echo "--nonewid : Will not define new star IDs"
+    echo "--magfile=<file> : Output with mean magnitudes and scatter (default: <input>.mag)"
+    echo "--corfile=<file> : Output with corrected magnitudes and errors (default: <input>.cor)"
+    echo "--rawfile=<file> : Output with raw magnitudes and errors (default: <input>.raw)"
+    echo "--mchfile=<file> : Output with new transformations (default: <input>.mch)"
+    echo "--tfrfile=<file> : Output with transfer table (default: <input>.tfr)"
+    echo "--mchfile=<file> : Output with new transformations (default: <input>.mch)"
+    echo "--nonewcoo: Will not overwrite coordinates files with new star IDs (.coo files)"
+    echo "--nomtr: Will not produce input files with IDs changed (.mtr files)"
 }
 
 do_do() {
-    local 
+    local frames="" maxsigma=0.2 dof=6 radius=2
+    local magfile="" corfile="" rawfile="" mchfile="" tfrfile=""
+    local newid=y newcoo=y mtr=y
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --in=*)   infile="${1##*=}" ;;
+	    --frames=*) frames="${1##*=}" ;;
+	    --maxsigma=*) maxsigma="${1##*=}" ;;
+	    --radius=*) radius="${1##*=}" ;;
+	    --dof=*) dof="${1##*=}" ;;
+	    --nonewid) newid=n ;;
+	    --magfile=*) magfile="${1##*=}" ;;
+	    --corfile=*) corfile="${1##*=}" ;;
+	    --rawfile=*) rawfile="${1##*=}" ;;
+	    --mchfile=*) mchfile="${1##*=}" ;;
+	    --tfrfile=*) tfrfile="${1##*=}" ;;
+	    --nonewcoo)  newcoo=n ;;
+	    --nomtr) mtr=n ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
     done
 
-    local field=${1%.*}
-    local nframes=$(wc -l ${field}.mch | cut -d ' ' -f 1)
-    awk '{print "rm -f "substr($1,2,match($1,/\./)-2)".{coo,mtr}"}' ${field}.mch | sh
-    rm -f ${field}.{mag,cor,raw,tfr}
-
+    local field="${1%.*}"
+    local nframes=$(wc -l ${1} | cut -d ' ' -f 1)
+    [[ -z ${frames} ]] && frames="$(( ${nframes} / 2 )),0.5,${nframes}"
     allphot_setup daomaster
-    dao_master "${1}" 
+    dao_master \
+	"${1}" "${frames}" ${maxsigma} ${dof} ${radius} \
+	${newid} "${magfile:-${field}.mag}" "${corfile:-${field}.cor}" \
+	"${rawfile:-${field}.raw}" "${mchfile:-${field}.mch}" "${tfrfile:-${field}.tfr}" \
+	${newcoo} ${mtr}
     allphot_run daomaster
 }

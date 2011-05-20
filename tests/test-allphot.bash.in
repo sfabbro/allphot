@@ -3,9 +3,6 @@
 # psf analytical profile 
 prof=1
 
-# name of the dictionary 
-dict=sky.dict
-
 ALLPHOT_EXE=%BUILDDIR%/bin/allphot
 ALLPHOT_DATA_PATH=%BUILDDIR%
 ALLPHOT_LIBEXEC_PATH=%BUILDDIR%
@@ -18,7 +15,10 @@ export PATH=%BUILDDIR%/src:${PATH}
 
 for fits in ${ALLPHOT_TESTDIR}/sky??.fits; do
     im=$(basename ${fits%.*})
-    ${ALLPHOT_EXE} daophot opt --dict=${dict} ${fits}
+    ${ALLPHOT_EXE} daophot opt \
+	--option GA=$(fitskey -n -p GAIN ${fits}) \
+	--option RE=$(fitskey -n -p RON ${fits}) \
+	--option HI=$(fitskey -n -p SATLEV ${fits})
     ${ALLPHOT_EXE} daophot find ${fits}
     ${ALLPHOT_EXE} daophot phot ${fits}
     ${ALLPHOT_EXE} daophot pick ${im}.ap
@@ -31,9 +31,7 @@ for fits in ${ALLPHOT_TESTDIR}/sky??.fits; do
 done
 
 ${ALLPHOT_EXE} daomatch do --out=sky.mch sky??.als
+${ALLPHOT_EXE} daomaster do sky.mch
+${ALLPHOT_EXE} allframe do sky.mch
 
-# not tested yet
-#${ALLPHOT_EXE} daomaster do sky.mch
-#${ALLPHOT_EXE} allframe do sky.mch
-
-unset  ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
+unset ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR

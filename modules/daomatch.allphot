@@ -4,7 +4,6 @@ DESCRIPTION="Run DAOMATCH on star catalogues"
 
 inherit allframe process paths
 
-### MATCH ###
 describe_do() {
     echo "Make combinatorial match between catalogues of stars"
 }
@@ -19,7 +18,7 @@ describe_do_options() {
 }
 
 do_do() {
-    local fieldname="myfield" refcat=
+    local fieldname="myfield" refcat=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --out=*) fieldname="${1##*=}";;
@@ -37,8 +36,8 @@ do_do() {
     fi
     [[ $# -lt 1 ]] && die -q "missing input star lists"
 
-    ln -sfn ${refcat} ${fieldname}ref.${refcat##*.}
-    refcat=${fieldname}ref.${refcat##*.}
+    #ln -sfn ${refcat} ${fieldname}ref.${refcat##*.}
+    #refcat=${fieldname}ref.${refcat##*.}
 
     local fcat
     declare -a cats

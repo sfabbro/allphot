@@ -35,6 +35,7 @@ SUFFIXES = .in
 	fi
 
 clean-local:
-	-rm -rf process_* *.psf *.als *s.fits *.coo *.opt *.ap *.nei *.lst \
-		*.pk *.raw *.mtr *.alf *j.fits *.tfr *.nmg *.mch *.cor *.mag \
-		allstar_*.in daophot_*.in $(check_SCRIPTS)
+	-rm -rf process_* *.psf *.als *s.fits *j.fits *.coo *.opt *.ap *.nei *.lst \
+		*.pk *.raw *.mtr *.alf *j.fits *.tfr *.nmg *.mch *.cor *.mag *.old \
+		allstar_*.in daophot_*.in daomatch_*.in daomaster_*.in allframe_*.in \
+		$(check_SCRIPTS)
