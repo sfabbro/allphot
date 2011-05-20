@@ -2,3 +2,4 @@ GA=fits(CS-GAIN)
 RE=fits(RDNOISE)
 HI=fits(SATURATE)
 FW=fits(SEEING)
+AN=4
