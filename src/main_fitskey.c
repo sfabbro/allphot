@@ -138,15 +138,17 @@ int main(int argc, char** argv) {
       if (iomode == READONLY && doprintfile) { 
 	printf(filename);
 	if (nrelhdu > 0) printf("[%d]", fptr->HDUposition);
+	printf(" ");
       }
 
       for (j=0; j<nkeys; j++) {         /* loop over keys of each HDU */
 	
 	keyscan = &keys[j];
 
-	if (keyscan->dofunc & doprint)
+	if (keyscan->dofunc & doprint) {
 	  fits_print_keyvalue(fptr, keyscan->keystring, &status);
-	
+	  printf(" ");
+	}
 	if (keyscan->dofunc & dofull)  
 	  fits_update_keycard(fptr, keyscan->keystring, &status);
 	

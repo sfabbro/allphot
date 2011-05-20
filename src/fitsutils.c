@@ -104,7 +104,7 @@ int fits_print_keyvalue(fitsfile* fptr, char* keyname, int* status) {
     printf("%s", keyval);
   } else {
     *status = oldstatus;
-    printf(" absent");
+    printf("absent");
   }
 
   return *status;
