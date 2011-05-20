@@ -1,6 +1,7 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run DAOMATCH on star catalogues"
+DEFAULT_ACTION="do"
 
 inherit allframe process paths
 
@@ -9,7 +10,7 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<file with list of files>"
+    echo "<star file1>...<star file n>"
 }
 
 describe_do_options() {
@@ -29,7 +30,8 @@ do_do() {
 	shift
     done
 
-    [[ $# -lt 1 ]] && die -q "missing input star lists"
+    [[ $# -lt 1 ]] && do_usage && die -q "missing star file"
+
     if [[ -z ${refcat} ]]; then
 	refcat="$(canonicalise ${1})"
 	shift

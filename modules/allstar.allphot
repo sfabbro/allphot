@@ -1,8 +1,9 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run ALLSTAR on a FITS image"
+DEFAULT_ACTION="do"
 
-inherit options daophot process qa
+inherit options daophot process
 
 ### ALLSTAR ###
 describe_do() {
@@ -11,11 +12,11 @@ describe_do() {
 
 describe_do_options() {
     echo "--opt=<file>        : Option file as input (default: $(opt_file_path allstar))"
-    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
+    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: FI=4)"
     echo "--in=<file>      : Input photometry (default: <input>.ap)"
     echo "--psf=<file>     : Input PSF file (default: <input>.psf)"
     echo "--out=<file>     : Output photometry file (default: <input>.als)"
-    echo "--sub=<FITS>     : Output residual image (default: <input>s.fits)"
+    echo "--sub=<FITS image> : Output residual image (default: <input>s.fits)"
 }
 
 describe_do_parameters() {
@@ -37,6 +38,10 @@ do_do() {
         esac
 	shift
     done
+
+
+    [[ $# -lt 1 ]] && do_usage && die -q "missing FITS image"
+
     local im=$(basename ${1%.*})
     
     allphot_setup --optfile="${optfile}" allstar "${1}"

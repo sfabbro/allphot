@@ -1,6 +1,7 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run DAOMASTER on star catalogues"
+DEFAULT_ACTION="do"
 
 inherit options allframe process
 
@@ -51,6 +52,8 @@ do_do() {
         esac
 	shift
     done
+
+    [[ $# -lt 1 ]] && do_usage && die -q "missing match file"
 
     local field="${1%.*}"
     local nframes=$(wc -l ${1} | cut -d ' ' -f 1)
