@@ -1,0 +1,7 @@
+Examples on how to use ALLPHOT
+==============================
+
+* allstar.bash: simple script to produce a PSF and run ALLSTAR
+* allframe.bash: simple script to run DAOMATCH, DAOMASTER and ALLFRAME
+* iter_allstar.bash: an involved process with iterative PSF and ALLSTAR
+* daorecipe.bash: a bash recipe example to run with allphot daophot recipe

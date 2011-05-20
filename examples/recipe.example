@@ -1,7 +1,0 @@
-
-im=${1%.*}
-daophot_attach ${im}
-daophot_find ${1}
-daophot_phot photo.opt coo ap
-pick in=ap out=coo nstars=200 magfaint=18
-psf  in=ap
