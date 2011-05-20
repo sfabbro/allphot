@@ -1,7 +1,7 @@
+* clean examples, give better ones
+* write shorter help
+* compare input files with outputs in tests
 * write montage2 module
 * write daogrow module
-* write shorter help
-* test suite should be automatically generated (with addstar?)
-* test suite should compare input files with outputs
-* faster allstar recipe
-* automate match/master/allframe/montage2/daogrow
+* faster allstar recipe 
+* allframe recipe

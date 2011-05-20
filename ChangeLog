@@ -1,6 +1,10 @@
+2011-05-19 Sebastien Fabbro <sfabbro@uvic.ca>
 
-allphot-0.4.1 released
-	
+	* daomatch module ready
+	* daomaster module ready
+	* allframe module ready
+	* tests running daomaster and allframe
+
 2011-05-11 Sebastien Fabbro <sfabbro@uvic.ca>
 	
 	* C executables fitskey and fitshead calling CFITSIO routines

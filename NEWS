@@ -1,17 +1,34 @@
+* Added daomaster module
+* Added allframe module
+
+========================================================================
+ALLPHOT version 0.4.1				    Released: 2011-05-11
+------------------------------------------------------------------------
+* Added fitshead executable to list FITS headers
+* Added fitskey executable to print, set and update FITS keys
+* Added daomatch module
+* More documentation
+
+========================================================================
+ALLPHOT version 0.4				    Released: 2010-11-23
+------------------------------------------------------------------------
+* Added modules daophot, allstar
+* Added recipe possibility for own catalogue creation recipe
+* Many examples
+
 ========================================================================
 ALLPHOT version 0.3				    Released: 2010-01-10
 ------------------------------------------------------------------------
-Added modules catalog, psf. Added bash completion.
+* Added modules catalog, psf
+* Added bash completion.
 
 ========================================================================
 ALLPHOT version 0.2				    Released: 2010-01-10
 ------------------------------------------------------------------------
-New directory based processing
-
+* New directory based processing
 
 ========================================================================
 ALLPHOT version 0.1				    Released: 2010-01-10
 ------------------------------------------------------------------------
-
-This is the first release of ALLPHOT.
+* This is the first release of ALLPHOT.
 
