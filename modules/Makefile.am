@@ -7,7 +7,6 @@ modules_DATA = \
 	daomatch.allphot \
 	daomaster.allphot \
 	modules.allphot \
-	recipe.allphot \
 	cat.allphot
 
 
