@@ -1,7 +1,7 @@
 # -*-shell-script-*-
 
 DESCRIPTION="No description available"
-VERSION="No version available"
+VERSION="%VERSION%"
 DEFAULT_ACTION="usage"
 
 describe_usage() {
