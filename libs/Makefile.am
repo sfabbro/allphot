@@ -31,6 +31,7 @@ dosed = @SED@ \
 	-e 's,%BASH%,$(BASH),g' \
 	-e 's,%SED%,@SED@,g' \
 	-e 's,%CANONICALISE%,@CANONICALISE@,g' \
+	-e 's,%VERSION%,$(PACKAGE_VERSION),g' \
 	-e 's,%NAME%,$(PACKAGE_NAME),g' \
 	-e "s,%DATADIR%,$(datadir),g"
 

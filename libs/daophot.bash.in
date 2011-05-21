@@ -45,13 +45,13 @@ daophot_sky() {
     echo " >>> Will run DAOPHOT SKY"
 }
 
-# daophot_find <output coordinate file>
+# daophot_find  <nframes average,summed> <output coordinate file>
 daophot_find() {
     rm -f ${ALLPHOT_PROCDIR}/*jnk.*
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	FIND
-	1,1
-	$(allphot_output ${1})
+	${1}
+	$(allphot_output ${2})
 	y
 EOF
     echo " >>> Will run DAOPHOT FIND"
@@ -92,12 +92,22 @@ EOF
     echo " >>> Will run DAOPHOT PICK"
 }
 
-# daophot_psf <input mag file> <input psf stars file> <output psf file>  <output neihbour file>
+# daophot_psf <input mag file> <input psf stars file> <output psf file>
 daophot_psf() {
-    $(allphot_output ${4}) &> /dev/null
+    local phofile=${1} neifile=${2%.*}.nei
+    if [[ ${phofile} == ${neifile} ]]; then
+	mv -f ${phofile}{,.2}
+	phofile=$(allphot_input ${phofile}.2)
+	echo >> ${ALLPHOT_POSTPROC} \
+	    "[[ -e ${neifile} ]] && rm -f ${phofile}.2 || mv ${phofile}{.2,}"
+    else
+	phofile=$(allphot_input ${1})
+	$(allphot_output ${neifile}) &> /dev/null
+    fi
+    
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	PSF
-	$(allphot_input ${1})
+	${phofile}
 	$(allphot_input ${2})
 	$(allphot_output ${3})
 EOF
