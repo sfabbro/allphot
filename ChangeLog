@@ -1,3 +1,15 @@
+2011-05-20 Sebastien Fabbro <sfabbro@uvic.ca>
+
+	* Bumped to 0.5.0
+	* Consistent description in daophot module help
+	* Module version now works and default to the package version
+	* Cleaned up and updated all examples
+	* Removed all SExtractor stuff, was outdated
+	* daophot_find now takes nframes parameters
+	* daophot_psf neighbour file is not more a parameter
+	* fitskey: no more blanks while printing
+	* recipe module is now part of daophot module as "do"
+	
 2011-05-19 Sebastien Fabbro <sfabbro@uvic.ca>
 
 	* daomatch module ready
@@ -7,6 +19,7 @@
 
 2011-05-11 Sebastien Fabbro <sfabbro@uvic.ca>
 	
+	* Bumped to 0.4.1
 	* C executables fitskey and fitshead calling CFITSIO routines
 	* cfitsio check with m4 macro
 	* Debugged daomatch

@@ -1,7 +1,10 @@
 Examples on how to use ALLPHOT
 ==============================
 
-* allstar.bash: simple script to produce a PSF and run ALLSTAR
-* allframe.bash: simple script to run DAOMATCH, DAOMASTER and ALLFRAME
+* allstar.bash: simple bash script to produce a PSF and run ALLSTAR
+* allframe.bash: simple bash script to run DAOMATCH, DAOMASTER and ALLFRAME
 * iter_allstar.bash: an involved process with iterative PSF and ALLSTAR
-* daorecipe.bash: a bash recipe example to run with allphot daophot recipe
+* macho_allstar.bash: bash script that will:
+   1) fetch a MACHO mosaic FITS file from the CADC archive
+   2) run the iter_allstar.bash script
+* daorecipe.bash: a bash recipe example to run with "allphot daophot recipe"

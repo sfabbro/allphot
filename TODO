@@ -1,7 +1,5 @@
-* clean examples, give better ones
-* write shorter help
+* find a way to exit from a bash script calls allphot
+* make it possible to run without the "do" redundant action name
 * compare input files with outputs in tests
 * write montage2 module
 * write daogrow module
-* faster allstar recipe 
-* allframe recipe
