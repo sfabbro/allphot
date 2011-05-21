@@ -36,3 +36,5 @@ libtool
 /tests/sky*.pk
 /tests/sky*s.fits
 /tests/*.opt
+src/fitshead
+src/fitskey

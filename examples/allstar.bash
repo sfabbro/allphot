@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 do_psf_allstar() {
     local options
