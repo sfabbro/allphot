@@ -1,5 +1,5 @@
 #!%BASH%
-# -*-bash-*- vim: ft=bash
+# -*-shell-script-*- vim: ft=bash
 
 : ${ALLPHOT_LIBEXEC_PATH:="%LIBEXECDIR%/%NAME%"}
 : ${ALLPHOT_DATA_PATH:="%DATADIR%/%NAME%"}
