@@ -1,7 +1,7 @@
 # -*-shell-script-*-
 
 DESCRIPTION="Run DAOPHOT actions on FITS images and catalogues"
-DEFAULT_ACTION="do"
+DEFAULT_ACTION="list"
 
 inherit options paths daophot process
 

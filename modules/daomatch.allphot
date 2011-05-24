@@ -6,7 +6,7 @@ DEFAULT_ACTION="do"
 inherit allframe process paths
 
 describe_do() {
-    echo "Make combinatorial match between catalogues of stars"
+    echo "Match stars catalogues"
 }
 
 describe_do_parameters() {
@@ -14,8 +14,8 @@ describe_do_parameters() {
 }
 
 describe_do_options() {
-    echo "--out=<name>      :     Name of the output file name (default: <first>.mch)"
-    echo "--ref=<list>      :     Name of the reference (default: first)"
+    echo "--out=<name>      :  Output file name (default: <first>.mch)"
+    echo "--ref=<list>      :  Name of the reference (default: first)"
 }
 
 do_do() {
