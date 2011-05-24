@@ -1,4 +1,4 @@
-inherit options daophot process fits
+inherit options daophot process
 
 # psf_fwhm <psf file>
 psf_fwhm() {

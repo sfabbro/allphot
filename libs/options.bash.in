@@ -1,5 +1,6 @@
 # -*-bash-*-
-inherit fits
+
+inherit core
 
 # names of program option file per default
 : ${DAOPHOT_OPT:=daophot.opt}
