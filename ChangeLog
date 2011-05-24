@@ -1,7 +1,9 @@
 2011-05-23 Sebastien Fabbro <sfabbro@uvic.ca>
-	
+
+	* Bumped to 0.5.1
+	* fixed recipe example
 	* list is now default daophot action
-	* removed fits.bash.in causing trouble
+	* removed fits.bash.in causing non functional modules
 	
 2011-05-20 Sebastien Fabbro <sfabbro@uvic.ca>
 
