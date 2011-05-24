@@ -832,7 +832,7 @@ do_do() {
    [[ $# -lt 1 ]] && daophot_action_usage do && die -q "missing recipe file"
     local infile="${1}"
     shift
-    allphot_setup --optfile="${optfile}" daophot "${1}"
+    allphot_setup daophot
     source "${infile}" $@
     allphot_run daophot
 }
