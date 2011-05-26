@@ -1,5 +1,3 @@
-# -*-shell-script-*-
-# vim: ft=bash
 
 DESCRIPTION="Various tools for manipulating DAOPHOT catalogues"
 
@@ -33,7 +31,7 @@ do_header() {
     [[ -r ${1} ]] || die -q "File ${1} not readable"
     [[ -r ${2} ]] || die -q "File ${2} not readable"
     [[ -w ${3} ]] || die -q "File ${3} not writeable"
-    echo " >>> Insert a header into ${3}"
+    write_process_msg "Insert a header into ${3}"
     cat_insert_header ${1} ${2} ${3} || die -q "Could not insert header"
 }
 
@@ -108,7 +106,7 @@ do_chisharp() {
 	    '{ if ( $1 == vid  && $8< vcmax && $9<vsmax && $9>-vsmax ) { print } }' \
 	    ${profcat} >> ${pickcat}.filtered
     done < ${pickcat}
-    echo " >>> Removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) )) objects with chi > ${cmax} and |sharp| > ${smax}"
+    write_process_msg "Removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) )) objects with chi > ${cmax} and |sharp| > ${smax}"
     mv -f ${pickcat}.filtered ${pickcat}
 }
 
@@ -130,5 +128,5 @@ do_neighbours() {
 	sed -i \
 	    $(grep [\*\?] ${1} | awk '{printf "-e /^[[:space:]]*"$1"/d "}') \
 	    ${2}
-    echo " >>> Removed ${nnei} neighbours to PSF stars"
+    write_process_msg "Removed ${nnei} neighbours to PSF stars"
 }

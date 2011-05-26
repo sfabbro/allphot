@@ -1,4 +1,3 @@
-# -*-shell-script-*-
 
 DESCRIPTION="Run ALLFRAME on FITS images"
 DEFAULT_ACTION="do"

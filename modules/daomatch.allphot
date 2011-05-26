@@ -1,4 +1,3 @@
-# -*-shell-script-*-
 
 DESCRIPTION="Run DAOMATCH on star catalogues"
 DEFAULT_ACTION="do"

@@ -1,4 +1,4 @@
-# -*-shell-script-*-
+
 
 DESCRIPTION="Run DAOPHOT actions on FITS images and catalogues"
 DEFAULT_ACTION="list"
