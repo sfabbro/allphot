@@ -1,13 +1,14 @@
+ALLPHOT - Stellar photometry automated
+======================================
+
 ALLPHOT is a package designed to automate the ALLFRAME stellar
 photometry package. 
-
-The idea was to create scripts to run all ALLFRAME (DAOPHOT, DAOMATCH,
-DAOMASTER, ALLFRAME) programs to be run unattended, but at the same
-time using a friendly command line interface that allows to write scripts
-quickly.
+ALLPHOT consists of fancy wrapper scripts for all ALLFRAME (DAOPHOT, DAOMATCH,
+DAOMASTER, ALLFRAME) programs to be run unattended. It has a friendly
+command line interface that allows to write scripts quickly.
 
 It was originally developed with the CANFAR project to re-run
-photometry on MACHO data in the hope it can be applied to other big
+photometry on MACHO data in the hope it can be applied to other large
 data sets.
 
 It could be used for other command line programs, its API is fairly
@@ -15,16 +16,27 @@ generic. The code was originally inspired by the "eselect" tool used
 on Gentoo Linux, and shamefully borrows a lot of code from it, but it
 diverged from it significantly.
 
+Availability
+============
+
+The current stable version is available on http://astrowww.phys.uvic.ca/~seb/
+The development git is public on http://gitorious.org/tvs/allphot
+
+Installation
+============
+
+See the INSTALL file.
 
 
 Documentation
 =============
 
-* All commands are fancy wrappers around the ALLFRAME commands, so you will
+* All commands are wrappers around the ALLFRAME commands, so you will
   have to know how the original ALLFRAME commands work. Refer to the
-  original documentation for more details.
+  original ALLFRAME documentation for more details, and the papers.
+
   Typing "allphot <command> --help" will describe what you can do with
-  it.
+  the particular <command>.
 
   For example, let's do a typical interactive DAOPHOT FIND command would sum
   up as follow, assuming you have a daophot.opt file:
@@ -72,7 +84,21 @@ Documentation
 
        $ allphot <module> usage
 
+* Get a list of DAOPHOT submodule:
+
+      $ allphot daophot list
+
 * Most modules have default arguments that you can overwrite with
   command line options.
 
-* There are also some example scripts in the directory "examples"
+* There are also some example scripts in the directory "examples".
+
+
+Contributing to GSL
+===================
+
+If you are interested in participating in ALLPHOT development, please
+send me an email, or just interact with the
+http://gitorious.org/tvs/allphot site.
+
+

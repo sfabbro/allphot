@@ -1,27 +1,41 @@
 ALLPHOT Installation Instructions
-=====================================================================
+=================================
 
-ALLPHOT follows the standard GNU installation procedure. To install
-it, you will a few packages described below.  After unpacking the
-distribution the Makefiles can be prepared using the configure command.
-./configure && make install
+ALLPHOT follows the standard GNU installation procedure.
 
-Dependencies:
+Requirements:
 
-* cfitsio: most likely your distribution supports it. 
-  If not, get a fully working cfitsio and execs from
-  http://astrowww.phys.uvic.ca/~seb/cfitsio-3.270.tar.gz
+* BASH: most likely you have it installed
 
-* allframe: it is not public software. To get allframe you have to ask
-  the author Peter Stetson. I have an autotool'ed version of
-  allframe-4 which I can not put publically but I would be happy to
-  give you once you have asked Peter Stetson to give you the same software.
+* C Compiler: most likely you have gcc already
 
-Note: ALLPHOT has only been tested on Linux.
+* CFITSIO: most likely your distribution supports it. 
+  If not, get a fully working CFITSIO and execs from
+  http://astrowww.phys.uvic.ca/~seb/. Fetch the latest version.
 
-Below are the standard autotools installation instructions.
+* ALLFRAME: it is not public software. To get ALLFRAME you have to email
+  the author Peter Stetson and he will send you the code. You can install it yourself, but I
+  recommand an easier and more robust installation from an autotool'ed version of
+  which I can not yet publically, but I would be happy to give you
+  once you have asked Peter Stetson to give you his ALLFRAME tar ball. 
 
------------------------------------------------------------
+Once those two have been installed and are reachable from the paths,
+you can build ALLPHOT using 
+
+    ./configure && make
+
+You can test that the scripts are working with the unit tests by running:
+
+    make check
+
+Then install it with:
+
+    make install
+
+Below are the generic automatically generated autotools installation instructions.
+
+==============================
+
 Installation Instructions
 *************************
 

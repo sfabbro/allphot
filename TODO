@@ -1,5 +1,6 @@
-* find a way to exit from a bash script calls allphot
-* make it possible to run without the "do" redundant action name
+* a --verbose option
+* a --pretend option to do the script without running them
 * compare input files with outputs in tests
+* find a way to exit from a bash script calls allphot
 * write montage2 module
 * write daogrow module
