@@ -1,4 +1,3 @@
-* a --verbose option
 * a --pretend option to do the script without running them
 * compare input files with outputs in tests
 * find a way to exit from a bash script calls allphot

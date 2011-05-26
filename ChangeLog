@@ -1,4 +1,12 @@
-2011-05-23 Sebastien Fabbro <sfabbro@uvic.ca>
+2011-05-26 Sebastien Fabbro <sfabbro@uvic.ca>
+
+	* Bumped to 0.5.2
+	* fixed quoting for wrongly set FITS keywords
+	* removed verbosity, now in log files
+	* added a pre-processing function
+	* cancel pre-processing file existing checks
+
+2011-05-25 Sebastien Fabbro <sfabbro@uvic.ca>
 
 	* colorized processing
 	* documented all functions for API

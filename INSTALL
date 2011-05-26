@@ -14,10 +14,11 @@ Requirements:
   http://astrowww.phys.uvic.ca/~seb/. Fetch the latest version.
 
 * ALLFRAME: it is not public software. To get ALLFRAME you have to email
-  the author Peter Stetson and he will send you the code. You can install it yourself, but I
-  recommand an easier and more robust installation from an autotool'ed version of
-  which I can not yet publically, but I would be happy to give you
-  once you have asked Peter Stetson to give you his ALLFRAME tar ball. 
+  the author Peter Stetson and he will send you the code. You can
+  install it yourself, but I recommand an easier and more robust
+  installation from an autotool'ed version of which I can not yet
+  publically, but I would be happy to give you once you have asked
+  Peter Stetson to give you his ALLFRAME tar ball. 
 
 Once those two have been installed and are reachable from the paths,
 you can build ALLPHOT using 
@@ -32,7 +33,8 @@ Then install it with:
 
     make install
 
-Below are the generic automatically generated autotools installation instructions.
+Below are the generic automatically generated autotools installation
+instructions.
 
 ==============================
 
