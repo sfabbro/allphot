@@ -1,5 +1,12 @@
 2011-05-23 Sebastien Fabbro <sfabbro@uvic.ca>
 
+	* colorized processing
+	* documented all functions for API
+	* do_do is now treated as a special default action
+	* list is now default daophot action
+
+2011-05-23 Sebastien Fabbro <sfabbro@uvic.ca>
+
 	* Bumped to 0.5.1
 	* fixed recipe example
 	* list is now default daophot action

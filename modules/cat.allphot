@@ -76,8 +76,8 @@ describe_chisharp() {
 }
 
 describe_chisharp_options() {
-    echo "--sharpmax    : Remove stars with |sharp| > sharpmax (default: 0.6)"
-    echo "--chimax      : Remove stars with chi > chimax (default: 2)"
+    echo "--sharpmax=<val>    : Remove stars with |sharp| > <val> (default: 0.6)"
+    echo "--chimax=<val>      : Remove stars with chi > <val> (default: 2)"
 }
 
 describe_chisharp_parameters() {

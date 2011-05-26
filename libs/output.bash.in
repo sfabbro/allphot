@@ -35,6 +35,7 @@ is_output_mode() {
     [[ ${ALLPHOT_OUTPUT_MODE} = ${1} ]]
 }
 
+# init_columns INTERNAL
 # Determine width of terminal and set COLUMNS variable
 init_columns() {
     [[ -n ${COLUMNS} ]] || COLUMNS=$(tput cols) || COLUMNS=80
@@ -44,6 +45,12 @@ init_columns() {
 # write an error
 write_error_msg() {
     echo -e "${COLOUR_ERROR} Error *** ${COLOUR_NORMAL}${*}" 1>&2
+}
+
+# write_process_msg PUBLIC
+# write a message during processing
+write_process_msg() {
+    echo -e "${COLOUR_HI}   >>> ${*}${COLOUR_NORMAL}"
 }
 
 # write_warning_msg PUBLIC

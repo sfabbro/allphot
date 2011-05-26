@@ -1,4 +1,4 @@
-# -*-bash-*-
+# -*-bash-*-  vim: ft=bash
 
 inherit core
 
@@ -9,7 +9,7 @@ inherit core
 : ${ALLFRAME_OPT:=allframe.opt}
 : ${ALLPHOT_OPTDIR:="%DATADIR%/%NAME%/options"}
 
-# opt_get_val <option name> <option file>
+# opt_get_val <option name> <option file> PUBLIC
 # return the value of an option from an option file
 opt_get_val() {
     [[ -r ${2} ]] || die -q "option file ${2} impossible to read"
@@ -21,7 +21,7 @@ opt_get_val() {
     fi
 }
 
-# opt_set_val <option name>=<option value> <option file>
+# opt_set_val <option name>=<option value> <option file> PUBLIC
 # set the value of an option in an option file
 opt_set_val() {
     [[ -w ${2} ]] || die -q "option file ${2} impossible to set"
@@ -35,7 +35,7 @@ opt_set_val() {
     fi
 }
 
-# opt_update_val <option name>=<new option value> <option file>
+# opt_update_val <option name>=<new option value> <option file> PUBLIC
 # update the value if the option is present in the option file
 opt_update_val() {
     [[ -w ${2} ]] || die -q "option file ${2} impossible to update"
@@ -45,7 +45,7 @@ opt_update_val() {
     sed -i -e "s/\b${key}.*=.*/${key}=${val}/" ${2}
 }
 
-# opt_update_from_dict  <dictionary table> <option file> [<FITS file>] 
+# opt_update_from_dict  <dictionary table> <option file> [<FITS file>] PUBLIC 
 # update an option file from a dictionary translation table
 # dictionary table should be in the following format:
 # <daophot option name>=<value> 
@@ -67,7 +67,7 @@ opt_update_from_dict() {
     done < ${1}
 }
 
-# opt_file_path [<command>]
+# opt_file_path [<command>] PUBLIC
 # return the file path of the used option file (given a command)
 # the path order is .:${HOME}/.allphot
 opt_file_path() {
@@ -82,7 +82,7 @@ opt_file_path() {
     die -q "no default ${optfile} file found"
 }
 
-# opt_update_from_fwhm <fwhm> [option file]
+# opt_update_from_fwhm <fwhm> [option file] PUBLIC
 # update an option file give an FWHM of a star
 opt_update_from_fwhm() {
     local fwhm=${1} optfile=${2:=$(opt_file_path)}
@@ -117,29 +117,29 @@ opt_update_from_fwhm() {
     fi
 }
 
-# opt_is_daophot <option file>
-# true if it is a DAOPHOT standard option file
+# opt_is_daophot <option file> PUBLIC
+# return true if it is a DAOPHOT standard option file
 opt_is_daophot() {
     [[ ${1} == ${DAOPHOT_OPT} ]] && return
     grep -q ^GA ${1}
 }
 
-# opt_is_allstar <option file>
-# true if it is a ALLSTAR standard option file
+# opt_is_allstar <option file> PUBLIC
+# return true if it is a ALLSTAR standard option file
 opt_is_allstar() {
     [[ ${1} == ${ALLSTAR_OPT} ]] && return
     grep -q ^FI ${1} && grep -q ^IS ${1}
 }
 
-# opt_is_photo <option file>
-# true if it is a DAOPHOT PHOT aperture radius option file
+# opt_is_photo <option file> PUBLIC
+# return true if it is a DAOPHOT PHOT aperture radius option file
 opt_is_photo() {
     [[ ${1} == ${PHOTO_OPT} ]] && return
     grep -q ^A1 ${1}
 }
 
-# opt_allframe <option file>
-# true if it is a ALLFRAME standard option file
+# opt_allframe <option file> PUBLIC
+# return true if it is a ALLFRAME standard option file
 opt_is_allframe() {
     [[ ${1} == ${ALLFRAME_OPT} ]] && return
     grep -q ^FI ${1} && grep -q ^GE ${1}

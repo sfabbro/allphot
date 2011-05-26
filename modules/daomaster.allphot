@@ -53,7 +53,7 @@ do_do() {
 	shift
     done
 
-    [[ $# -lt 1 ]] && do_usage && die -q "missing match file"
+    [[ $# -lt 1 ]] && do_usage && return
 
     local field="${1%.*}"
     local nframes=$(wc -l ${1} | cut -d ' ' -f 1)

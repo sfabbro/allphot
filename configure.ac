@@ -1,4 +1,4 @@
-AC_INIT([allphot], [0.5.1], [sfabbro@uvic.ca])
+AC_INIT([allphot], [0.5.2], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])
@@ -54,11 +54,6 @@ if test x$ALLSTAR = "x" ; then
     AC_MSG_ERROR([allstar is required])
 fi
 
-AC_PATH_PROGS(BC, bc)
-if test x$BC = "x" ; then
-    AC_MSG_ERROR([bc calculator is required])
-fi
-
 AC_PATH_PROGS(DAOMATCH, daomatch)
 if test x$DAOMATCH = "x" ; then
     AC_MSG_ERROR([daomatch is required])
@@ -70,6 +65,11 @@ fi
 AC_PATH_PROGS(ALLFRAME, allframe)
 if test x$ALLFRAME = "x" ; then
     AC_MSG_ERROR([allframe is required])
+fi
+
+AC_PATH_PROGS(BC, bc)
+if test x$BC = "x" ; then
+    AC_MSG_ERROR([bc calculator is required])
 fi
 
 AX_CFITSIO

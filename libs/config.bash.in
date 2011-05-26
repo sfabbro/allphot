@@ -1,6 +1,6 @@
 # -*-bash-*-  vim: ft=bash
 
-# store_config file key value PUBLIC
+# store_config <file> <key> <value> PUBLIC
 # Stores a $key/$value pair for given module in $configfile
 store_config() {
     # we need at least "module" and "key"
@@ -70,7 +70,7 @@ store_config() {
 	)
 }
 
-# load_config module key PUBLIC
+# load_config <module> <key> PUBLIC
 # Loads $key value from $configfile
 load_config() {
     [[ ${#@} -eq 2 ]] || die
@@ -89,7 +89,7 @@ load_config() {
     echo "${value}"
 }
 
-# append_config file key item ... PUBLIC
+# append_config <file> <key> item ... PUBLIC
 # Appends $item to already stored value of $key in $configfile
 # if $item is not already part of $key
 append_config() {

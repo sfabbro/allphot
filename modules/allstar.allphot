@@ -40,7 +40,7 @@ do_do() {
     done
 
 
-    [[ $# -lt 1 ]] && do_usage && die -q "missing FITS image"
+    [[ $# -lt 1 ]] && do_usage && return
 
     local im=$(basename ${1%.*})
     
@@ -50,7 +50,7 @@ do_do() {
 	    opt_set_val "${opt}" "${ALLPHOT_PROCDIR}/${ALLSTAR_OPT}"
 	done
     fi
-    daophot_allstar "${1}" "${psffile:-${im}.psf}" \
+    dao_allstar "${1}" "${psffile:-${im}.psf}" \
 	"${infile:-${im}.ap}" "${outfile:-${im}.als}" "${subfits:-${im}s.fits}"
     allphot_run
 }

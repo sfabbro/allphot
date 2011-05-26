@@ -1,11 +1,14 @@
+# -*-bash-*-  vim: ft=bash
+
 inherit options daophot process
 
-# psf_fwhm <psf file>
+# psf_fwhm <PSF file> PUBLIC
+# return the FWHM of a DAOPHOT PSF
 psf_fwhm() {
     awk 'NR==2 {print ($1+$2)*1.176; exit}' ${1} 2> /dev/null
 }
 
-# psf_profile <psf file>
+# psf_profile <psf file> PUBLIC
 psf_profile() {
     local psfname=$(awk 'NR==1 {print $1; exit}' ${1})
     case ${psfname} in
@@ -20,6 +23,7 @@ psf_profile() {
     esac
 }
 
+# psf_check <PSF file> PUBLIC
 # return false if fwhm of the psf file is not between 0.5 and 20
 psf_check() {
     local ifwhm10=$(awk 'NR==2 {print int(($1+$2)*11.76); exit}' ${1} 2> /dev/null)    
@@ -28,16 +32,16 @@ psf_check() {
     fi
 }
 
-
-# opt_update_ <psf file> [option file]
+# psf_update_opt <PSF file> [option file] PUBLIC
+# update all the FWHM related options from a PSF file
 psf_update_opt() {
     [[ -z ${1} ]] && write_warning_msg "Missing PSF file for updating options" && return 
     [[ ! -e ${1} ]] && write_warning_msg "${1} not found for updating options" && return 
     opt_update_from_fwhm $(psf_fwhm ${1}) ${2}
 }
 
-# fits_sky_rms <fits file>
-# return sky mode and rms using daophot sky
+# fits_sky_rms <fits file> PUBLIC
+# return sky mode and rms using daophot sky of a fits image
 fits_sky_rms() {
     allphot_setup daophot ${1} > /dev/null
     daophot_attach ${1} > /dev/null
@@ -45,7 +49,8 @@ fits_sky_rms() {
     allphot_run | awk '/Sky/ {print $7" "$8}'
 }
 
-# insert_daophot_header <daophot opt file> <FITS image> <file>
+# insert_daophot_header <daophot opt file> <FITS image> <file> PUBLIC
+# insert a DAOPHOT style header to a catalogue
 # unfortunately uses a temporary file
 cat_insert_header() {
     local optfile=${1} fitsfile=${2} catfile=${3} nl=1
@@ -76,12 +81,13 @@ cat_insert_header() {
     mv -f ${catfile}{.tmp,}
 }
 
-# cat_nstars <daophot catalogue>
-# return the number of stars of a DAOPHOT catalogue
+# cat_nstars <daophot catalogue> PUBLIC
+# return the number of stars of a DAOPHOT star catalogue
 cat_nstars() {
     wc -l ${1} | awk '{print $1 - 3}'
 }
 
+# cat_check <file> PUBLIC
 # return false if a catalogue has less than 5 lines
 cat_check() {
     [[ $(wc -l ${1} | cut -d ' ' -f1) -gt 5  ]] || \

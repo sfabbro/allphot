@@ -1,6 +1,6 @@
-# -*-bash-*-
+# -*-bash-*-  vim: ft=bash
 
-# check_do function args
+# check_do <function> [<args>] PUBLIC
 # Check that function exists, and call it with args.
 check_do() {
     local function="${1}"
@@ -47,12 +47,12 @@ die() {
     exit 249
 }
 
-# do_action action args...
+# do_action <action> [<args>] PUBLIC
 # Load and do 'action' with the specified args
 do_action() {
     local action="${1##--}" modfile="" subaction="${2##--}"
     [[ -z ${action} ]] && die "Usage: do_action <action> <args>"
-    shift; shift
+    shift
     
     ALLPHOT_MODULE_NAME="${action}"
     ALLPHOT_COMMAND="${ALLPHOT_PROGRAM_NAME} ${ALLPHOT_MODULE_NAME}"
@@ -60,24 +60,31 @@ do_action() {
     [[ ${ALLPHOT_BINARY_NAME##*/} != ${ALLPHOT_PROGRAM_NAME} ]] && \
 	ALLPHOT_COMMAND="${ALLPHOT_BINARY_NAME##*/}"
     
-    modfile=$( ap_find_module "${action}" )
+    modfile=$(ap_find_module "${action}")
     (
 	source "${ALLPHOT_DEFAULT_ACTIONS}" 2>/dev/null \
 	    || die "Couldn't source ${ALLPHOT_DEFAULT_ACTIONS}"
 	source "${modfile}" 2>/dev/null \
 	    || die "Couldn't source ${modfile}"
 	if [[ -z ${subaction} ]] ; then
-	    check_do "do_${DEFAULT_ACTION:-usage}" "$@"
-	else
-	    is_function "do_${subaction}" \
-		|| die -q "Action ${subaction} unknown"
+	    check_do "do_${DEFAULT_ACTION:-usage}"
+	else	    
+	    if ! is_function "do_${subaction}"; then
+		if is_function "do_do"; then
+		    subaction=do
+		else
+		    die -q "Action ${subaction} unknown"
+		fi
+	    else 
+		shift
+	    fi
 	    check_do "do_${subaction}" "$@"
 	fi
     )
 }
 
-# inherit module PUBLIC
-# Sources a given allphot library file
+# inherit <module> PUBLIC
+# Sources a module (bash script) with the allphot path
 inherit() {
     local x
     for x in "$@"; do

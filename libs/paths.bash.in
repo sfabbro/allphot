@@ -1,7 +1,7 @@
 # -*-bash-*-  vim: ft=bash
 
-# basename and dirname functions
-# transparent bash-only replacements for the external commands
+# basename <path> PUBLIC
+# transparent bash-only replacements for the 'basename' command
 # extended pattern matching (shopt -s extglob) is required
 basename() {
     local path=$1 suf=$2
@@ -24,6 +24,9 @@ basename() {
     echo "${path:-/}"
 }
 
+# dirname <path> PUBLIC
+# transparent bash-only replacements for the 'dirname' command
+# extended pattern matching (shopt -s extglob) is required
 dirname() {
     local path=$1
 
@@ -46,12 +49,14 @@ dirname() {
     echo "${path:-/}"
 }
 
+# canonicalise <path> PUBLIC
+# return the full path of <path>
 canonicalise() {
     %CANONICALISE% "$@"
 }
 
-# relative_name
-# Convert filename $1 to be relative to directory $2 (both must exist).
+# relative_name <file> <directory> PUBLIC
+# convert filename $1 to be relative to directory $2 (both must exist).
 relative_name() {
     local path=$(canonicalise "$1") dir=$(canonicalise "$2") c
     while [[ -n ${dir} ]]; do

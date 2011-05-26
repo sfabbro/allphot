@@ -47,8 +47,6 @@ describe_list() {
 }
 
 do_list() {
-    [[ $# -gt 0 ]] && die -q "does not take any parameters"
-    
     local action desc
     local -a daophot_actions
     for action in $(set | \
@@ -101,7 +99,7 @@ describe_opt_parameters() {
 describe_opt_options() {
     daophot_options_description
     echo "--dict=<file> : Dictionary to set options from FITS keywords"
-    echo "--out=<file>  : DAOPHOT option file as output (default: input)"
+    echo "--out=<file>  : DAOPHOT option file as output (default: daophot.opt)"
 }
 
 do_opt() {
@@ -113,7 +111,7 @@ do_opt() {
 	    --opt=*)  optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;	
 	    --out=*)  outfile="${1##*=}" ;;       
-	    --*) die -q "Unrecognized option '$1'" ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
 	esac
 	shift
@@ -161,7 +159,7 @@ do_sky() {
 	esac
 	shift
     done
-    [[ $# -lt 1 ]] && daophot_action_usage sky && die -q "missing FITS image"
+    [[ $# -lt 1 ]] && daophot_action_usage sky && return
     allphot_setup daophot "${1}"
     daophot_attach "${1}"
     daophot_sky
@@ -198,7 +196,7 @@ do_find() {
 	shift
    done
 
-   [[ $# -lt 1 ]] && daophot_action_usage find && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage find && return
 
    allphot_setup --optfile="${optfile}" daophot "${1}"
    [[ -n ${options} ]] && daophot_opt "${options}"
@@ -244,7 +242,7 @@ do_phot() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage phot && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage phot && return
 
     allphot_setup daophot "${1}"
     if [[ ! -e ${radfile} ]]; then
@@ -299,7 +297,7 @@ do_pick() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage pick && die -q "missing star file"
+   [[ $# -lt 1 ]] && daophot_action_usage pick && return
 
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
@@ -340,7 +338,7 @@ do_psf() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage psf && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage psf && return
 
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
@@ -382,7 +380,7 @@ do_peak() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage peak && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage peak && return
     allphot_setup daophot "${1}"
     local im=$(basename ${1%.*})
     daophot_attach "${1}"
@@ -424,7 +422,7 @@ do_group() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage group && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage group && return
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
     daophot_attach "${1}"
@@ -464,7 +462,7 @@ do_nstar() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage nstar && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage nstar && return
     allphot_setup --optfile="${optfile}" daophot "${1}"
     [[ -n ${options} ]] && daophot_opt "${options}"
     daophot_attach "${1}"
@@ -504,7 +502,7 @@ do_substar() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage substar && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage substar && return
 
     local im=$(basename ${1%.*})
     allphot_setup daophot "${1}"
@@ -545,7 +543,7 @@ do_sort() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage sort && die -q "missing star file"
+   [[ $# -lt 1 ]] && daophot_action_usage sort && return
 
     allphot_setup daophot "${1}"
     daophot_sort ${idx} "${1}" "${outfile:-$(basename ${1%.*}).srt}" ${renum}
@@ -582,7 +580,7 @@ do_select() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage select && die -q "missing group file"
+   [[ $# -lt 1 ]] && daophot_action_usage select && return
 
     allphot_setup daophot "${1}"
     local im=$(basename ${1%.*})
@@ -624,7 +622,7 @@ do_offset() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage offset && die -q "missing star file"
+   [[ $# -lt 1 ]] && daophot_action_usage offset && return
 
     allphot_setup daophot "${1}"
     daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-$(basename ${1%.*}).off}"
@@ -657,7 +655,7 @@ do_append() {
 	shift
     done
 
-   [[ $# -lt 2 ]] && daophot_action_usage append && die -q "missing files"
+   [[ $# -lt 2 ]] && daophot_action_usage append && return
 
     allphot_setup daophot "${1}"
     daophot_append "${1}" "${2}" "${outfile:-$(basename ${1%.*}).cmb}"
@@ -694,7 +692,7 @@ do_dump() {
         esac
 	shift
     done
-   [[ $# -lt 1 ]] && daophot_action_usage dump && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage dump && return
 
     [[ -z ${xc} ]] && xc=$(calc $(fitskey -n -p NAXIS1 "${1}") / 2)
     [[ -z ${yc} ]] && yc=$(calc $(fitskey -n -p NAXIS2 "${1}") / 2)
@@ -738,7 +736,7 @@ do_fudge() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage fudge && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage fudge && return
 
     local x0=$(expr ${a} : '\[\([[:digit:]]*\):')
     local x1=$(expr ${a} : '.*:\([[:digit:]]*\),')
@@ -802,7 +800,7 @@ do_addstar() {
 	shift
     done
 
-   [[ $# -lt 1 ]] && daophot_action_usage addstar && die -q "missing FITS image"
+   [[ $# -lt 1 ]] && daophot_action_usage addstar && return
 
     local im=$(basename ${1%.*})
     allphot_setup daophot "${1}"
@@ -829,7 +827,7 @@ describe_do_parameters() {
 }
 
 do_do() {
-   [[ $# -lt 1 ]] && daophot_action_usage do && die -q "missing recipe file"
+   [[ $# -lt 1 ]] && daophot_action_usage do && return
     local infile="${1}"
     shift
     allphot_setup daophot

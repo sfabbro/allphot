@@ -1,4 +1,5 @@
 # -*-shell-script-*-
+# -*-bash-*-  vim: ft=bash
 
 DESCRIPTION="No description available"
 VERSION="%VERSION%"
@@ -13,7 +14,7 @@ do_usage() {
 }
 
 show_usage_message() {
-    echo "Usage: ${ALLPHOT_COMMAND} <action> <options>"
+    echo "Usage: ${ALLPHOT_COMMAND} <action> [OPTIONS]"
     echo
     local action
     write_list_start "Standard actions:"

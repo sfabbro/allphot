@@ -30,7 +30,7 @@ do_do() {
 	shift
     done
 
-    [[ $# -lt 1 ]] && do_usage && die -q "missing star file"
+    [[ $# -lt 1 ]] && do_usage && return
 
     if [[ -z ${refcat} ]]; then
 	refcat="$(canonicalise ${1})"

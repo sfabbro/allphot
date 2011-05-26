@@ -1,4 +1,4 @@
-# autotools generated
+# autotools generated (configure)
 *.o
 *.so
 *.l[oa]
@@ -7,9 +7,6 @@
 .libs
 stamp-h*
 config.h
-\#*
-.#*
-*~
 Makefile
 Makefile.in
 libtool
@@ -22,19 +19,24 @@ libtool
 /config
 /configure
 /autoconf
-
 /config.h.in
-/bin/allphot
-/libs/*.bash
-/libs/default.allphot
-/tests/sky*.als
-/tests/sky*.ap
-/tests/sky*.coo
-/tests/sky*.lst
-/tests/sky*.nei
-/tests/sky*.psf
-/tests/sky*.pk
-/tests/sky*s.fits
-/tests/*.opt
+
+# compilation generated (make)
+bin/allphot
+libs/*.bash
+tests/test-allphot.bash
+libs/default.allphot
 src/fitshead
 src/fitskey
+
+# tests generated (make check)
+tests/sky*
+tests/*.opt
+!tests/sky*.fits
+!tests/sky*.list
+tests/sky*[sj].fits
+
+# emacs crap
+\#*
+.#*
+*~

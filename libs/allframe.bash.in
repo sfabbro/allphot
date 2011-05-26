@@ -1,11 +1,15 @@
-# -*-bash-*-
+# -*-bash-*-  vim: ft=bash
 
 inherit process
 
+# mch_getframes <match file> INTERNAL
+# return the frame names within a match file
 mch_getframes() {
-    echo "$(awk '{print substr($1,2,match($1,/\./)-2)}' ${1})"
+    awk '{print substr($1,2,match($1,/\./)-2)}' ${1}
 }
 
+# mch_output <match file> <suf>...<suf> INTERNAL
+# prepare frames from a match file with suffixes 
 mch_output() {    
     local i f mchfile=${1}
     shift
@@ -16,7 +20,8 @@ mch_output() {
     done
 }
 
-# dao_match <input reference star file> <output mch file> <star file 1>...<star file n>
+# dao_match <input reference star file> <output mch file> <star file 1>...<star file n> PUBLIC
+# create a file of answers to be run by daomatch
 dao_match() {
     echo >> ${ALLPHOT_CMDFILE} $(allphot_input ${1})
     shift
@@ -27,12 +32,14 @@ dao_match() {
 	echo >> ${ALLPHOT_CMDFILE} ${frame}
     done
     echo >> ${ALLPHOT_CMDFILE}
+    write_process_msg "Will run DAOMATCH"
 }
 
 # dao_master 1:<input mch file> 2:<min frames>,<min frac frames>,<enough frames> 
 #            3:<max sigma> 4:<d.o.f.> 5:<critical rad> 6:<assign stars new IDs?> 
 #            7:<output mean mag file> 8:<output cor mag file> 9:<output raw mag file> 10:<output mch file>
-#            11:<output transfer table file> 12:<output coo files?> 13:<output mtr files?> 
+#            11:<output transfer table file> 12:<output coo files?> 13:<output mtr files?>  PUBLIC
+# create a file of answers to be run by daomaster
 dao_master() {
     [[ ${12} == y ]] && mch_output ${1} coo
     [[ ${13} == y ]] && mch_output ${1} mtr
@@ -77,9 +84,11 @@ EOF
 	${12}
 	${13}
 EOF
+    write_process_msg "Will run DAOMASTER"
 }
 
 # dao_allframe <mch file> <mag file>
+# create a file of answers to be run by allframe
 dao_allframe() {
     mch_output ${1} alf
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
@@ -87,4 +96,5 @@ dao_allframe() {
 	$(allphot_input ${1})
 	$(allphot_input ${2})
 EOF
+    write_process_msg "Will run ALLFRAME"
 }

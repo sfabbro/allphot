@@ -1,13 +1,14 @@
-# -*-bash-*-
+# -*-bash-*-  vim: ft=bash
 
 : ${ALLPHOT_PROCDIR:=.}
 export ALLPHOT_PROCDIR
 ALLPHOT_CMDFILE=""
+ALLPHOT_PREPROC="${ALLPHOT_PROCDIR}/.allphot_preproc.bash"
 ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/.allphot_postproc.bash"
+ALLPHOT_LOG="${ALLPHOT_PROCDIR}/.allphot.log"
 
-# allphot_setup <command> [<FITS file>]
-# will make setup a directory for processing a fits file with <command>
-# - 
+# allphot_setup [--optfile=<file>] <command> [<FITS file>] PUBLIC
+# setup a directory and option file for processing a fits file with <command>
 allphot_setup() {
     local optfile=""
     while [[ $# -gt 0 ]]; do
@@ -21,8 +22,11 @@ allphot_setup() {
     local cmd=${1:-daophot}
     mkdir -p ${ALLPHOT_PROCDIR}
     ALLPHOT_CMDFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.in"
+    ALLPHOT_PREPROC="${ALLPHOT_PROCDIR}/${cmd}_$$.pre"
+    ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/${cmd}_$$.post"
+    ALLPHOT_LOGFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.log"
     touch ${ALLPHOT_CMDFILE}
-    export ALLPHOT_CMDFILE
+    export ALLPHOT_CMDFILE ALLPHOT_PREPROC ALLPHOT_POSTPROC ALLPHOT_LOGFILE
  
     # prepare option file which always has to be passed    
     # should probably go to each command
@@ -41,40 +45,52 @@ allphot_setup() {
 
 }
 
-# allphot_run [<cmd>]
+# allphot_run [<cmd>] PUBLIC
+# run the command <cmd> within the processing directory
 allphot_run() {
     local cmd="${1:-$(basename ${ALLPHOT_CMDFILE%_*})}"
+
+    # pre-process
     [[ -x $(type -P ${cmd}) ]] || die -q "${cmd} is not a known executable"
-    [[ -e ${ALLPHOT_POSTPROC} ]] && chmod 755 ${ALLPHOT_POSTPROC}
     [[ -z ${ALLPHOT_CMDFILE} ]] && die -q "no process to run"
 
+    if [[ -e ${ALLPHOT_PREPROC} ]]; then
+	chmod 755 ${ALLPHOT_PREPROC}
+	${ALLPHOT_PREPROC}
+    fi
+
     # process
-    echo " >>> Running ${cmd}"
+    local cmdup=$(echo ${cmd} | tr [a-z] [A-Z])
+    write_process_msg "Now running ${cmdup}"
     pushd ${ALLPHOT_PROCDIR} &> /dev/null
-    $(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) || die -q "${cmd} failed"
+    $(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) >> ${ALLPHOT_LOGFILE} 2>&1 \
+	|| die -q "${cmdup} failed"
     popd &> /dev/null
 
-    # post process
+    # post-process
     rm -f ${ALLPHOT_CMDFILE}
-    [[ -x ${ALLPHOT_POSTPROC} ]] && ${ALLPHOT_POSTPROC} && rm -f ${ALLPHOT_POSTPROC}
+    if [[ -e ${ALLPHOT_POSTPROC} ]]; then
+	chmod 755 ${ALLPHOT_POSTPROC}
+	${ALLPHOT_POSTPROC}
+    fi
+    rm -f ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC} ${ALLPHOT_LOGFILE}
 
-    echo " >>> Done."
+    write_process_msg "Done."
 }
 
-# prepare an input file: no directory, filename only
-# allphot_input <input file>
+# allphot_input <input file> PUBLIC
+# prepare an input file to be processed within the processing directory
 allphot_input() {
-    [[ -r ${1} ]] || die -q "could not read input file: '${1}'"
     local procfile="${ALLPHOT_PROCDIR}/$(basename ${1})"
     if [[ ! ${procfile} -ef ${1} ]]; then
-	rm -f ${procfile}
-	ln -s $(relative_name "${1}" "${ALLPHOT_PROCDIR}") ${procfile}
+	echo >> ${ALLPHOT_PREPROC} "rm -f ${procfile}"
+	echo >> ${ALLPHOT_PREPROC} "ln -s $(relative_name "${1}" "${ALLPHOT_PROCDIR}") ${procfile}"
     fi
     echo $(basename ${procfile})
 }
 
-# prepare an output file: no directory, and remove if it exists as backup
-# allphot_output <output file>
+# allphot_output <output file> PUBLIC
+# prepare a file for output within the processing directory
 allphot_output() {
     local outfile="$(canonicalise ${1})"
     [[ -r ${outfile} ]] && mv -f ${outfile}{,.old}
@@ -85,3 +101,4 @@ allphot_output() {
 	rm -f ${outfile}.old
 EOF
 }
+
