@@ -95,13 +95,22 @@ int fits_exist_key(fitsfile *fptr, char *keyname) {
 int fits_print_keyvalue(fitsfile* fptr, char* keyname, int* status) {
   /* Standard string lengths defined in fitsio.h */
   static char keyval[FLEN_VALUE];
+  static char valstr[FLEN_VALUE];
   
   int oldstatus = *status;
 
   /* Read and print requested keyword value */
+  /*fits_read_key_str(fptr, keyname, keyval, 0, status);*/
   fits_read_keyword(fptr, keyname, keyval, 0, status);
   if (*status != KEY_NO_EXIST) {
-    printf("%s", keyval);
+    int datatype = fits_detect_key_type(keyval);
+    if (datatype == TSTRING)
+      printf("%s", keyval);
+    else {
+      removequotes(valstr, keyval);
+      printf("%s", valstr);      
+    }
+
   } else {
     *status = oldstatus;
     printf("absent");
@@ -161,10 +170,10 @@ int fits_update_keycard(fitsfile* fptr, char* keystring, int* status) {
 }
 
 int fits_detect_key_type(char *keyval) {
-  /* search for a ' */
+  /* search for a ' 
   if (strchr(keyval, '\''))
     return TSTRING;
-  else if (strchr(keyval,'.'))
+  else */if (strchr(keyval,'.'))
     return TDOUBLE;
   else if (isdigit(keyval[0]))
     return TLONG;
