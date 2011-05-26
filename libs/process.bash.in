@@ -2,6 +2,7 @@
 
 : ${ALLPHOT_PROCDIR:=.}
 export ALLPHOT_PROCDIR
+
 ALLPHOT_CMDFILE=""
 ALLPHOT_PREPROC="${ALLPHOT_PROCDIR}/.allphot_preproc.bash"
 ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/.allphot_postproc.bash"
@@ -37,7 +38,7 @@ allphot_setup() {
 	    [[ ! ${ALLPHOT_OPTFILE} -ef ${optfile} ]] \
 		&& rm -f ${ALLPHOT_OPTFILE} && \
 		ln -s $(relative_name ${optfile} "${ALLPHOT_PROCDIR}") ${ALLPHOT_OPTFILE}
-	elif [[ ! -e ${ALLPHOT_OPTFILE} ]]; then	
+	elif [[ ! -e ${ALLPHOT_OPTFILE} ]]; then
 	    cp "$(opt_file_path ${cmd})" ${ALLPHOT_OPTFILE}
 	fi
 	export ALLPHOT_OPTFILE
@@ -60,12 +61,11 @@ allphot_run() {
     fi
 
     # process
-    local cmdup=$(echo ${cmd} | tr [a-z] [A-Z])
-    write_process_msg "Now running ${cmdup}"
-    pushd ${ALLPHOT_PROCDIR} &> /dev/null
+    write_process_msg "Running ${cmd}..."
+    pushd ${ALLPHOT_PROCDIR} > /dev/null
     $(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) >> ${ALLPHOT_LOGFILE} 2>&1 \
-	|| die -q "${cmdup} failed"
-    popd &> /dev/null
+	|| die -q "${cmd} failed. See ${ALLPHOT_LOGFILE}."
+    popd > /dev/null
 
     # post-process
     rm -f ${ALLPHOT_CMDFILE}
@@ -101,4 +101,3 @@ allphot_output() {
 	rm -f ${outfile}.old
 EOF
 }
-

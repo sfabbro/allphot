@@ -1,5 +1,4 @@
-# -*-shell-script-*-
-# -*-bash-*-  vim: ft=bash
+# -*-*-bash-*-*-
 
 DESCRIPTION="No description available"
 VERSION="%VERSION%"
@@ -38,12 +37,14 @@ show_usage_message() {
 		;;
 	    ?*)
 		local desc="" line="" ifs_save="${IFS}" action_text=""
-		is_function "describe_${action}" && desc=$(describe_${action} )
+		is_function "describe_${action}" && desc=$(describe_${action})
 		
+		local actiontxt=${action}
+		[[ ${action} == do ]] && actiontxt="[do]"
 		if is_function "describe_${action}_parameters" ; then
-		    action_text="${action} $(describe_${action}_parameters)"
+		    action_text="${actiontxt} $(describe_${action}_parameters)"
 		else
-		    action_text="${action}"
+		    action_text="${actiontxt}"
 		fi
 		
 		write_kv_list_entry "${action_text}" "${desc:-(no description)}"

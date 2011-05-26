@@ -1,4 +1,4 @@
-# -*-bash-*-  vim: ft=bash
+# -*-*-bash-*-*-
 
 inherit process
 
@@ -42,7 +42,7 @@ daophot_attach() {
     local fitsname="$(allphot_input ${1})"
     ALLPHOT_NAME="${fitsname%.*}"    
     echo >> ${ALLPHOT_CMDFILE} "ATTACH ${fitsname}"
-    write_process_msg "Will run DAOPHOT ATTACH"
+    write_process_msg "Will run DAOPHOT ATTACH on ${fitsname}"
 }
 
 # daophot_sky PUBLIC

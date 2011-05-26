@@ -1,4 +1,4 @@
-# -*-bash-*-  vim: ft=bash
+# -*-*-bash-*-*-
 
 # check_do <function> [<args>] PUBLIC
 # Check that function exists, and call it with args.

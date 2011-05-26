@@ -1,4 +1,4 @@
-# -*-bash-*-  vim: ft=bash
+# -*-*-bash-*-*-
 
 inherit process
 
@@ -23,7 +23,8 @@ mch_output() {
 # dao_match <input reference star file> <output mch file> <star file 1>...<star file n> PUBLIC
 # create a file of answers to be run by daomatch
 dao_match() {
-    echo >> ${ALLPHOT_CMDFILE} $(allphot_input ${1})
+    local ref=$(allphot_input ${1})
+    echo >> ${ALLPHOT_CMDFILE} ${ref}
     shift
     echo >> ${ALLPHOT_CMDFILE} $(allphot_output ${1})
     shift
@@ -32,7 +33,7 @@ dao_match() {
 	echo >> ${ALLPHOT_CMDFILE} ${frame}
     done
     echo >> ${ALLPHOT_CMDFILE}
-    write_process_msg "Will run DAOMATCH"
+    write_process_msg "Will run DAOMATCH with reference ${ref}"
 }
 
 # dao_master 1:<input mch file> 2:<min frames>,<min frac frames>,<enough frames> 
@@ -84,17 +85,18 @@ EOF
 	${12}
 	${13}
 EOF
-    write_process_msg "Will run DAOMASTER"
+    write_process_msg "Will run DAOMASTER on ${mchfilein}"
 }
 
 # dao_allframe <mch file> <mag file>
 # create a file of answers to be run by allframe
 dao_allframe() {
     mch_output ${1} alf
+    local mchfile=$(allphot_input ${1})
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	
-	$(allphot_input ${1})
+	${mchfile}
 	$(allphot_input ${2})
 EOF
-    write_process_msg "Will run ALLFRAME"
+    write_process_msg "Will run ALLFRAME on ${mchfile}"
 }

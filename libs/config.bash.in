@@ -1,4 +1,4 @@
-# -*-bash-*-  vim: ft=bash
+# -*-*-bash-*-*-
 
 # store_config <file> <key> <value> PUBLIC
 # Stores a $key/$value pair for given module in $configfile

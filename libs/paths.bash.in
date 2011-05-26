@@ -1,4 +1,4 @@
-# -*-bash-*-  vim: ft=bash
+# -*-*-bash-*-*-
 
 # basename <path> PUBLIC
 # transparent bash-only replacements for the 'basename' command
