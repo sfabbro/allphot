@@ -40,7 +40,7 @@ show_usage_message() {
 		is_function "describe_${action}" && desc=$(describe_${action})
 		
 		local actiontxt=${action}
-		[[ ${action} == do ]] && actiontxt="[do]"
+		[[ ${action} == do ]] && actiontxt="do [default]"
 		if is_function "describe_${action}_parameters" ; then
 		    action_text="${actiontxt} $(describe_${action}_parameters)"
 		else

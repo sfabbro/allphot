@@ -1,4 +1,4 @@
-
+# -*-shell-script-*-
 
 DESCRIPTION="Run DAOPHOT actions on FITS images and catalogues"
 DEFAULT_ACTION="list"
@@ -20,15 +20,18 @@ daophot_options_description() {
 daophot_action_usage() {
     [[ $# -lt 1 ]] && return
     local action=${1} desc="" line="" ifs_save="${IFS}" action_text=""
-    is_function "describe_${action}" && desc=$(describe_${action} )    
+    is_function "describe_${action}" && desc=$(describe_${action})
+
+    local actiontxt=${action}
+    [[ ${action} == do ]] && actiontxt="do [default]"
     if is_function "describe_${action}_parameters" ; then
-	action_text="${action} $(describe_${action}_parameters)"
+	action_text="${actiontxt} $(describe_${action}_parameters)"
     else
-	action_text="${action}"
+	action_text="${actiontxt}"
     fi
     
     write_kv_list_entry "${action_text}" "${desc:-(no description)}"
-    
+
     if is_function "describe_${action}_options" ; then
 	IFS=$'\n'
 	local line
@@ -54,34 +57,27 @@ do_list() {
 	grep -v 'action' | \
 	sort ) ; do
 	case "${action}" in
-	    help|usage|version)
+	    help|usage|version|list)
 		continue
 		;;
+	    do) daophot_actions=(  "${action}" "${daophot_actions[@]}") ;;
 	    ?*)	daophot_actions=( "${daophot_actions[@]}" "${action}" ) ;;
 	esac
     done
     
     if is_output_mode brief; then
-	# This is mainly intended for bash completion
-	echo "help"
-	echo "usage"
-	echo "version"
 	for action in "${daophot_actions[@]}" ; do
 	    echo "${action}"
 	done
     else
-	write_list_start "Built-in actions:"
-	write_kv_list_entry "help"			"Display a help message"
-	write_kv_list_entry "usage"			"Display a usage message"
-	write_kv_list_entry "version"		"Display version information"
-	
 	if [[ ${#daophot_actions[@]} -gt 0 ]] ; then
-	    echo
 	    write_list_start "DAOPHOT actions:"
 	    for action in "${daophot_actions[@]}" ; do
 		desc=${desc:-No description available}
-		is_function "describe_${action}" && desc=$(describe_${action} )
-		write_kv_list_entry "${action}" "${desc}"
+		is_function "describe_${action}" && desc=$(describe_${action})
+    		local actiontxt=${action}
+		[[ ${action} == do ]] && actiontxt="do [default]"
+		write_kv_list_entry "${actiontxt}" "${desc}"
 	    done
 	fi
     fi
@@ -819,15 +815,27 @@ do_addstar() {
 
 ### DO ###
 describe_do() {
-    echo "Run your own DAOPHOT recipe"
+    echo "Run your own ALLPHOT/DAOPHOT recipe script"
 }
 
 describe_do_parameters() {
     echo "<recipe file> [arg1 ... arg]"
 }
 
+describe_do_options() {
+    daophot_help_description
+}
+
 do_do() {
-   [[ $# -lt 1 ]] && daophot_action_usage do && return
+    while [[ $# -gt 0 ]]; do
+	case "${1}" in
+	    --help) daophot_action_usage do && return ;;
+	    --*) die -q "Unrecognized option '${1}'" ;;
+              *) break ;;
+        esac
+	shift
+    done
+    [[ $# -lt 1 ]] && daophot_action_usage do && return
     local infile="${1}"
     shift
     allphot_setup daophot
