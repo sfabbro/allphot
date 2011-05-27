@@ -3,10 +3,10 @@
 do_psf_allstar() {
     local options
     local gain=$(fitskey -n -p GAIN ${1})
-    [[ ${gain} == absent ]] || options="--option GA=${gain}"
+    [[ ${gain} == absent ]] || options="${options} --option GA=${gain}"
     local ron=$(fitskey -n -p RDNOISE ${1})
-    [[ ${ron} == absent ]] || options="--option RE=${ron}"
-    allphot daophot opt "${options}"
+    [[ ${ron} == absent ]] || options="${options} --option RE=${ron}"
+    allphot daophot opt ${options}
     allphot daophot find ${1}
     allphot daophot phot ${1}
     allphot daophot pick ${1%.*}.ap

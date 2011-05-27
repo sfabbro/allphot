@@ -5,7 +5,8 @@ if [ $# -lt 1 ]; then
     echo " First one is reference"
 fi
 
-allphot daomatch do --out=${1%.*}.mch $*
-allphot daomaster do sky.mch
-allphot allframe do sky.mch
+mch=${1%.*}.mch
+allphot daomatch --out=${mch} $*
+allphot daomaster ${mch}
+allphot allframe ${mch}
 
