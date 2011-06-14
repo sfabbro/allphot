@@ -1,3 +1,4 @@
+# -*-shell-script-*-
 
 DESCRIPTION="Run DAOMASTER on star catalogues"
 DEFAULT_ACTION="do"
@@ -13,10 +14,10 @@ describe_do_parameters() {
 }
 
 describe_do_options() {
-    echo "--frames=<num>,<num>,<num> : Minimum number, minimum fraction, enough frames (default <nframes>/2,0.5,<nframes>)"
-    echo "--maxsigma=<num>        : Maximum magnitude error in sigma (default 0.2)"
-    echo "--dof=<num>        : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
-    echo "--radius=<num> : Critical match up radius in pixels  (default 2)"
+    echo "--frames=<val>,<val>,<val> : Minimum number, minimum fraction, enough frames (default <nframes>/2,0.5,<nframes>)"
+    echo "--maxsigma=<val>        : Maximum magnitude error in sigma (default 0.2)"
+    echo "--dof=<val>        : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
+    echo "--radius=<val> : Critical match up radius in pixels  (default 2)"
     echo "--nonewid : Will not define new star IDs"
     echo "--magfile=<file> : Output with mean magnitudes and scatter (default: <input>.mag)"
     echo "--corfile=<file> : Output with corrected magnitudes and errors (default: <input>.cor)"
@@ -57,6 +58,7 @@ do_do() {
     local field="${1%.*}"
     local nframes=$(wc -l ${1} | cut -d ' ' -f 1)
     [[ -z ${frames} ]] && frames="$(( ${nframes} / 2 )),0.5,${nframes}"
+
     allphot_setup daomaster
     dao_master \
 	"${1}" "${frames}" ${maxsigma} ${dof} ${radius} \

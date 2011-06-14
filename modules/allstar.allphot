@@ -1,3 +1,4 @@
+# -*-shell-script-*-
 
 DESCRIPTION="Run ALLSTAR on a FITS image"
 DEFAULT_ACTION="do"

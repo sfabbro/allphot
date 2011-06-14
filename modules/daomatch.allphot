@@ -1,3 +1,4 @@
+# -*-shell-script-*-
 
 DESCRIPTION="Run DAOMATCH on star catalogues"
 DEFAULT_ACTION="do"
@@ -5,24 +6,36 @@ DEFAULT_ACTION="do"
 inherit allframe process paths
 
 describe_do() {
-    echo "Match stars catalogues"
+    echo "Match star catalogues"
 }
 
 describe_do_parameters() {
-    echo "<star file1>...<star file n>"
+    echo "<star file1>[xmin:xmax,ymin:ymax]...<star file n>[xmin:xmax,ymin:ymax]"
 }
 
 describe_do_options() {
-    echo "--out=<name>      :  Output file name (default: <first>.mch)"
-    echo "--ref=<list>      :  Name of the reference (default: first)"
+    echo "--out=<file>      : Output file name (default: <first>.mch)"
+    echo "--ref=<file>      : Name of the master reference (default: <first>)"
+    echo "--chimax=<val>    : Skip stars with chi > <val>"
+    echo "--sharpmax=<val>  : Skip stars with |sharp| > <val>"
+    echo "--magmax=<val>    : Skip stars with mag > <val>"
+    echo "--sigmax=<val>    : Skip stars with dmag > <val>"
+    echo "--scale=<val>     : Force the scale value relative to the reference (1: no scaling)"
+    echo "--onlyshift       : Search only for shifts (no rotations, no scaling)"
 }
 
 do_do() {
-    local fieldname="myfield" refcat=""
+    local field="" master="" cuts="" trns=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --out=*) fieldname="${1##*=}";;
-	    --ref=*) refcat="${1##*=}";;
+	    --out=*) field="${1##*=}" ;;
+    	    --chimax=*) cuts="${cuts}%${1##*=}" ;;
+    	    --sharpmax=*) cuts="${cuts}[${1##*=}" ;;
+	    --magmax=*) cuts="${cuts}<${1##*=}" ;;
+	    --sigmax=*) cuts="${cuts}|${1##*=}" ;;
+	    --ref=*) master="${1##*=}" ;;
+            --onlyshift) trns=";" ;;
+	    --scale=*) trns="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -30,26 +43,17 @@ do_do() {
     done
 
     [[ $# -lt 1 ]] && do_usage && return
-
-    if [[ -z ${refcat} ]]; then
-	refcat="$(canonicalise ${1})"
-	shift
-    fi
+    [[ -z ${master} ]] && master=${1%}
+    shift
     [[ $# -lt 1 ]] && die -q "missing input star lists"
-
-    #ln -sfn ${refcat} ${fieldname}ref.${refcat##*.}
-    #refcat=${fieldname}ref.${refcat##*.}
-
-    local fcat
-    declare -a cats
-    for fcat in $*; do
-	fcat="$(canonicalise ${fcat})"
-	[[ -r ${fcat} ]] || die -q "file ${fcat} not found"
-	[[ ! ${fcat} -ef $(basename ${fcat}) ]] && ln -sfn "${fcat}" .
-	cats+=( "$(basename ${fcat})" )
+    
+    local f
+    declare -a files
+    for f in $*; do
+	files+=( ${f}${trns} )
     done
 
     allphot_setup daomatch
-    dao_match ${refcat} ${fieldname} "${cats[@]}"
+    dao_match ${master}${cuts} ${field:-${master%%.*}.mch} "${files[@]}"
     allphot_run daomatch
 }
