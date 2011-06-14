@@ -86,6 +86,7 @@ ap_do_version() {
 ap_do_list_options() {
     write_list_start "Global options:"
     write_kv_list_entry "--brief"    "Make output shorter"
+    write_kv_list_entry "--quiet"    "Make output silent"
     write_kv_list_entry "--no-color,--no-colour"    "Disable coloured output"
 }
 
@@ -135,6 +136,10 @@ if [[ -z ${action} ]] && [[ -n ${1##--} ]] ; then
 	    brief)
 		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} brief"
 		set_output_mode brief
+		;;
+	    quiet)
+		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} quiet"
+		set_output_mode quiet
 		;;
 	    no-colour|no-color)
 		ALLPHOT_OPTIONS="${ALLPHOT_OPTIONS} no-colour"

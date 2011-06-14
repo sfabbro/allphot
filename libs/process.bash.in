@@ -6,7 +6,6 @@ export ALLPHOT_PROCDIR
 ALLPHOT_CMDFILE=""
 ALLPHOT_PREPROC="${ALLPHOT_PROCDIR}/.allphot_preproc.bash"
 ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/.allphot_postproc.bash"
-ALLPHOT_LOG="${ALLPHOT_PROCDIR}/.allphot.log"
 
 # allphot_setup [--optfile=<file>] <command> [<FITS file>] PUBLIC
 # setup a directory and option file for processing a fits file with <command>
@@ -25,9 +24,8 @@ allphot_setup() {
     ALLPHOT_CMDFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.in"
     ALLPHOT_PREPROC="${ALLPHOT_PROCDIR}/${cmd}_$$.pre"
     ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/${cmd}_$$.post"
-    ALLPHOT_LOGFILE="${ALLPHOT_PROCDIR}/${cmd}_$$.log"
     touch ${ALLPHOT_CMDFILE}
-    export ALLPHOT_CMDFILE ALLPHOT_PREPROC ALLPHOT_POSTPROC ALLPHOT_LOGFILE
+    export ALLPHOT_CMDFILE ALLPHOT_PREPROC ALLPHOT_POSTPROC
  
     # prepare option file which always has to be passed    
     # should probably go to each command
@@ -63,17 +61,21 @@ allphot_run() {
     # process
     write_process_msg "Running ${cmd}..."
     pushd ${ALLPHOT_PROCDIR} > /dev/null
-    $(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) >> ${ALLPHOT_LOGFILE} 2>&1 \
-	|| die -q "${cmd} failed. See ${ALLPHOT_LOGFILE}."
+    if is_output_mode quiet; then
+	$(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) \
+	    > /dev/null || die -q "${cmd} failed."
+    else
+	$(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) \
+	    || die -q "${cmd} failed."
+    fi
     popd > /dev/null
 
     # post-process
-    rm -f ${ALLPHOT_CMDFILE}
     if [[ -e ${ALLPHOT_POSTPROC} ]]; then
 	chmod 755 ${ALLPHOT_POSTPROC}
 	${ALLPHOT_POSTPROC}
     fi
-    rm -f ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC} ${ALLPHOT_LOGFILE}
+    #rm -f ${ALLPHOT_CMDFILE} ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC}
 
     write_process_msg "Done."
 }

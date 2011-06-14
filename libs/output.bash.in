@@ -50,6 +50,7 @@ write_error_msg() {
 # write_process_msg PUBLIC
 # write a message during processing
 write_process_msg() {
+    is_output_mode quiet && return
     echo -e "${COLOUR_HI}   >>> ${*}${COLOUR_NORMAL}"
 }
 
