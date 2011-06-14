@@ -1,3 +1,25 @@
+2011-06-13 Sebastien Fabbro <sfabbro@uvic.ca>
+
+	* Bumped to 0.6.0
+	* quiet mode for processing
+
+2011-06-07 Sebastien Fabbro <sfabbro@uvic.ca>
+
+	* implemented sub images on daomatch: [xmin:xmax,ymin:ymax]
+	* implemented daomatch cuts : %,<,|,[ on master
+	* emacs love 
+
+2011-06-06 Sebastien Fabbro <sfabbro@uvic.ca>
+	
+	* fitskey now remove completely quotes
+	* emacs love 
+
+2011-05-27 Sebastien Fabbro <sfabbro@uvic.ca>
+
+	* mentioned do as default action in help
+	* simplified daophot.allphot list action help
+	* updated examples for newer formats
+
 2011-05-26 Sebastien Fabbro <sfabbro@uvic.ca>
 
 	* Bumped to 0.5.2

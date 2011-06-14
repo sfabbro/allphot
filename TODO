@@ -1,5 +1,5 @@
-* a --pretend option to do the script without running them
-* compare input files with outputs in tests
+* --pretend option to do the script without running it
+* tests work: compare, many more tests
 * find a way to exit from a bash script calls allphot
 * write montage2 module
 * write daogrow module
