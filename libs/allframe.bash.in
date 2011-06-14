@@ -1,4 +1,4 @@
-# -*-*-bash-*-*-
+# -*-*-shell-script-*-*-
 
 inherit process
 
@@ -20,31 +20,47 @@ mch_output() {
     done
 }
 
+get_cutout_limits() {
+    echo ${1} | sed \
+	-e 's/.*\[\([[:digit:]]*\):\([[:digit:]]*\),\([[:digit:]]*\):\([[:digit:]]*\)\]/\1 \2 \3 \4/'
+}
+
 # dao_match <input reference star file> <output mch file> <star file 1>...<star file n> PUBLIC
 # create a file of answers to be run by daomatch
 dao_match() {
-    local ref=$(allphot_input ${1})
-    echo >> ${ALLPHOT_CMDFILE} ${ref}
+    local ref=$(allphot_input "$(dirname ${1})/$(basename ${1%%[\%\<\[\|*]*})")
+    echo >> ${ALLPHOT_CMDFILE} $(basename ${1})
     shift
     echo >> ${ALLPHOT_CMDFILE} $(allphot_output ${1})
     shift
-    local frame
-    for frame in $@; do
-	echo >> ${ALLPHOT_CMDFILE} ${frame}
+    local fcat scat cutoutflag
+    declare -a cutout
+    for scat in $*; do
+	[[ ${scat} =~ "\[" ]] && cutoutflag="*"
+    	fcat="$(dirname ${scat})/$(basename ${scat%%[\[*/;?]*})"
+	echo >> ${ALLPHOT_CMDFILE} $(allphot_input "${fcat}")"${cutoutflag}"
+	if [[ ${cutoutflag} == "*" ]]; then
+	    cutout=( $(get_cutout_limits "${scat}") )
+	    echo >> ${ALLPHOT_CMDFILE} ${cutout[0]},${cutout[1]}
+	    echo >> ${ALLPHOT_CMDFILE} ${cutout[2]},${cutout[3]}
+	    cutoutflag="!"
+	else
+	    cutoutflag=""
+	fi
     done
     echo >> ${ALLPHOT_CMDFILE}
-    write_process_msg "Will run DAOMATCH with reference ${ref}"
+    write_process_msg "Will run DAOMATCH with master reference ${ref}"
 }
 
-# dao_master 1:<input mch file> 2:<min frames>,<min frac frames>,<enough frames> 
-#            3:<max sigma> 4:<d.o.f.> 5:<critical rad> 6:<assign stars new IDs?> 
+# dao_master 1:<input mch file> 2:<min frames>,<min frac frames>,<enough frames>
+#            3:<max sigma> 4:<d.o.f.> 5:<critical rad> 6:<assign stars new IDs?>
 #            7:<output mean mag file> 8:<output cor mag file> 9:<output raw mag file> 10:<output mch file>
 #            11:<output transfer table file> 12:<output coo files?> 13:<output mtr files?>  PUBLIC
 # create a file of answers to be run by daomaster
 dao_master() {
     [[ ${12} == y ]] && mch_output ${1} coo
     [[ ${13} == y ]] && mch_output ${1} mtr
-    local mchfilein=$(allphot_input ${1})
+    local mchfilein=$(allphot_input "$(dirname ${1})/$(basename ${1%%[\%\</\?]*})")
     local mchfileout=${10}
     if [[ ${1} == ${10} ]]; then
 	mchfileout=$(allphot_output ${10}.out)
@@ -54,7 +70,7 @@ dao_master() {
     fi
 
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
-	${mchfilein}
+	$(basename ${1})
 	${2}
 	${3}
 	${4}
@@ -81,10 +97,14 @@ EOF
 	y
 	${mchfileout}
 	y
-	$(allphot_output ${11})
-	${12}
-	${13}
 EOF
+	if [[ ${1} =~ [\<\%\[\|\>] ]]; then
+	    echo ${12}
+	else
+	    echo $(allphot_output ${11})
+	    echo ${12}
+	    echo ${13}
+	fi
     write_process_msg "Will run DAOMASTER on ${mchfilein}"
 }
 
