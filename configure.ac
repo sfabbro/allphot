@@ -1,9 +1,9 @@
-AC_INIT([allphot], [0.6.0], [sfabbro@uvic.ca])
+AC_INIT([allphot], [0.6.2], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])
 AC_CONFIG_AUX_DIR([autoconf])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 
 
 # BASH may already be set in the shell, if the admin then changes the

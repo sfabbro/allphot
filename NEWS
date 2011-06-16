@@ -1,4 +1,21 @@
 ========================================================================
+ALLPHOT version 0.6.2                               Released: 2011-06-17
+------------------------------------------------------------------------
+* Fixed daomatch default master
+* Many daomaster fixes
+* Auto-generated ChangeLog
+
+========================================================================
+ALLPHOT version 0.6.1                               Released: 2011-06-15
+------------------------------------------------------------------------
+* Added daomatch secret options: cuts on catalogues, transformations
+* Added daomaster secret options: cuts on catalogues
+* Added --quiet mode
+* Added simple --debug mode (yet to be more functional)
+* Added color for processing
+* Fixed many bug for daomatch/daomaster
+
+========================================================================
 ALLPHOT version 0.5.1                               Released: 2011-05-24
 ------------------------------------------------------------------------
 * Fixed major bug when accessinng fits.bash causing silent crash
