@@ -75,7 +75,7 @@ allphot_run() {
 	chmod 755 ${ALLPHOT_POSTPROC}
 	${ALLPHOT_POSTPROC}
     fi
-    #rm -f ${ALLPHOT_CMDFILE} ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC}
+    is_debug_mode || rm -f ${ALLPHOT_CMDFILE} ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC}
 
     write_process_msg "Done."
 }
