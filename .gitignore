@@ -9,7 +9,6 @@ stamp-h*
 config.h
 Makefile
 Makefile.in
-ChangeLog
 libtool
 /aclocal.m4
 /autom4te.cache
