@@ -27,12 +27,16 @@ describe_do_options() {
     echo "--mchfile=<file> : Output with new transformations (default: <input>.mch)"
     echo "--nonewcoo: Will not overwrite coordinates files with new star IDs (.coo files)"
     echo "--nomtr: Will not produce input files with IDs changed (.mtr files)"
+    echo "--chimax=<val>    : Skip stars with chi > <val>"
+    echo "--sharpmax=<val>  : Skip stars with |sharp| > <val>"
+    echo "--magmax=<val>    : Skip stars with mag > <val>"
+    echo "--sigmax=<val>    : Skip stars with dmag > <val>"
 }
 
 do_do() {
     local frames="" maxsigma=0.2 dof=6 radius=2
     local magfile="" corfile="" rawfile="" mchfile="" tfrfile=""
-    local newid=y newcoo=y mtr=y
+    local newid=y newcoo=y mtr=y options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --frames=*) frames="${1##*=}" ;;
@@ -47,6 +51,10 @@ do_do() {
 	    --tfrfile=*) tfrfile="${1##*=}" ;;
 	    --nonewcoo)  newcoo=n ;;
 	    --nomtr) mtr=n ;;
+    	    --chimax=*) options="${options} ${1}" ;;
+    	    --sharpmax=*) options="${options} ${1}" ;;
+	    --magmax=*) options="${options} ${1}" ;;
+	    --sigmax=*) options="${options} ${1}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -60,7 +68,7 @@ do_do() {
     [[ -z ${frames} ]] && frames="$(( ${nframes} / 2 )),0.5,${nframes}"
 
     allphot_setup daomaster
-    dao_master \
+    dao_master ${options} \
 	"${1}" "${frames}" ${maxsigma} ${dof} ${radius} \
 	${newid} "${magfile:-${field}.mag}" "${corfile:-${field}.cor}" \
 	"${rawfile:-${field}.raw}" "${mchfile:-${field}.mch}" "${tfrfile:-${field}.tfr}" \
