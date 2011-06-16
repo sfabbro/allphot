@@ -35,6 +35,17 @@ is_output_mode() {
     [[ ${ALLPHOT_OUTPUT_MODE} = ${1} ]]
 }
 
+# toggle debug mode
+set_debug_mode() {
+    ALLPHOT_DEBUG_MODE=${1:-true}
+}
+
+# is_debug_mode PUBLIC
+# test if we are on debug mode
+is_debug_mode() {
+    [[ ${ALLPHOT_DEBUG_MODE} == true ]]
+}
+
 # init_columns INTERNAL
 # Determine width of terminal and set COLUMNS variable
 init_columns() {
