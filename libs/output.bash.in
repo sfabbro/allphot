@@ -35,15 +35,16 @@ is_output_mode() {
     [[ ${ALLPHOT_OUTPUT_MODE} = ${1} ]]
 }
 
-# toggle debug mode
+# set debug mode to $1
 set_debug_mode() {
-    ALLPHOT_DEBUG_MODE=${1:-true}
+    ALLPHOT_DEBUG_MODE=${1}
 }
 
+
 # is_debug_mode PUBLIC
-# test if we are on debug mode
+# test if $1 is the current debug mode
 is_debug_mode() {
-    [[ ${ALLPHOT_DEBUG_MODE} == true ]]
+    [[ ${ALLPHOT_DEBUG_MODE} == ${1} ]]
 }
 
 # init_columns INTERNAL

@@ -1,4 +1,4 @@
-AC_INIT([allphot], [0.6.2], [sfabbro@uvic.ca])
+AC_INIT([allphot], [0.7.0], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])

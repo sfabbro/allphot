@@ -1,5 +1,10 @@
-* --pretend option to do the script without running it
+== 0.8 ==
+* write daogrow module
+
+== 0.9 ==
 * tests work: compare, many more tests
 * find a way to exit from a bash script calls allphot
-* write montage2 module
-* write daogrow module
+
+== 1.0 ==
+* bug fixes from 0.9 only
+* many nice examples of pipelines

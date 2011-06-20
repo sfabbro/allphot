@@ -33,5 +33,6 @@ done
 ${ALLPHOT_EXE} daomatch --out=sky.mch sky??.als
 ${ALLPHOT_EXE} daomaster sky.mch
 ${ALLPHOT_EXE} allframe sky.mch
+${ALLPHOT_EXE} montage2 sky.mch
 
 unset ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
