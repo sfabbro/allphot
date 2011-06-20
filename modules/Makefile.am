@@ -6,6 +6,7 @@ modules_DATA = \
 	daophot.allphot \
 	daomatch.allphot \
 	daomaster.allphot \
+	montage2.allphot \
 	modules.allphot \
 	cat.allphot
 

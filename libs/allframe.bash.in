@@ -8,6 +8,12 @@ mch_getframes() {
     awk '{print substr($1,2,match($1,/\./)-2)}' ${1}
 }
 
+# mch_getmaster <match file> INTERNAL
+# return the master frame name within a match file
+mch_getmaster() {
+    awk 'NR==1{print substr($1,2,match($1,/\./)-2);exit}' ${1}
+}
+
 # mch_output <match file> <suf>...<suf> INTERNAL
 # prepare frames from a match file with suffixes 
 mch_output() {    
@@ -22,7 +28,7 @@ mch_output() {
 
 get_cutout_limits() {
     echo ${1} | sed \
-	-e 's/.*\[\([[:digit:]]*\):\([[:digit:]]*\),\([[:digit:]]*\):\([[:digit:]]*\)\]/\1 \2 \3 \4/'
+	-e 's/\[\([[:digit:]]*\):\([[:digit:]]*\),\([[:digit:]]*\):\([[:digit:]]*\)\]/\1 \2 \3 \4/'
 }
 
 # dao_match [options] <input reference star file> <output mch file> <star file 1>...<star file n> PUBLIC
@@ -164,4 +170,33 @@ dao_allframe() {
 	$(allphot_input ${2})
 EOF
     write_process_msg "Will run ALLFRAME on ${mchfile}"
+}
+
+# dao_montage2 <mch file> <suffix> <num frames, perc> <xmin:xmax,ymin:ymax> <expansion factor> <sky?> <output>
+# create a file of answers to be run by montage2
+dao_montage2() {
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	$(allphot_input ${1})
+	${2}
+	${3}
+EOF
+    declare -a cutout
+    cutout=( $(get_cutout_limits "${4}") )
+    cat >> ${ALLPHOT_CMDFILE} <<-EOF
+	${cutout[0]},${cutout[1]}
+	${cutout[2]},${cutout[3]}
+	${5}
+	${6}
+EOF
+    [[ ${6} != "e" ]] && echo >> ${ALLPHOT_CMDFILE} $(allphot_output ${7})
+
+    # now montage2 needs silently the psf and fits files
+    # make sure we have them locally to the processing directory
+    local f
+    for f in $(mch_getframes ${1}); do
+	allphot_input ${f}.psf > /dev/null
+	allphot_input ${f}${2} > /dev/null
+    done
+
+    write_process_msg "Will run MONTAGE2 on ${mchfile}"
 }
