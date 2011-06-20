@@ -58,6 +58,7 @@ allphot_run() {
 	${ALLPHOT_PREPROC}
     fi
 
+    is_debug_mode pretend && return
     # process
     write_process_msg "Running ${cmd}..."
     pushd ${ALLPHOT_PROCDIR} > /dev/null
@@ -70,12 +71,21 @@ allphot_run() {
     fi
     popd > /dev/null
 
+    if is_debug_mode debug; then	
+	write_process_msg "==== Debug information start ===="
+	echo "ALLPHOT_PROCDIR=${ALLPHOT_PROCDIR}"
+	echo "ALLPHOT_PREPROC=${ALLPHOT_PREPROC}"
+	echo "ALLPHOT_POSTPROC=${ALLPHOT_POSTPROC}"
+	echo "Command launched: $(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE})"
+	write_process_msg "==== Debug information end ===="	
+    fi
+
     # post-process
     if [[ -e ${ALLPHOT_POSTPROC} ]]; then
 	chmod 755 ${ALLPHOT_POSTPROC}
 	${ALLPHOT_POSTPROC}
     fi
-    is_debug_mode || rm -f ${ALLPHOT_CMDFILE} ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC}
+    is_debug_mode debug || rm -f ${ALLPHOT_CMDFILE} ${ALLPHOT_PREPROC} ${ALLPHOT_POSTPROC}
 
     write_process_msg "Done."
 }
