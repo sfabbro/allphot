@@ -146,8 +146,8 @@ int main(int argc, char** argv) {
 	keyscan = &keys[j];
 
 	if (keyscan->dofunc & doprint) {
+	  if (j>0) printf(" ");
 	  fits_print_keyvalue(fptr, keyscan->keystring, &status);
-	  printf(" ");
 	}
 	if (keyscan->dofunc & dofull)  
 	  fits_update_keycard(fptr, keyscan->keystring, &status);
