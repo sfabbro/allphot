@@ -22,6 +22,6 @@ if [ $# -lt 2 ]; then
     echo "Usage: $(basename $0) <fits image 1>...<fits image n>"
 fi
 
-for im in *@; do
+for im in $@; do
     do_psf_allstar ${im}
 done

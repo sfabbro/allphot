@@ -79,7 +79,8 @@ ap_do_help() {
 
 # Display version
 ap_do_version() {
-    echo "${ALLPHOT?_PROGRAM_NAME} ${ALLPHOT_VERSION}"
+    echo "${ALLPHOT_PROGRAM_NAME} ${ALLPHOT_VERSION}"
+    echo "Distributed under the terms of the GNU GPL version 3."
 }
 
 # Display all recognized global options
