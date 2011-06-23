@@ -13,6 +13,11 @@ Requirements:
   If not, get a fully working CFITSIO and execs from
   http://astrowww.phys.uvic.ca/~seb/. Fetch the latest version.
 
+* GNU readlink or the realpath (the command, not the libc
+  function). On Linux you will have it installed. On Mac OSX and other
+  BSD Unix, you will need to install either GNU coreutils (Macports on
+  OSX), or realpath. 
+
 * ALLFRAME: it is not public software. To get ALLFRAME you have to email
   the author Peter Stetson and he will send you the code. You can then
   install it yourself, but I recommand an easier and more robust
@@ -31,7 +36,7 @@ You can test that the scripts are working with the unit tests by running:
 
 Then install it with:
 
-    make install
+    (sudo) make install
 
 Below are the generic automatically generated autotools installation
 instructions.

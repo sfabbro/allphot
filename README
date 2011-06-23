@@ -37,8 +37,8 @@ Documentation
 
 * All commands are wrappers around the ALLFRAME commands, so it is
   very much advised to know how the original ALLFRAME commands
-  work. Refer to the original DAOPHOT ALLFRAME papers and
-  documentation for more details.
+  work. Refer to the original DAOPHOT and ALLFRAME papers, and
+  documentation included in the allframe tar ball for more details.
 
   Typing "allphot <command> --help" will describe what you can do with
   the particular <command>.
