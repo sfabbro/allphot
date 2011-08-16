@@ -33,7 +33,7 @@ macho_fetch() {
 # fits_cut <fits>: uncompress and keep datasec only
 # return the new name
 fits_cut() {
-    imcopy "${1}$(fits_key DATASEC ${1})" ${1%%.*}.fits
+    imcopy "${1}$(fitskey -n -p DATASEC ${1})" ${1%%.*}.fits
     rm -f ${1}
     echo ${1%%.*}.fits
 }
