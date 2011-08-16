@@ -22,8 +22,11 @@ Requirements:
   the author Peter Stetson and he will send you the code. You can then
   install it yourself, but I recommand an easier and more robust
   installation from an autotool'ed version of which I can not yet release
-  publically, but I would be happy to give you once you have asked
-  Peter Stetson to give you his ALLFRAME tar ball.
+  publically because of the non-public part of ALLFRAME, but I would
+  be happy to give you once you have asked Peter Stetson to give you
+  his ALLFRAME tar ball.
+
+* bc: a simple calculator, it should be installed. 
 
 Once those two have been installed and are reachable from the paths,
 you can build ALLPHOT using 
