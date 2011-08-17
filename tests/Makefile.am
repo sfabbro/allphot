@@ -13,8 +13,6 @@ dosed = @SED@ \
 
 EXTRA_DIST= \
 	test-allphot.bash.in \
-	generate.py \
-	sky.dict \
 	sky00.fits \
 	sky00.list \
 	sky01.fits \
