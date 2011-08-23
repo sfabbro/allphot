@@ -1,5 +1,9 @@
+The following features are planned, development has not started.
+
 == 0.8 ==
-* write daogrow module
+* daogrow module
+* add a --quiet or multiple logging options
+* examples of pipeline for DAOMATCH/DAOMASTER/ALLFRAME
 
 == 0.9 ==
 * tests work: compare, many more tests
@@ -7,4 +11,4 @@
 
 == 1.0 ==
 * bug fixes from 0.9 only
-* many nice examples of pipelines
+
