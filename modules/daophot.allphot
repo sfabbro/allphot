@@ -130,7 +130,9 @@ do_opt() {
 
     daophot_opt "${optfile}"
     allphot_run daophot
-    [[ -n ${outfile} ]] && cp -f "${ALLPHOT_OPTFILE}" "${outfile}"
+    [[ -n ${outfile} ]] && \
+	[[ ! ${ALLPHOT_OPTFILE} -ef ${outfile} ]] && \
+	cp -f "${ALLPHOT_OPTFILE}" "${outfile}"
 }
 
 ### SKY ###
@@ -319,7 +321,7 @@ describe_psf_parameters() {
 
 do_psf() {
     local optfile="" options=""
-    local phofile="" lstfile="" psffile="" neifile="" 
+    local phofile="" lstfile="" psffile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --help) daophot_action_usage psf && return ;;
