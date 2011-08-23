@@ -24,24 +24,32 @@ make_psf_als() {
     local fits=${1}
     local im=$(basename ${fits%.*})
     export ALLPHOT_PROCDIR=process_${im}
-    # 1) make psf with high S/N stars
-    allphot daophot opt --dict="${ALLSTAR_DICT}" --out=${im}.opt ${fits}
+    
+    echo " ========================================================"
+    echo " === STEP 1: Make simple Gaussian PSF with high S/N stars"
+    echo " ========================================================"
+
+    allphot daophot opt --dict="${DICTFILE}" --out=${im}.opt ${fits}
     allphot daophot find --option TH=15 ${fits}
     allphot daophot phot ${fits}
     allphot daophot pick --nstars=50 --magfaint=13 ${im}.ap
     allphot daophot psf \
 	--option VA=-1 \
 	--option AN=1 ${fits}
-    allphot cat neighbours ${im}.nei ${im}.lst
+    allphot cat neighbours ${im}.nei ${im}.lst    
     allphot daophot psf \
 	--option VA=-1 \
-	--option AN=1 ${fits}
+	--option AN=1 \
+	${fits}
 
-    # 2) subtract stars neighbours and rebuild
     allphot allstar \
 	--option WA=0 \
 	--option IS=0 \
 	--option OS=0 ${fits}
+
+    echo " ================================================================"
+    echo " === STEP 2: Remove neighbours and choose best analytical profile"
+    echo " ================================================================"
 
     allphot daophot sort --index=3 ${im}.als
     allphot daophot substar --in=${im}.srt --keep=${im}.lst ${fits}
@@ -51,15 +59,18 @@ make_psf_als() {
 	--option AN=-7 \
 	--pho=${im}.ap \
 	--in=${im}.lst \
-	--nei=${im}.nei \
 	--out=${im}.psf \
 	${im}s.fits
     allphot allstar ${fits}
+    rm -f ${im}.srt ${ALLPHOT_PROCDIR}/${im}.srt
 
-    # 3) detect all faint stars on residuals
+    echo " ================================================================"
+    echo " === STEP 3: Increase spatial variabilty and detect fainter stars"
+    echo " ================================================================"
+
     local fwhm=$(get_psf_fwhm ${im}.psf)
     allphot daophot opt \
-	--dict="${ALLSTAR_DICT}" \
+	--dict="${DICTFILE}" \
 	--option AN=$(get_psf_profile ${im}.psf) \
 	--option FW=${fwhm} \
 	--option FI=${fwhm} \
@@ -77,12 +88,19 @@ make_psf_als() {
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot daophot sort --renum --index=4 --out=${im}.all ${im}.cmb
 
-    # 4) Make psf fully variable with best profile and subtracted neighbours
+    echo " ================================================================"
+    echo " === STEP 4: Iterate between ALLSTAR and PSF to get unpolluted PSF"
+    echo " ================================================================"
+
     allphot daophot opt --opt=${im}.opt ${im}s.fits
     allphot daophot pick --magfaint=15 --nstars=200 ${im}.all
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
-	allphot daophot psf --in=${im}.lst --pho=${im}.all --out=${im}.psf --nei=${im}.nei ${im}s.fits
+	allphot daophot psf \
+	    --in=${im}.lst \
+	    --pho=${im}.all \
+	    --out=${im}.psf \
+	    ${im}s.fits
 	allphot cat neighbours ${im}.nei ${im}.lst
     done
     allphot allstar \
@@ -90,6 +108,7 @@ make_psf_als() {
 	--option IS="$(echo ${fwhm} | awk '{print $1*0.7}')" \
 	--option OS="$(echo ${fwhm} | awk '{print $1*4}')" \
 	--in=${im}.all ${fits}
+
     allphot daophot find ${im}s.fits
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.als | awk '{print $1+1}') \
@@ -114,14 +133,26 @@ make_psf_als() {
     allphot daophot pick --magfaint=15 --nstars=200 ${im}.all
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
-	allphot daophot psf --in=${im}.lst --pho=${im}.all --out=${im}.psf --nei=${im}.nei ${im}s.fits
+	allphot daophot psf \
+	    --in=${im}.lst \
+	    --pho=${im}.all \
+	    --out=${im}.psf \
+	    ${im}s.fits
 	allphot cat neighbours ${im}.nei ${im}.lst
     done
+    rm -f ${im}.nei
+
+    echo " ================================================================"
+    echo " === STEP 5: Final ALLSTARs with stable PSF with every star      "
+    echo " ================================================================"
+
     allphot allstar \
 	--option FI=${fwhm} \
 	--option IS="$(echo ${fwhm} | awk '{print $1*0.7}')" \
 	--option OS="$(echo ${fwhm} | awk '{print $1*4}')" \
 	--in=${im}.all ${fits}
+    rm -f ${im}.all
+
     allphot daophot find ${im}s.fits
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.als | awk '{print $1+1}') \
@@ -134,15 +165,19 @@ make_psf_als() {
 	--psf=${im}.psf --in=${im}s.ap ${im}s.fits
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot allstar --in=${im}.cmb ${fits}
+    cp -f ${ALLPHOT_PROCDIR}/*.opt .
+    rm -f ${im}.cmb ${im}s.{off,als,ap,coo} ${im}ss.fits
+    rm -rf ${ALLPHOT_PROCDIR} 
     unset ALLPHOT_PROCDIR
 }
 
-ALLSTAR_DICT=""
+DICTFILE=""
 
 while [[ $# -gt 0 ]]; do
     case "${1}" in
-	--dict=*) ALLSTAR_DICT="${1##*=}" ;;
-	--*) echo "Unrecognized option '$1'"; exit ;;
+	--dict=*) DICTFILE="${1##*=}" ;;
+	--help) echo "$(basename ${0}) [--dict=<dictfile>] FITSFILE"; exit ;;
+	--*) echo "Unrecognized option: ${1}" 1>&2 ; exit ;;
         *) break ;;
     esac
     shift
