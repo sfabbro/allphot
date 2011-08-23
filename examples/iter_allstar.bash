@@ -20,7 +20,7 @@ get_psf_profile() {
     esac
 }
 
-make_psf_als() {
+iter_psf_allstar() {
     local fits=${1}
     local im=$(basename ${fits%.*})
     export ALLPHOT_PROCDIR=process_${im}
@@ -184,5 +184,5 @@ while [[ $# -gt 0 ]]; do
 done
 
 for i in $@; do
-    make_psf_als ${i}
+    iter_psf_allstar ${i}
 done

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source iter_allstar.bash
+
 # macho_dict [<name>]: produce a basic dict file for MACHO for ALLPHOT
 macho_dict() {
     local dict=${1:-macho}.dict
@@ -57,7 +59,7 @@ allstar_cleanup() {
     local im=${1%.*} outdir=allstar-${im}
     mkdir ${outdir}
     mv -f ${im}.{opt,als,psf,log} ${outdir}
-    tar cfj output-${im}.tar.bz2 ${outdir}
+    tar cfj ${outdir}.tar.bz2 ${outdir}
     rm -rf process_* ${im}* *.dict ${outdir}
 }
 
@@ -70,7 +72,8 @@ macho_process() {
     local ccd
     for ccd in $(fits_split ${im}); do
 	echo " >>> Running DAOPHOT/ALLSTAR for ${ccd}"
-	iter_allstar.bash --dict="$(macho_dict)" ${ccd} &> ${ccd%.*}.log
+	export DICTFILE="$(macho_dict)"
+	iter_psf_allstar ${ccd} &> ${ccd%.*}.log
 	allstar_cleanup ${ccd}
     done
 }
