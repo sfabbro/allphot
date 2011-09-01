@@ -10,7 +10,7 @@ CLEANFILES = *~
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = bin data examples libs modules src tests
-EXTRA_DIST = TODO NEWS INSTALL COPYING README allphot.bashcomp
+EXTRA_DIST = TODO NEWS INSTALL COPYING README THANKS allphot.bashcomp
 
 dist-hook:
 	@if test -d "$(srcdir)/.git"; \
