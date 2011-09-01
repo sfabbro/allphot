@@ -1,4 +1,4 @@
-AC_INIT([allphot], [0.7.2], [sfabbro@uvic.ca])
+AC_INIT([allphot], [0.7.3], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])
@@ -72,6 +72,7 @@ if test x$BC = "x" ; then
     AC_MSG_ERROR([bc calculator is required])
 fi
 
+AC_PROG_CC
 AX_CFITSIO
 
 PACKAGE_UPNAME=`echo $PACKAGE_NAME | tr '[:lower:]' '[:upper:]'`
