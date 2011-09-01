@@ -2,6 +2,7 @@
 
 do_psf_allstar() {
     local options
+    # try GAIN and RDNOISE as standard keywords
     local gain=$(fitskey -n -p GAIN ${1})
     [[ ${gain} == absent ]] || options="${options} --option GA=${gain}"
     local ron=$(fitskey -n -p RDNOISE ${1})
@@ -12,8 +13,8 @@ do_psf_allstar() {
     allphot daophot pick ${1%.*}.ap
     local i
     for i in $(seq 3); do
-	allphot cat neighbours ${1%.*}.{nei,lst}
 	allphot daophot psf ${1}
+	allphot cat neighbours ${1%.*}.{nei,lst}
     done
     allphot allstar ${1}
 }

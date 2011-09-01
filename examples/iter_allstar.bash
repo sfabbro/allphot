@@ -93,7 +93,8 @@ iter_psf_allstar() {
     echo " ================================================================"
 
     allphot daophot opt --opt=${im}.opt ${im}s.fits
-    allphot daophot pick --magfaint=15 --nstars=200 ${im}.all
+    allphot daophot phot --in=${im}.all --out=${im}.ap ${im}.fits
+    allphot daophot pick --magfaint=15 --nstars=200 ${im}.ap
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
 	allphot daophot psf \
@@ -130,7 +131,8 @@ iter_psf_allstar() {
 	--psf=${im}.psf --in=${im}s.ap ${im}s.fits
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot daophot sort --renum --index=4 --out=${im}.all ${im}.cmb
-    allphot daophot pick --magfaint=15 --nstars=200 ${im}.all
+    allphot daophot phot --in=${im}.all --out=${im}.ap ${im}.fits
+    allphot daophot pick --magfaint=15 --nstars=200 ${im}.ap
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
 	allphot daophot psf \
