@@ -113,9 +113,10 @@ do_opt() {
 	shift
     done
 
+    # make a basic option file if not present, only setup if present
     allphot_setup --optfile="${optfile}" daophot "${1}"
 
-    # update option file from dictionnary
+    # update option file from dictionary
     if [[ -r ${dictfile} ]]; then
 	grep -q "fits(" ${dictfile} && [[ -z ${1} ]] && die -q "missing input FITS file for directory"
 	opt_update_from_dict ${dictfile} "${ALLPHOT_OPTFILE}" "${1}"

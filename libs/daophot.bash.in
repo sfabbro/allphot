@@ -14,7 +14,9 @@ daophot_opt() {
     echo >> ${ALLPHOT_CMDFILE} "OPTION"
     # option file
     if  [[ -e ${1} ]]; then
-	echo >> ${ALLPHOT_CMDFILE} "$(allphot_input ${1})"
+	local optfile="$(allphot_input ${1})"
+	echo >> ${ALLPHOT_CMDFILE} ${optfile}
+	[[ ${optfile} != daophot.opt ]] && echo >> ${ALLPHOT_CMDFILE}
 	return 0
     fi
     # option command
