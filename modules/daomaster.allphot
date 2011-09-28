@@ -10,47 +10,46 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<match file>"
+    echo "<matchfile>"
 }
 
 describe_do_options() {
-    echo "--frames=<val>,<val>,<val> : Minimum number, minimum fraction, enough frames (default <nframes>/2,0.5,<nframes>)"
-    echo "--maxsigma=<val>        : Maximum magnitude error in sigma (default 0.2)"
-    echo "--dof=<val>        : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
-    echo "--radius=<val> : Critical match up radius in pixels  (default 2)"
-    echo "--nonewid : Will not define new star IDs"
-    echo "--magfile=<file> : Output with mean magnitudes and scatter (default: <input>.mag)"
-    echo "--corfile=<file> : Output with corrected magnitudes and errors (default: <input>.cor)"
-    echo "--rawfile=<file> : Output with raw magnitudes and errors (default: <input>.raw)"
-    echo "--mchfile=<file> : Output with new transformations (default: <input>.mch)"
-    echo "--tfrfile=<file> : Output with transfer table (default: <input>.tfr)"
-    echo "--mchfile=<file> : Output with new transformations (default: <input>.mch)"
-    echo "--nonewcoo: Will not overwrite coordinates files with new star IDs (.coo files)"
-    echo "--nomtr: Will not produce input files with IDs changed (.mtr files)"
-    echo "--chimax=<val>    : Skip stars with chi > <val>"
-    echo "--sharpmax=<val>  : Skip stars with |sharp| > <val>"
-    echo "--magmax=<val>    : Skip stars with mag > <val>"
-    echo "--sigmax=<val>    : Skip stars with dmag > <val>"
+    echo "--frames=<val>,<val>,<val> : Min number, min fraction, enough frames (default <nframes>/2,0.5,<nframes>)"
+    echo "--maxsigma=<val> : Maximum magnitude error in sigma (default 0.2)"
+    echo "--dof=<val>  : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
+    echo "--rad=<val>  : Initial critical match up radius in pixels  (default 5)"
+    echo "--mag=<file> : File with mean magnitudes and scatter (default: <matchfile>.mag)"
+    echo "--cor=<file> : File with corrected magnitudes and errors (default: <matchfile>.cor)"
+    echo "--raw=<file> : File with raw magnitudes and errors (default: <matchfile>.raw)"
+    echo "--out=<file> : File with new transformations (default: <matchfile>)"
+    echo "--tfr=<file> : File with transfer table (default: <matchfile>.tfr)"
+    echo "--no-id :  Do not define new star IDs"
+    echo "--no-coo : Do not (over)write coordinates files with new star IDs (.coo files)"
+    echo "--no-mtr : Do not produce input files with IDs changed (.mtr files)"
+    echo "--chimax=<val>   : Skip stars with chi > <val>"
+    echo "--sharpmax=<val> : Skip stars with |sharp| > <val>"
+    echo "--magmax=<val>   : Skip stars with mag > <val>"
+    echo "--sigmax=<val>   : Skip stars with dmag > <val>"
 }
 
 do_do() {
-    local frames="" maxsigma=0.2 dof=6 radius=2
+    local frames="" maxsigma=0.2 dof=6 radius=5
     local magfile="" corfile="" rawfile="" mchfile="" tfrfile=""
     local newid=y newcoo=y mtr=y options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --frames=*) frames="${1##*=}" ;;
 	    --maxsigma=*) maxsigma="${1##*=}" ;;
-	    --radius=*) radius="${1##*=}" ;;
+	    --rad=*) radius="${1##*=}" ;;
 	    --dof=*) dof="${1##*=}" ;;
-	    --nonewid) newid=n ;;
-	    --magfile=*) magfile="${1##*=}" ;;
-	    --corfile=*) corfile="${1##*=}" ;;
-	    --rawfile=*) rawfile="${1##*=}" ;;
-	    --mchfile=*) mchfile="${1##*=}" ;;
-	    --tfrfile=*) tfrfile="${1##*=}" ;;
-	    --nonewcoo)  newcoo=n ;;
-	    --nomtr) mtr=n ;;
+	    --mag=*) magfile="${1##*=}" ;;
+	    --cor=*) corfile="${1##*=}" ;;
+	    --raw=*) rawfile="${1##*=}" ;;
+	    --out=*) mchfile="${1##*=}" ;;
+	    --tfr=*) tfrfile="${1##*=}" ;;
+	    --no-id) newid=n ;;
+	    --no-coo)  newcoo=n ;;
+	    --no-mtr) mtr=n ;;
     	    --chimax=*) options="${options} ${1}" ;;
     	    --sharpmax=*) options="${options} ${1}" ;;
 	    --magmax=*) options="${options} ${1}" ;;

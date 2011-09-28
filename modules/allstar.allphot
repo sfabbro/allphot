@@ -11,16 +11,16 @@ describe_do() {
 }
 
 describe_do_options() {
-    echo "--opt=<file>        : Option file as input (default: $(opt_file_path allstar))"
+    echo "--opt : Option file as input (default: $(opt_file_path allstar))"
     echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: FI=4)"
-    echo "--in=<file>      : Input photometry (default: <input>.ap)"
-    echo "--psf=<file>     : Input PSF file (default: <input>.psf)"
-    echo "--out=<file>     : Output photometry file (default: <input>.als)"
-    echo "--sub=<FITS image> : Output residual image (default: <input>s.fits)"
+    echo "--in=<file>  : Input photometry file (default: <fitsfile>.ap)"
+    echo "--psf=<file> : Input PSF file (default: <input>.psf)"
+    echo "--out=<file> : Output photometry file (default: <fitsfile>.als)"
+    echo "--sub=<fits> : Output residual FITS image (default: <fitsfile>s.fits)"
 }
 
 describe_do_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_do() {
@@ -42,14 +42,9 @@ do_do() {
 
     [[ $# -lt 1 ]] && do_usage && return
 
-    local im=$(basename ${1%.*})
+    local im=${1%.*}
     
-    allphot_setup --optfile="${optfile}" allstar "${1}"
-    if [[ -n ${options} ]]; then
-	for opt in ${options}; do
-	    opt_set_val "${opt}" "${ALLPHOT_PROCDIR}/${ALLSTAR_OPT}"
-	done
-    fi
+    allphot_setup --optfile="${optfile}" allstar "${1}" ${options}
     dao_allstar "${1}" "${psffile:-${im}.psf}" \
 	"${infile:-${im}.ap}" "${outfile:-${im}.als}" "${subfits:-${im}s.fits}"
     allphot_run

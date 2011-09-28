@@ -7,7 +7,7 @@ ALLPHOT_CMDFILE=""
 ALLPHOT_PREPROC="${ALLPHOT_PROCDIR}/.allphot_preproc.bash"
 ALLPHOT_POSTPROC="${ALLPHOT_PROCDIR}/.allphot_postproc.bash"
 
-# allphot_setup [--optfile=<file>] <command> [<FITS file>] PUBLIC
+# allphot_setup [--optfile=<file>] <command> [OP=VAL]...PUBLIC
 # setup a directory and option file for processing a fits file with <command>
 allphot_setup() {
     local optfile=""
@@ -39,6 +39,11 @@ allphot_setup() {
 	elif [[ ! -e ${ALLPHOT_OPTFILE} ]]; then
 	    cp "$(opt_file_path ${cmd})" ${ALLPHOT_OPTFILE}
 	fi
+	shift
+	local opt
+	for opt in $*; do
+	    opt_set_val "${opt}" ${ALLPHOT_OPTFILE}
+	done
 	export ALLPHOT_OPTFILE
     fi
 

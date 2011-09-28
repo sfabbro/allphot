@@ -10,12 +10,12 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<star file1>[xmin:xmax,ymin:ymax]...<star file n>[xmin:xmax,ymin:ymax]"
+    echo "<star file>[xmin:xmax,ymin:ymax]..."
 }
 
 describe_do_options() {
-    echo "--out=<file>      : Output file name (default: <first>.mch)"
-    echo "--ref=<file>      : Name of the master reference (default: <first>)"
+    echo "--out=<file>      : Output match file name (default: <ref>.mch)"
+    echo "--ref=<file>      : Name of the master reference star file (default: first)"
     echo "--chimax=<val>    : Skip stars with chi > <val>"
     echo "--sharpmax=<val>  : Skip stars with |sharp| > <val>"
     echo "--magmax=<val>    : Skip stars with mag > <val>"
@@ -25,10 +25,10 @@ describe_do_options() {
 }
 
 do_do() {
-    local field="" master="" options=""
+    local mchfile="" master="" options=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --out=*) field="${1##*=}" ;;
+	    --out=*) mchfile="${1##*=}" ;;
 	    --ref=*) master="${1##*=}" ;;
     	    --chimax=*) options="${options} ${1}" ;;
     	    --sharpmax=*) options="${options} ${1}" ;;
@@ -43,11 +43,15 @@ do_do() {
     done
 
     [[ $# -lt 1 ]] && do_usage && return
-    : ${master:=${1}}
-    shift
+
+    if [[ -z ${master} ]]; then
+	master=${1}
+	shift
+    fi
+
     [[ $# -lt 1 ]] && die -q "missing input star lists"
     
     allphot_setup daomatch
-    dao_match ${options} ${master} ${field:-${master%%.*}.mch} $*
+    dao_match ${options} ${master} ${mchfile:-${master%.*}.mch} $*
     allphot_run daomatch
 }

@@ -114,7 +114,7 @@ do_opt() {
     done
 
     # make a basic option file if not present, only setup if present
-    allphot_setup --optfile="${optfile}" daophot "${1}"
+    allphot_setup --optfile="${optfile}" daophot
 
     # update option file from dictionary
     if [[ -r ${dictfile} ]]; then
@@ -159,7 +159,7 @@ do_sky() {
 	shift
     done
     [[ $# -lt 1 ]] && daophot_action_usage sky && return
-    allphot_setup daophot "${1}"
+    allphot_setup daophot
     daophot_attach "${1}"
     daophot_sky
     allphot_run daophot
@@ -173,11 +173,11 @@ describe_find() {
 describe_find_options() {
     daophot_options_description
     echo "--frames=<num>,<num>: Number of frames averaged, summed (default: 1,1)"
-    echo "--out=<file>        : Output star list file (default: <input>.coo)"
+    echo "--out=<file>        : Output star list file (default: <fitsfile>.coo)"
 }
 
 describe_find_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_find() {
@@ -197,10 +197,9 @@ do_find() {
 
    [[ $# -lt 1 ]] && daophot_action_usage find && return
 
-   allphot_setup --optfile="${optfile}" daophot "${1}"
-   [[ -n ${options} ]] && daophot_opt "${options}"
+   allphot_setup --optfile="${optfile}" daophot ${options}
    daophot_attach "${1}"
-   daophot_find ${frames} "${outfile:-$(basename ${1%.*}).coo}"
+   daophot_find ${frames} "${outfile:-${1%.*}.coo}"
    allphot_run daophot
 }
 
@@ -211,12 +210,12 @@ describe_phot() {
 
 describe_phot_options() {
     daophot_help_description
-    echo "--in=<file>         : Input star list file (default: <input>.coo)"
-    echo "--out=<file>        : Output star list file (default: <input>.ap)"
+    echo "--in=<file>         : Input star list file (default: <fitsfile>.coo)"
+    echo "--out=<file>        : Output star list file (default: <fitsfile>.ap)"
     echo "--radius <RAD>=<val>: Set a aperture radius <RAD>"
-    echo "--radfile=<file>    : Specifiy aperture radii file (default $(opt_file_path photo))"
+    echo "--rad=<file>    : Specifiy aperture radii file (default $(opt_file_path photo))"
     echo "--nei=<file>        : Subtract neighbour stars from this file"
-    echo "--psf=<file>        : PSF to subtract neighbours (default: <input>.psf)"
+    echo "--psf=<file>        : PSF to subtract neighbours (default: <fitsfile>.psf)"
 }
 
 describe_phot_parameters() {
@@ -233,7 +232,7 @@ do_phot() {
 	    --out=*) outfile="${1##*=}" ;;
 	    --nei=*) neifile="${1##*=}" ;;
 	    --psf=*) psffile="${1##*=}" ;;
-	    --radfile=*) radfile="${1##*=}" ;;
+	    --rad=*) radfile="${1##*=}" ;;
     	    --radius) shift; radii="${radii} ${1/ //}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
@@ -243,7 +242,9 @@ do_phot() {
 
    [[ $# -lt 1 ]] && daophot_action_usage phot && return
 
-    allphot_setup daophot "${1}"
+    allphot_setup daophot
+
+    # set up aperture photometry radii
     if [[ ! -e ${radfile} ]]; then
 	radfile=${ALLPHOT_PROCDIR}/${PHOTO_OPT}
 	cp -f ${ALLPHOT_OPTDIR}/${PHOTO_OPT} ${radfile}
@@ -253,8 +254,11 @@ do_phot() {
 	    opt_set_val "${rad}" ${radfile}
 	done
     fi
+
     daophot_attach "${1}"
-    local im=$(basename ${1%.*})
+    
+    # take care of special case when psf is present
+    local im=${1%.*}
     if [[ -n ${neifile} ]]; then
 	[[ -r ${psffile:=${im}.psf} ]] || die -q "could not read psf file: '${psffile}'"
 	daophot_phot "${radfile}" "${neifile}" "${infile:-${neifile}}" "${outfile:-${im}.ap}"
@@ -271,13 +275,13 @@ describe_pick() {
 
 describe_pick_options() {
     daophot_options_description
-    echo "--out=<file>        : Output star list file (default: <input>.lst)"
+    echo "--out=<file>        : Output star list file (default: <starfile>.lst)"
     echo "--magfaint=<value>  : Magnitude of the faintest star (default: 13)"
     echo "--nstars=<value>    : Max number of stars to pick (default: 200)"    
 }
 
 describe_pick_parameters() {
-    echo "<star file>"
+    echo "<starfile>"
 }
 
 do_pick() {
@@ -298,9 +302,8 @@ do_pick() {
 
    [[ $# -lt 1 ]] && daophot_action_usage pick && return
 
-    allphot_setup --optfile="${optfile}" daophot "${1}"
-    [[ -n ${options} ]] && daophot_opt "${options}"
-    daophot_pick "${1}" ${nstars} ${magfaint} "${outfile:-$(basename ${1%.*}).lst}"
+    allphot_setup --optfile="${optfile}" daophot ${options}
+    daophot_pick "${1}" ${nstars} ${magfaint} "${outfile:-${1%.*}.lst}"
     allphot_run daophot
 }
 
@@ -311,13 +314,13 @@ describe_psf() {
 
 describe_psf_options() {
     daophot_options_description
-    echo "--pho=<file>      : Input photometry (default: <input>.ap)"
-    echo "--in=<file>      : Input PSF star list (default: <input>.lst)"
-    echo "--out=<file>     : Output PSF file (default: <input>.psf)"
+    echo "--pho=<file>      : Input photometry (default: <fitsfile>.ap)"
+    echo "--in=<file>      : Input PSF star list (default: <fitsfile>.lst)"
+    echo "--out=<file>     : Output PSF file (default: <fitsfile>.psf)"
 }
 
 describe_psf_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_psf() {
@@ -339,10 +342,9 @@ do_psf() {
 
    [[ $# -lt 1 ]] && daophot_action_usage psf && return
 
-    allphot_setup --optfile="${optfile}" daophot "${1}"
-    [[ -n ${options} ]] && daophot_opt "${options}"
+    allphot_setup --optfile="${optfile}" daophot ${options}
     daophot_attach "${1}"
-    local im=$(basename ${1%.*})
+    local im=${1%.*}
     daophot_psf \
 	"${phofile:-${im}.ap}" "${lstfile:-${im}.lst}" \
 	"${psffile:-${im}.psf}"
@@ -356,13 +358,13 @@ describe_peak() {
 
 describe_peak_options() {
     daophot_help_description
-    echo "--psf=<psf file>   : Input PSF file (default: <in>.psf)"
-    echo "--in=<star file>   : Input photometry file (default: <in>.ap)"
-    echo "--out=<file>  : Output file name (default: <input>.pk)"
+    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
+    echo "--in=<star file>   : Input photometry file (default: <fitsfile>.ap)"
+    echo "--out=<file>  : Output file name (default: <fitsfile>.pk)"
 }
 
 describe_peak_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_peak() {
@@ -380,10 +382,12 @@ do_peak() {
     done
 
    [[ $# -lt 1 ]] && daophot_action_usage peak && return
-    allphot_setup daophot "${1}"
-    local im=$(basename ${1%.*})
+
+    local im=${1%.*}
+
+    allphot_setup daophot
     daophot_attach "${1}"
-    daophot_peak "${infile:-${im}.ap}" "${psffile:-${im}.psf}" "${outfile:-$(basename ${1%.*}).pk}"
+    daophot_peak "${infile:-${im}.ap}" "${psffile:-${im}.psf}" "${outfile:-${im}.pk}"
     allphot_run daophot
 }
 
@@ -394,14 +398,14 @@ describe_group() {
 
 describe_group_options() {
     daophot_options_description
-    echo "--in=<file>        : Input star list file (default: <fits>.ap)"
-    echo "--psf=<psf file>   : Input PSF file (default: <fits>.psf)"
-    echo "--out=<file>        : Output star list file (default: <fits>.grp)"
+    echo "--in=<file>        : Input star list file (default: <fitsfile>.ap)"
+    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
+    echo "--out=<file>        : Output star list file (default: <fitsfile>.grp)"
     echo "--overlap=<value>   : Critical overlap (default: 1sigma)"
 }
 
 describe_group_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_group() {
@@ -422,10 +426,12 @@ do_group() {
     done
 
    [[ $# -lt 1 ]] && daophot_action_usage group && return
-    allphot_setup --optfile="${optfile}" daophot "${1}"
-    [[ -n ${options} ]] && daophot_opt "${options}"
+
+    local im=${1%.*}
+
+    allphot_setup --optfile="${optfile}" daophot ${options}
     daophot_attach "${1}"
-    daophot_group  "${infile:-${im}.ap}" "${psffile:-${im}.psf}" ${overlap} "${outfile:-$(basename ${1%.*}).grp}"
+    daophot_group  "${infile:-${im}.ap}" "${psffile:-${im}.psf}" ${overlap} "${outfile:-${im}.grp}"
     allphot_run daophot
 }
 
@@ -436,13 +442,13 @@ describe_nstar() {
 
 describe_nstar_options() {
     daophot_options_description
-    echo "--psf=<psf file>   : Input PSF file (default: <fits>.psf)"
-    echo "--in=<file>        : Input star group file (default: <fits>.grp)"
-    echo "--out=<file>        : Output star list file (default: <fits>.grp)"
+    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
+    echo "--in=<file>        : Input star group file (default: <fitsfile>.grp)"
+    echo "--out=<file>       : Output star list file (default: <fitsfile>.nst)"
 }
 
 describe_nstar_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_nstar() {
@@ -462,10 +468,12 @@ do_nstar() {
     done
 
    [[ $# -lt 1 ]] && daophot_action_usage nstar && return
-    allphot_setup --optfile="${optfile}" daophot "${1}"
-    [[ -n ${options} ]] && daophot_opt "${options}"
+
+    local im=${1%.*}
+
+    allphot_setup --optfile="${optfile}" daophot ${options}
     daophot_attach "${1}"
-    daophot_nstar  "${infile:-${im}.grp}" "${psffile:-${im}.psf}" "${outfile:-$(basename ${1%.*}).nst}"
+    daophot_nstar  "${infile:-${im}.grp}" "${psffile:-${im}.psf}" "${outfile:-${im}.nst}"
     allphot_run daophot
 }
 
@@ -476,10 +484,10 @@ describe_substar() {
 
 describe_substar_options() {
     daophot_help_description
-    echo "--psf=<psf file>   : Input PSF file (default: <in>.psf)"
-    echo "--in=<star file>   : Input photometry file (default: <in>.nei)"
-    echo "--keep=<star file> : File with stars to keep (default: <in>.lst)"
-    echo "--out=<FITS image> : Output subtracted image (default: <in>s.fits)"
+    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
+    echo "--in=<star file>   : Input photometry file (default: <fitsfile>.nei)"
+    echo "--keep=<star file> : File with stars to keep (default: <fitsfile>.lst)"
+    echo "--out=<FITS image> : Output subtracted image (default: <fitsfile>s.fits)"
 }
 
 describe_substar_parameters() {
@@ -503,12 +511,11 @@ do_substar() {
 
    [[ $# -lt 1 ]] && daophot_action_usage substar && return
 
-    local im=$(basename ${1%.*})
-    allphot_setup daophot "${1}"
+    local im=${1%.*}
+
+    allphot_setup daophot
     daophot_attach "${1}"
-    daophot_substar \
-	"${psffile:-${im}.psf}" "${infile:-${im}.nei}" \
-	"${keepfile}" "${subfits:-${im}s.fits}"
+    daophot_substar "${psffile:-${im}.psf}" "${infile:-${im}.nei}" "${keepfile}" "${subfits:-${im}s.fits}"
     allphot_run daophot
 }
 
@@ -520,12 +527,12 @@ describe_sort() {
 describe_sort_options() {
     daophot_help_description
     echo "--index=<val>   : Column index to sort (default: 1)"
-    echo "--out=<file>    : Output file name (default: <input>.srt)"
+    echo "--out=<file>    : Output file name (default: <starfile>.srt)"
     echo "--renum         : Renumber the star IDs"
 }
 
 describe_sort_parameters() {
-    echo "<star file>"
+    echo "<starfile>"
 }
 
 do_sort() {
@@ -544,8 +551,8 @@ do_sort() {
 
    [[ $# -lt 1 ]] && daophot_action_usage sort && return
 
-    allphot_setup daophot "${1}"
-    daophot_sort ${idx} "${1}" "${outfile:-$(basename ${1%.*}).srt}" ${renum}
+    allphot_setup daophot
+    daophot_sort ${idx} "${1}" "${outfile:-${1%.*}.srt}" ${renum}
     allphot_run daophot
 }
 
@@ -558,11 +565,11 @@ describe_select_options() {
     daophot_help_description
     echo "--min=<value>  : Minimum group size (default: 1)"
     echo "--max=<value>  : Maximum group size (default: 60)"
-    echo "--out=<new group file>  : Output file name (default:<input>.sel)"
+    echo "--out=<new group file>  : Output file name (default:<groupfile>.sel)"
 }
 
 describe_select_parameters() {
-    echo "<group file>"
+    echo "<groupfile>"
 }
 
 do_select() {
@@ -581,9 +588,8 @@ do_select() {
 
    [[ $# -lt 1 ]] && daophot_action_usage select && return
 
-    allphot_setup daophot "${1}"
-    local im=$(basename ${1%.*})
-    daophot_select "${1}" ${mingrp} ${maxgrp} "${outfile:-$(basename ${1%.*}).sel}"
+    allphot_setup daophot
+    daophot_select "${1}" ${mingrp} ${maxgrp} "${outfile:-${1%.*}.sel}"
     allphot_run daophot
 }
 
@@ -598,11 +604,11 @@ describe_offset_options() {
     echo "--x=<val>  : Add <val> to x-coordinate (default: 0)"
     echo "--y=<val>  : Add <val> to y-coordinate (default: 0)"
     echo "--mag=<val>: Add <val> to magnitude (default: 0)"
-    echo "--out=<file>  : Output file name (default <input>.off)"
+    echo "--out=<file>  : Output file name (default <starfile>.off)"
 }
 
 describe_offset_parameters() {
-    echo "<star file>"
+    echo "<starfile>"
 }
 
 do_offset() {
@@ -623,8 +629,8 @@ do_offset() {
 
    [[ $# -lt 1 ]] && daophot_action_usage offset && return
 
-    allphot_setup daophot "${1}"
-    daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-$(basename ${1%.*}).off}"
+    allphot_setup daophot
+    daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-${1%.*}.off}"
     allphot_run daophot
 }
 
@@ -635,11 +641,11 @@ describe_append() {
 
 describe_append_options() {
     daophot_help_description
-    echo "--out=<file>  : Output file name (default: <input1>.cmb)"
+    echo "--out=<file>  : Output file name (default: <starfile1>.cmb)"
 }
 
 describe_append_parameters() {
-    echo "<file 1> <file 2>"
+    echo "<starfile1> <starfile2>"
 }
 
 do_append() {
@@ -656,8 +662,8 @@ do_append() {
 
    [[ $# -lt 2 ]] && daophot_action_usage append && return
 
-    allphot_setup daophot "${1}"
-    daophot_append "${1}" "${2}" "${outfile:-$(basename ${1%.*}).cmb}"
+    allphot_setup daophot
+    daophot_append "${1}" "${2}" "${outfile:-${1%.*}.cmb}"
     allphot_run daophot
 }
 
@@ -675,7 +681,7 @@ describe_dump_options() {
 }
 
 describe_dump_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_dump() {
@@ -695,7 +701,8 @@ do_dump() {
 
     [[ -z ${xc} ]] && xc=$(calc $(fitskey -n -p NAXIS1 "${1}") / 2)
     [[ -z ${yc} ]] && yc=$(calc $(fitskey -n -p NAXIS2 "${1}") / 2)
-    allphot_setup daophot "${1}"
+
+    allphot_setup daophot
     daophot_attach "${1}"
     daophot_dump ${sz} ${xc} ${yc}
     allphot_run daophot
@@ -708,7 +715,7 @@ describe_fudge() {
 
 describe_fudge_options() {    
     daophot_help_description
-    echo "--out=<fits file>  : Output picture name (default: <input>s.fits)"
+    echo "--out=<fits file>  : Output picture name (default: <fitsfile>s.fits)"
     echo "--border=<number>  : Border outside region (default: 0)"
     echo "--region=[x0:x1,y0:y1] : Image region to fudge, FITS coordinates "
     echo "--brightness=<value> : Value to replace with"
@@ -716,7 +723,7 @@ describe_fudge_options() {
 }
 
 describe_fudge_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_fudge() {
@@ -742,15 +749,16 @@ do_fudge() {
     local y0=$(expr ${a} : '.*,\([[:digit:]]*\):')
     local y1=$(expr ${a} : '.*:.*,.*:\([[:digit:]]*\)\]')
 
-    local im=$(basename ${1%.*})
-    allphot_setup daophot "${1}"
+    local im=${1%.*}
+
+    allphot_setup daophot
     daophot_attach "${1}"
-    if [[ -n ${brightness} ]]; then
-	daophot_fudge \
-	    "${outfits:-${im}f.fits}" ${x0} ${x1} ${y0} ${y1} ${brightness}
-    else
+    if [[ -z ${brightness} ]]; then
 	daophot_fudge \
 	    "${outfits:-${im}f.fits}" ${border} ${order} ${x0} ${x1} ${y0} ${y1}
+    else
+	daophot_fudge \
+	    "${outfits:-${im}f.fits}" ${x0} ${x1} ${y0} ${y1} ${brightness}
     fi
     allphot_run daophot
 }
@@ -775,7 +783,7 @@ describe_addstar_options() {
 }
 
 describe_addstar_parameters() {
-    echo "<FITS image>"
+    echo "<fitsfile>"
 }
 
 do_addstar() {
@@ -801,8 +809,9 @@ do_addstar() {
 
    [[ $# -lt 1 ]] && daophot_action_usage addstar && return
 
-    local im=$(basename ${1%.*})
-    allphot_setup daophot "${1}"
+    local im=${1%.*}
+
+    allphot_setup daophot
     daophot_attach "${1}"
     if [[ -z ${infile} ]]; then
 	daophot_addstar \
@@ -818,11 +827,11 @@ do_addstar() {
 
 ### DO ###
 describe_do() {
-    echo "Run your own ALLPHOT/DAOPHOT recipe script"
+    echo "Run your own DAOPHOT session using ALLPHOT API"
 }
 
 describe_do_parameters() {
-    echo "<recipe file> [arg1 ... arg]"
+    echo "<allphot script> [arg1 ... arg]"
 }
 
 describe_do_options() {
@@ -834,14 +843,14 @@ do_do() {
 	case "${1}" in
 	    --help) daophot_action_usage do && return ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
-              *) break ;;
+            *) break ;;
         esac
 	shift
     done
+
     [[ $# -lt 1 ]] && daophot_action_usage do && return
-    local infile="${1}"
-    shift
+
     allphot_setup daophot
-    source "${infile}" $@
+    . $@
     allphot_run daophot
 }
