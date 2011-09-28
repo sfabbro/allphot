@@ -10,7 +10,7 @@ describe_header() {
 }
 
 describe_header_parameters() {
-    echo "<daophot option> <FITS> <file>"
+    echo "<daophot option> <fitsfile> <starfile>"
 }
 
 describe_header_options() {
@@ -29,24 +29,28 @@ do_header() {
         esac
 	shift
     done
+
+    [[ $# -lt 3 ]] && header_usage && return
+
     [[ -r ${1} ]] || die -q "File ${1} not readable"
     [[ -r ${2} ]] || die -q "File ${2} not readable"
     [[ -w ${3} ]] || die -q "File ${3} not writeable"
+
     write_process_msg "Insert a header into ${3}"
     cat_insert_header ${1} ${2} ${3} || die -q "Could not insert header"
 }
 
 ### MERGE ###
 describe_merge() {
-    echo "Merge two catalogues with offsetting id numbers"
+    echo "Merge two star files with offsetting id numbers"
 }
 
 describe_merge_options() {
-    echo "--out=<file>  : Output file name (default: <file1>)"
+    echo "--out=<file>  : Output file name (default: <starfile1>)"
 }
 
 describe_merge_parameters() {
-    echo "<file1> <file2>"
+    echo "<starfile1> <starfile2>"
 }
 
 do_merge() {
@@ -59,75 +63,106 @@ do_merge() {
         esac
 	shift
     done
+
+    [[ $# -lt 2 ]] && merge_usage && return
     
-    allphot_setup --optfile="${infile}" daophot "${1}"
+    allphot_setup --optfile="${infile}" daophot
     daophot_sort 1 "${1}" tmpmerge.srt Y
     daophot_offset "${2}" $(tail -n 1 tmpmerge.srt | awk '{print $1+1}') 0 0 0 tmpmerge.off
     daophot_append "${1}" tmpmerge.off tmpmerge.app
     daophot_sort 1 tmpmerge.app ${outfile:-${1}} Y
-    allphot_run
+    allphot_run daophot
+
     rm -f tmpmerge.*
 }
 
-### CHISHARP ###
-describe_chisharp() {
-    echo "Filter PSF stars on a catalog with cuts on chi and sharp parameters"
+### CUTS ###
+describe_cuts() {
+    echo "Tag stars on als/alf file with (chi,sharp,mag,sigma). Stars with same ID will be removed in other input files"
 }
 
-describe_chisharp_options() {
-    echo "--sharpmax=<val>    : Remove stars with |sharp| > <val> (default: 0.6)"
-    echo "--chimax=<val>      : Remove stars with chi > <val> (default: 2)"
+describe_cuts_options() {
+    echo "--sharpmax=<val> : Remove stars with |sharp| > <val> (default: 0.6)"
+    echo "--chimax=<val>   : Remove stars with chi > <val> (default: 2)"
+    echo "--sigmax=<val>   : Remove stars with sig > <val> (default: 9)"
+    echo "--magmax=<val>   : Remove stars with mag > <val> (default: 99)"
 }
 
-describe_chisharp_parameters() {
-    echo "<file in> <prof fit file>"
+describe_cuts_parameters() {
+    echo "<starfile> [<starfile>]..."
 }
 
-do_chisharp() {
-    local cmax=2 smax=0.6
+do_cuts() {
+    local cmax=2 smax=0.6 mmax=99 dmax=9
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --sharpmax=*)  smax="${1##*=}";;
-	    --chimax=*)    cmax="${1##*=}";;
+	    --sharpmax=*)  smax="${1##*=}" ;;
+	    --chimax=*)    cmax="${1##*=}" ;;
+            --magmax=*)    mmax="${1##*=}" ;;
+            --sigmax=*)    dmax="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
     done
-    local pickcat=${1} profcat=${2} id
-    [[ -w ${pickcat} ]] || die -q "File ${pickcat} not writeable"
-    [[ -r ${profcat} ]] || die -q "File ${profcat} not readable"
 
-    head -n 3 ${profcat} > ${pickcat}.filtered    
-    while read line; do
-	id=$(echo ${line} | awk '{print $1}')
-	awk -v vid="${id}" \
-	    -v vcmax="${cmax}" \
+    [[ $# -lt 1 ]] && cuts_usage && return
+
+    local profile=${1} f id
+    [[ -r ${profile} ]] || die -q "File ${profile} not readable"
+
+    if [[ $# == 1 ]]; then
+	awk -v vcmax="${cmax}" \
 	    -v vsmax="${smax}" \
-	    '{ if ( $1 == vid  && $8< vcmax && $9<vsmax && $9>-vsmax ) { print } }' \
-	    ${profcat} >> ${pickcat}.filtered
-    done < ${pickcat}
-    write_process_msg "Removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) )) objects with chi > ${cmax} and |sharp| > ${smax}"
-    mv -f ${pickcat}.filtered ${pickcat}
+	    -v vdmax="${dmax}" \
+	    -v vmmax="${mmax}" \
+	    '$4 > vmmax ||  $5 > vdmax || $8 > vcmax || $9 > vsmax || $9 < -vsmax ) {next}1' \
+	    ${profile}
+	return
+    fi
+
+    shift
+    for f in $@; do
+	[[ -w ${f} ]] || die -q "File ${f} not writeable"
+	head -n 3 ${profile} > ${f}.filtered    
+	while read line; do
+	    id=$(echo ${line} | awk '{print $1}')
+	    if [[ -n $(awk -v vid="${id}" \
+		-v vcmax="${cmax}" \
+		-v vsmax="${smax}" \
+		-v vdmax="${dmax}" \
+		-v vmmax="${mmax}" \
+		'{ if ( $1 == vid  && $4 <= vmmax &&  $5 <= vdmax && $8 <= vcmax && $9 <= vsmax && $9 >= -vsmax ) { print $1 } }' \
+		${profile}) ]]
+	    then
+		echo ${line} >> ${f}.filtered
+	    fi
+	done < ${f}
+	write_process_msg "${f}: removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) ) stars)"
+	mv -f ${f}.filtered ${f}
+    done
 }
 
 ### NEIGHBOURS ###
 describe_neighbours() {
-    echo "Filter neighbours on a star catalogue thanks to with a PSF neighbour file"
+    echo "Filter flagged stars on a PSF neighbour file to another star file"
 }
 
 describe_neighbours_parameters() {
-    echo "<nei file> <cat to filter>"
+    echo "<neifile> <starfile>"
 }
 
 do_neighbours() {
+
+    [[ $# -lt 2 ]] && neighbours_usage && return
+
     [[ -r ${1} ]] || die -q "File ${1} not readable"
     [[ -w ${2} ]] || die -q "File ${2} not writeable"
     
     local nnei=$(grep -c [\*\?] ${1})
     [[ ${nnei} -gt 0 ]] && \
 	sed -i \
-	    $(grep [\*\?] ${1} | awk '{printf "-e /^[[:space:]]*"$1"/d "}') \
+	    $(awk '/[\*\?]/ {printf "-e /^[[:space:]]*"$1"/d "}' ${1}) \
 	    ${2}
     write_process_msg "Removed ${nnei} neighbours to PSF stars"
 }

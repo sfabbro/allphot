@@ -14,12 +14,12 @@ describe_do_parameters() {
 }
 
 describe_do_options() {
-    echo "--suffix=<suf>    : Suffix for FITS file  (default: j.fits)"
+    echo "--suffix=<suf>    : Suffix for input FITS files (default: j.fits)"
     echo "--frames=<val>,<val> : Minimum number of frames, percentile (default: <nfames>/2, 0.5)"
-    echo "--limits=[cutout] : Limits for the final frames in master (default: [1:NAXIS1,1:NAXIS2])"
+    echo "--limits=[xmin:xmax,ymin:ymax] : Limits for the final frame in master (default: [1:NAXIS1,1:NAXIS2])"
     echo "--expansion=<num> : Expansion factor (defaul: 1)"
-    echo "--nosky           : Do not re-determine sky"
-    echo "--out=<file>      : Output file name (default: <input>.fits)"
+    echo "--no-sky          : Do not re-determine sky"
+    echo "--fits=<file>     : Output FITS file name (default: <input>.fits)"
 }
 
 do_do() {
@@ -30,8 +30,8 @@ do_do() {
             --frames=*) frames"=${1##*=}" ;;
 	    --limits=*) limits="${1##*=}" ;;
     	    --expansion=*) expn="${1##*=}" ;;
-    	    --nosky) dosky=n ;;
-	    --out=*) outfile="${1##*=}" ;;
+    	    --no-sky) dosky=n ;;
+	    --fits=*) outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
