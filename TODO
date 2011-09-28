@@ -1,11 +1,14 @@
 The following features are planned, development has not started.
 
 == 0.8 ==
-* daogrow module
+* fix the [x:y] range parsing for portability
+* Update NEWS
+* check non pwd files for all execs
 * add a --quiet or multiple logging options
-* examples of pipeline for DAOMATCH/DAOMASTER/ALLFRAME
+* example of pipeline for DAOMATCH/DAOMASTER/ALLFRAME
 
 == 0.9 ==
+* daogrow module
 * tests work: compare, many more tests
 * find a way to exit from a bash script calls allphot
 

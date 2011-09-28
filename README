@@ -4,21 +4,22 @@ ALLPHOT - Stellar photometry automated
 ALLPHOT is a package designed to automate the ALLFRAME stellar
 photometry package. 
 ALLPHOT consists of fancy wrapper scripts for all ALLFRAME (DAOPHOT, DAOMATCH,
-DAOMASTER, ALLFRAME, MONTAGE2) programs to be run unattended. It has a friendly
+DAOMASTER, ALLFRAME, MONTAGE2) programs to be run unattended. allphot a friendly
 command line interface that allows to write scripts quickly. It has
-all the original commands parameters, but with built-in good default
-values, so the user does not have to deal with thousands unknown
-tweaks and directories.
+all the original command parameters, but with built-in good default
+values, so the user does not have to deal with thousands arcane
+tweaks. It also handle files and directories properly. It does not
+touch any of the ALLFRAME source code.
 
-It was originally developed with the CANFAR project to re-run
+ALLPHOT was originally developed with the CANFAR project to re-run
 photometry on MACHO data in the hope it can be applied to other large
-data sets.
+data sets. It is now used in other projects as well.
 
 It can be used from other command line programs, its API is fairly
 generic. The code was originally inspired by the "eselect" tool used
 on Gentoo Linux, and shamefully borrows a lot of code from it, but it
 diverged from it significantly. It is written in pure bash, with some
-C calls to deals with FITS files using cfitsio. 
+C tools to deal with FITS files (using cfitsio).
 
 Availability
 ============
@@ -35,16 +36,16 @@ See the INSTALL file.
 Documentation
 =============
 
-* All commands are wrappers around the ALLFRAME commands, so it is
+* All ALLPHOT commands are wrappers around the ALLFRAME commands, so it is
   very much advised to know how the original ALLFRAME commands
   work. Refer to the original DAOPHOT and ALLFRAME papers, and
   documentation included in the allframe tar ball for more details.
 
-  Typing "allphot <command> --help" will describe what you can do with
-  the particular <command>.
+  Typing "allphot <command> --help" (or with no arguments), will
+  describe what you can do with the particular <command>.
 
   All commands are straight forward and intuitive. For example, a
-  typical interactive DAOPHOT FIND command would summarize as follow,
+  typical orginal and interactive DAOPHOT FIND command would be as follow,
   assuming you have a daophot.opt file:
  
 	$ cat daophot.opt
@@ -63,13 +64,10 @@ Documentation
 		      Are you happy with this? Y
 	 Command: exit
 
-  You can get exactly the same result in two non-interactive command
+  You can get exactly the same result in one line ALLPHOT command
   lines using allphot:
 
-       $ allphot daophot opt --option GA=1.6 --option RE=5.5
-       [...snip...]
-
-       $ allphot daophot find image.fits
+       $ allphot daophot find --option GA=1.6 --option RE=5.5 image.fits
        [...snip...]
 
 * There is a very basic dictionnary generator to grab some values from a
@@ -94,18 +92,22 @@ Documentation
 
       $ allphot daophot list
 
-* Most modules have default arguments that you can overwrite with
+* Modules have default arguments that you can overwrite with
   command line options.
 
 * There are also some example scripts in the directory "examples".
+
+* Two tools to parse FITS headers are also compiled:
+    - fitshead: print a FITS header from a HDU or all of them
+    - fitskey : print or modify keys of FITS headers
 
 
 Contributing to ALLPHOT
 =======================
 
-If you have suggestions, bugs, or are interested in participating in
-ALLPHOT development, please send me an email, or interact directly
-with the site at:
+If you have suggestions, bugs, or are interested in contributing in
+ALLPHOT development, please send AUTHORS an email, or interact directly
+with the git site at:
 
      http://gitorious.org/tvs/allphot
 
