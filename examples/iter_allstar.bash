@@ -1,11 +1,13 @@
 #!/bin/bash
 
 # get_psf_fwhm <psf file>
+# returns the FWHM from the psf file
 get_psf_fwhm() {
     awk 'NR==2 {print ($1+$2)*1.176; exit}' ${1} 2> /dev/null
 }
 
-# get_psf_fwhm <psf file>
+# get_psf_profile <psf file>
+# returns the analytical profile type
 get_psf_profile() {
     local psfname=$(awk 'NR==1 {print $1; exit}' ${1})
     case ${psfname} in
@@ -20,6 +22,8 @@ get_psf_profile() {
     esac
 }
 
+# iter_psf_allstar <fits file>
+# iterate between PSF and ALLSTAR to create a good PSF and star list
 iter_psf_allstar() {
     local fits=${1}
     local im=$(basename ${fits%.*})
@@ -69,6 +73,10 @@ iter_psf_allstar() {
     echo " ================================================================"
 
     local fwhm=$(get_psf_fwhm ${im}.psf)
+    local radii="--radius A1=$(echo ${fwhm} | awk '{print $1*1.2}')"
+    radii="${radii} --radius IS=$(echo ${fwhm} | awk '{print $1*3}')"
+    radii="${radii} --radius OS=$(echo ${fwhm} | awk '{print $1*6}')"
+
     allphot daophot opt \
 	--dict="${DICTFILE}" \
 	--option AN=$(get_psf_profile ${im}.psf) \
@@ -83,7 +91,7 @@ iter_psf_allstar() {
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.coo | awk '{print $1+1}') \
 	--out=${im}s.off ${im}s.coo
-    allphot daophot phot --in=${im}s.off ${im}s.fits
+    allphot daophot phot ${radii} --in=${im}s.off ${im}s.fits
     allphot allstar --psf=${im}.psf --in=${im}s.ap ${im}s.fits
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot daophot sort --renum --index=4 --out=${im}.all ${im}.cmb
@@ -93,7 +101,7 @@ iter_psf_allstar() {
     echo " ================================================================"
 
     allphot daophot opt --opt=${im}.opt ${im}s.fits
-    allphot daophot phot --in=${im}.all --out=${im}.ap ${im}.fits
+    allphot daophot phot ${radii} --in=${im}.all --out=${im}.ap ${im}.fits
     allphot daophot pick --magfaint=15 --nstars=200 ${im}.ap
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
@@ -114,7 +122,7 @@ iter_psf_allstar() {
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.als | awk '{print $1+1}') \
 	--out=${im}s.off ${im}s.coo
-    allphot daophot phot --in=${im}s.off ${im}s.fits
+    allphot daophot phot ${radii} --in=${im}s.off ${im}s.fits
     allphot allstar --psf=${im}.psf --in=${im}s.ap ${im}s.fits
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot allstar --in=${im}.cmb ${fits}
@@ -123,7 +131,7 @@ iter_psf_allstar() {
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.coo | awk '{print $1+1}') \
 	--out=${im}s.off ${im}s.coo
-    allphot daophot phot --in=${im}s.off ${im}s.fits
+    allphot daophot phot ${radii} --in=${im}s.off ${im}s.fits
     allphot allstar \
 	--option FI=${fwhm} \
 	--option IS="$(echo ${fwhm} | awk '{print $1*0.7}')" \
@@ -131,7 +139,7 @@ iter_psf_allstar() {
 	--psf=${im}.psf --in=${im}s.ap ${im}s.fits
     allphot daophot append --out=${im}.cmb ${im}s.als ${im}.als
     allphot daophot sort --renum --index=4 --out=${im}.all ${im}.cmb
-    allphot daophot phot --in=${im}.all --out=${im}.ap ${im}.fits
+    allphot daophot phot ${radii} --in=${im}.all --out=${im}.ap ${im}.fits
     allphot daophot pick --magfaint=15 --nstars=200 ${im}.ap
     for i in $(seq 1 5); do
 	allphot daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
@@ -159,7 +167,7 @@ iter_psf_allstar() {
     allphot daophot offset \
 	--id=$(tail -n 1 ${im}.als | awk '{print $1+1}') \
 	--out=${im}s.off ${im}s.coo
-    allphot daophot phot --in=${im}s.off ${im}s.fits
+    allphot daophot phot ${radii} --in=${im}s.off ${im}s.fits
     allphot allstar \
 	--option FI=${fwhm} \
 	--option IS="$(echo ${fwhm} | awk '{print $1*0.7}')" \
@@ -173,18 +181,25 @@ iter_psf_allstar() {
     unset ALLPHOT_PROCDIR
 }
 
+usage() {
+    echo "$(basename ${0}) [--dict=<dictfile>] <FITS file>...<FITS file>"
+    exit
+}
+
 DICTFILE=""
+
+[[ $# -lt 1 ]] && usage
 
 while [[ $# -gt 0 ]]; do
     case "${1}" in
 	--dict=*) DICTFILE="${1##*=}" ;;
-	--help) echo "$(basename ${0}) [--dict=<dictfile>] FITSFILE"; exit ;;
+	--help) usage ;;
 	--*) echo "Unrecognized option: ${1}" 1>&2 ; exit ;;
         *) break ;;
     esac
     shift
 done
 
-for i in $@; do
-    iter_psf_allstar ${i}
+for f in $@; do
+    iter_psf_allstar ${f}
 done
