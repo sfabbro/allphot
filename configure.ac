@@ -1,4 +1,4 @@
-AC_INIT([allphot], [0.7.3], [sfabbro@uvic.ca])
+AC_INIT([allphot], [0.8.0_git], [sfabbro@uvic.ca])
 AC_PREREQ(2.59)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])
@@ -46,25 +46,32 @@ AC_SUBST(CANONICALISE)
 
 AC_PATH_PROGS(DAOPHOT, daophot)
 if test x$DAOPHOT = "x" ; then
-    AC_MSG_ERROR([daophot is required])
+    AC_MSG_WARN([daophot command not found. Needed at runtime for "allphot daophot"])
 fi
 
 AC_PATH_PROGS(ALLSTAR, allstar)
 if test x$ALLSTAR = "x" ; then
-    AC_MSG_ERROR([allstar is required])
+    AC_MSG_WARN([allstar command not found. Needed at runtime for "allphot allstar"])
 fi
 
 AC_PATH_PROGS(DAOMATCH, daomatch)
 if test x$DAOMATCH = "x" ; then
-    AC_MSG_ERROR([daomatch is required])
+    AC_MSG_WARN([daomatch command not found. Needed at runtime for "allphot daomatch"])
 fi
+
 AC_PATH_PROGS(DAOMASTER, daomaster)
 if test x$DAOMASTER = "x" ; then
-    AC_MSG_ERROR([daomaster is required])
+    AC_MSG_WARN([daomaster command not found. Needed at runtime for "allphot daomaster"])
 fi
+
 AC_PATH_PROGS(ALLFRAME, allframe)
 if test x$ALLFRAME = "x" ; then
-    AC_MSG_ERROR([allframe is required])
+    AC_MSG_WARN([allframe command not found. Needed at runtime for "allphot allframe"])
+fi
+
+AC_PATH_PROGS(ALLFRAME, montage2)
+if test x$ALLFRAME = "x" ; then
+    AC_MSG_WARN([montage2 command not found. Needed at runtime for "allphot montage2"])
 fi
 
 AC_PATH_PROGS(BC, bc)
