@@ -8,9 +8,8 @@ static void usage(const char* progname, int status) {
   }
 
   printf("Usage: %s [OPTION]... FILE[ext]...\n", progname);
-  printf("\nDump of the header(s) of the given FITS files. \n"
-	 "If ext is given, dump only the header of that extension. \n"
-	 "\nOPTIONS:\n");
+  printf("Dump of the header(s) of the given FITS files. \n"
+	 "If ext is given, dump only the header of that extension\n\n");
   GETOPT_HV_USAGE;
   printf("\n");
   exit(status);

@@ -2,16 +2,15 @@
 #include "fitsutils.h"
 
 static void usage(const char* progname, int status) {
+
   if (status != EXIT_SUCCESS) {
     fprintf(stderr, "Try `%s --help' for more information.\n", progname);
     exit(status);
   }
 
-
   printf("Usage: %s [OPTIONS]... FILE[ext]...\n", progname);
-  printf("\nPrint, set, change or delete keys of the given FITS files.\n"
-	 "If ext is given, process only the keywords of that extension.\n"
-         "\nOPTIONS:\n");  
+  printf("Print, set, change or delete keys of the given FITS files\n"
+	 "If ext is given, process only the keywords of that extension\n\n");  
   printf(" -p,  --print KEY              print key \n"
 	 " -n,  --nofile                 do not print filename\n"
 	 " -f,  --full  KEY=\"KEY=...\"    update the full key entry \n"
