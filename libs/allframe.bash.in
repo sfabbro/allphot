@@ -28,7 +28,7 @@ mch_output() {
 
 get_cutout_limits() {
     echo ${1} | sed \
-	-e 's/\[\([[:digit:]]*\):\([[:digit:]]*\),\([[:digit:]]*\):\([[:digit:]]*\)\]/\1 \2 \3 \4/'
+	-e 's/.*\[\([[:digit:]]*\):\([[:digit:]]*\),\([[:digit:]]*\):\([[:digit:]]*\)\]/\1 \2 \3 \4/'
 }
 
 # dao_match [options] <input reference star file> <output mch file> <star file 1>...<star file n> PUBLIC
@@ -87,6 +87,10 @@ dao_match() {
 	fi
     done
     echo >> ${ALLPHOT_CMDFILE}
+    # bulletproof hack
+    # adding a y in case daomatch hits the end of the file for a non matching file forever
+    echo >> ${ALLPHOT_CMDFILE} "y"
+    echo >> ${ALLPHOT_CMDFILE}
     write_process_msg "Will run DAOMATCH with master reference ${ref}"
 }
 
@@ -97,7 +101,7 @@ dao_match() {
 # create a file of answers to be run by daomaster
 dao_master() {
     # options
-    local refcuts="" trns=""
+    local refcuts=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
     	    --chimax=*) refcuts="${refcuts}%${1##*=}" ;;
@@ -134,28 +138,46 @@ EOF
     while (( irad > 0 )); do 
 	echo >> ${ALLPHOT_CMDFILE} ${irad}
 	echo >> ${ALLPHOT_CMDFILE} ${irad}
-	irad=$(( ${irad} - 1 ))
+	irad=$(( irad - 1 ))
     done
     cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	0
 	${6}
+EOF
+
+    local f
+    for f in ${7} ${8} ${9}; do
+	if [[ ${f} != no ]]; then
+	    cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	y
-	$(allphot_output ${7})
-	y
-	$(allphot_output ${8})
-	y
-	$(allphot_output ${9})
+	$(allphot_output ${f})
+EOF
+	else
+	    echo >> ${ALLPHOT_CMDFILE} "n"
+	fi
+    done
+    if [[ ${f} != no ]]; then
+	cat >> ${ALLPHOT_CMDFILE} <<-EOF
 	y
 	${mchfileout}
-	y
 EOF
-	if [[ -n ${refcuts} ]]; then
-	    echo >> ${ALLPHOT_CMDFILE} ${12}
-	else
+    else
+	echo >> ${ALLPHOT_CMDFILE} "n"
+    fi
+    
+    # if cuts are defined, we can not set mtr, tfr and coo files
+    if [[ -n ${refcuts} ]]; then
+	echo >> ${ALLPHOT_CMDFILE} ${12}
+    else
+	if [[ ${11} != no ]]; then
+	    echo >> ${ALLPHOT_CMDFILE} "y"
 	    echo >> ${ALLPHOT_CMDFILE} $(allphot_output ${11})
-	    echo >> ${ALLPHOT_CMDFILE} ${12}
-	    echo >> ${ALLPHOT_CMDFILE} ${13}
+	else
+	    echo >> ${ALLPHOT_CMDFILE} "n"
 	fi
+	echo >> ${ALLPHOT_CMDFILE} ${12}
+	echo >> ${ALLPHOT_CMDFILE} ${13}
+    fi
     write_process_msg "Will run DAOMASTER on ${mchfilein}"
 }
 
