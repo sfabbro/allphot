@@ -42,7 +42,7 @@ opt_update_val() {
     local key=$(echo ${1%=*}) val=$(echo ${1##*=})
     [[ -z ${key} ]] && die -q "no option to update"
     [[ -z ${val} ]] && die -q "no value to update for option ${key}"
-    sed -i -e "s/\b${key}.*=.*/${key}=${val}/" ${2}
+    %SED% -i -e "s/\b${key}.*=.*/${key}=${val}/" ${2}
 }
 
 # opt_update_from_dict  <dictionary table> <option file> [<FITS file>] PUBLIC 
