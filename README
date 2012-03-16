@@ -25,7 +25,7 @@ Availability
 ============
 
 The current stable version is available on http://astrowww.phys.uvic.ca/~seb/
-The development git is public on http://gitorious.org/tvs/allphot
+The development git is public on http://github.com/sfabbro/allphot
 
 Installation
 ============
@@ -109,6 +109,6 @@ If you have suggestions, bugs, or are interested in contributing in
 ALLPHOT development, please send AUTHORS an email, or interact directly
 with the git site at:
 
-     http://gitorious.org/tvs/allphot
+     http://github.com/sfabbro/allphot
 
 
