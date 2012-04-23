@@ -29,6 +29,8 @@ iter_psf_allstar() {
     local im=$(basename ${fits%.*})
     export ALLPHOT_PROCDIR=process_${im}
     
+    set -e
+
     echo " ========================================================"
     echo " === STEP 1: Make simple Gaussian PSF with high S/N stars"
     echo " ========================================================"
@@ -179,6 +181,7 @@ iter_psf_allstar() {
     rm -f ${im}.cmb ${im}s.{off,als,ap,coo} ${im}ss.fits
     rm -rf ${ALLPHOT_PROCDIR} 
     unset ALLPHOT_PROCDIR
+    set +e
 }
 
 usage() {
