@@ -99,7 +99,6 @@ int fits_print_keyvalue(fitsfile* fptr, char* keyname, int* status) {
   int oldstatus = *status;
 
   /* Read and print requested keyword value */
-  /*fits_read_key_str(fptr, keyname, keyval, 0, status);*/
   fits_read_key_str(fptr, keyname, keyval, 0, status);
   if (*status != KEY_NO_EXIST) {
     printf("%s", keyval);

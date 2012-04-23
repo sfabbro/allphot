@@ -28,6 +28,7 @@ tests/test-allphot.bash
 libs/default.allphot
 src/fitshead
 src/fitskey
+src/fitssatur
 
 # tests generated (make check)
 tests/sky*
