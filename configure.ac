@@ -14,9 +14,10 @@ if test x$BASH = "x" ; then
     AC_MSG_ERROR([bash is required])
 fi
 
-dnl AC_PROG_SED is available only in autoconf 2.60 and later.
-dnl With older autoconf, assume that 'sed' is ok.
-ifdef([AC_PROG_SED], [AC_PROG_SED], [SED=sed AC_SUBST(SED)])
+AP_PROG_GNU_SED
+if test x$SED = "x" ; then
+    AC_MSG_ERROR([GNU sed is required])
+fi
 
 AC_PATH_PROG(READLINK, greadlink)
 if test x$READLINK = "x" ; then
