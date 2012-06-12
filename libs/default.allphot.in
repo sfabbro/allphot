@@ -17,9 +17,9 @@ show_usage_message() {
     echo
     local action
     write_list_start "Standard actions:"
-    for action in "help" "usage" "version" ; do
+    for action in help usage version ; do
 	local desc=""
-	is_function "describe_${action}" && desc=$(describe_${action} )
+	is_function "describe_${action}" && desc=$(describe_${action})
 	write_kv_list_entry "${action}" "${desc:-(no description)}"
     done
     
@@ -27,12 +27,11 @@ show_usage_message() {
     write_list_start "Extra actions:"
     
     # FIXME: can we do this using expansion somehow?
-    for action in $(set | \
-	sed -n -e '/^do_\S\+ ()\s*$/s/^do_\(\S\+\).*/\1/p' | \
-	grep -v 'action' | \
+    for action in $(declare -F | \
+	sed -n -e 's/^declare\s\+-f\s\+do_//p' | \
 	sort ) ; do
 	case "${action}" in
-	    help|usage|version)
+	    action|help|usage|version)
 		continue
 		;;
 	    ?*)
