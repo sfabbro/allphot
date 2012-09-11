@@ -44,7 +44,7 @@ do_do() {
 
     local im=${1%.*}
     
-    allphot_setup --optfile="${optfile}" allstar "${1}" ${options}
+    allphot_setup --optfile="${optfile}" allstar ${options}
     dao_allstar "${1}" "${psffile:-${im}.psf}" \
 	"${infile:-${im}.ap}" "${outfile:-${im}.als}" "${subfits:-${im}s.fits}"
     allphot_run
