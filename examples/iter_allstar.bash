@@ -32,7 +32,7 @@ iter_psf_allstar() {
     set -e
 
     echo " ========================================================"
-    echo " === STEP 1: Make simple Gaussian PSF with high S/N stars"
+    echo " === STEP 1: Make analytical PSF with high S/N stars     "
     echo " ========================================================"
 
     allphot daophot opt --dict="${DICTFILE}" --out=${im}.opt ${fits}
@@ -41,11 +41,11 @@ iter_psf_allstar() {
     allphot daophot pick --nstars=50 --magfaint=13 ${im}.ap
     allphot daophot psf \
 	--option VA=-1 \
-	--option AN=1 ${fits}
+	--option AN=-3 ${fits}
     allphot cat neighbours ${im}.nei ${im}.lst    
     allphot daophot psf \
 	--option VA=-1 \
-	--option AN=1 \
+	--option AN=$(get_psf_profile ${im}.psf) \
 	${fits}
 
     allphot allstar \
