@@ -16,8 +16,8 @@ describe_do_parameters() {
 describe_do_options() {
     echo "--suffix=<suf>    : Suffix for input FITS files (default: j.fits)"
     echo "--frames=<val>,<val> : Minimum number of frames, percentile (default: <nfames>/2, 0.5)"
-    echo "--limits=[xmin:xmax,ymin:ymax] : Limits for the final frame in master (default: [1:NAXIS1,1:NAXIS2])"
-    echo "--expansion=<num> : Expansion factor (defaul: 1)"
+    echo "--limits=[xmin:xmax,ymin:ymax] : Limits in master coordinates (default: [1:NAXIS1,1:NAXIS2])"
+    echo "--expansion=<num> : Expansion factor (default: 1)"
     echo "--no-sky          : Do not re-determine sky"
     echo "--fits=<file>     : Output FITS file name (default: <input>.fits)"
 }
@@ -44,9 +44,12 @@ do_do() {
     master=${master%.*}${suf}
     : ${limits:="[1:$(fitskey -n -p NAXIS1 ${master}),1:$(fitskey -n -p NAXIS2 ${master})]"}
     local nframes=$(wc -l ${1} | cut -d ' ' -f 1)
-    : ${frames:="$(( ${nframes} / 2 )),0.5"}
+    nframes=$(( ${nframes} / 2 ))
+    (( nframes > 13 )) && nframes=13
+    : ${frames:="${nframes},0.5"}    
 
     allphot_setup montage2
-    dao_montage2 ${1} ${suf} ${frames} ${limits} ${expn} ${dosky} ${outfile:-${1%.*}.fits}
+    dao_montage2 ${1} ${suf} ${frames} ${limits} ${expn} ${dosky} \
+	${outfile:-${1%.*}.fits}
     allphot_run montage2
 }
