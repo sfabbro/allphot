@@ -125,13 +125,15 @@ int main(int argc, char** argv) {
   char* filename;
   int i, j, status, nrelhdu;
 
-  while (optind<argc) {              /* loop over file names */
+  /* loop over file names */
+  while (optind<argc) {
 
     filename = argv[optind++];
     fptr = fits_init(filename, iomode, &nrelhdu, &status);
     if (!fptr) continue;
 
-    for (i=0; i<=nrelhdu; i++) {     /* loop over HDU of each file */
+    /* loop over HDU of each file */
+    for (i=0; i<=nrelhdu; i++) {
 
       /* printing case */
       if (iomode == READONLY && doprintfile) { 
@@ -140,27 +142,28 @@ int main(int argc, char** argv) {
 	printf(" ");
       }
 
-      for (j=0; j<nkeys; j++) {         /* loop over keys of each HDU */
+      /* loop over keys of each HDU */
+      for (j=0; j<nkeys; j++) {
 	
 	keyscan = &keys[j];
-
+	if (!fits_exist_key(fptr, keyscan->keystring)) continue;
 	if (keyscan->dofunc & doprint) {
 	  if (j>0) printf(" ");
 	  fits_print_keyvalue(fptr, keyscan->keystring, &status);
 	}
-	if (keyscan->dofunc & dofull)  
+	if (keyscan->dofunc & dofull)
 	  fits_update_keycard(fptr, keyscan->keystring, &status);
 	
-	if (keyscan->dofunc & doval)  
+	if (keyscan->dofunc & doval)
 	  fits_update_keyvalue(fptr, keyscan->keystring, &status);
 	
-	if (keyscan->dofunc & dodel)   
+	if (keyscan->dofunc & dodel)
 	  fits_delete_key(fptr, keyscan->keystring, &status);
 	
 	if (keyscan->dofunc & doname)
 	  fits_update_keyname(fptr, keyscan->keystring, &status);
 	
-	if (keyscan->dofunc & docom)    
+	if (keyscan->dofunc & docom)
 	  fits_update_keycomment(fptr, keyscan->keystring, &status);
 	
       } /* end loop on keys */
