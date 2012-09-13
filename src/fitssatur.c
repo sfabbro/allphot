@@ -22,7 +22,7 @@ histo* histo_init(int n, float minv, float maxv) {
 
 /* fill histogram with a value */
 histo* histo_fill(histo* hist, float val) {
-  int bin = (int)(floor((val - hist->minval)*hist->scale));
+  int bin = (int)(floorf((val - hist->minval)*hist->scale));
   if (bin>0 && bin<hist->nbins)
     hist->data[bin] += 1;
 }
@@ -40,8 +40,8 @@ float histo_max(histo* hist, float* maxbin) {
 
 /* zero out bins between minv and maxv */
 void histo_zero(histo* hist, float minv, float maxv) {
-  int minbin = (int)(floor((minv - hist->minval)*hist->scale));
-  int maxbin = (int)(floor((maxv - hist->minval)*hist->scale));
+  int minbin = (int)(floorf((minv - hist->minval)*hist->scale));
+  int maxbin = (int)(floorf((maxv - hist->minval)*hist->scale));
   int bin;
   if (minbin<0 || maxbin>=hist->nbins) return;
   for (bin = minbin; bin < maxbin; bin++)

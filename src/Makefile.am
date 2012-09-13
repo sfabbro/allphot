@@ -10,3 +10,5 @@ bin_PROGRAMS = fitshead fitskey fitssatur
 fitshead_SOURCES = $(CSRC) main_fitshead.c
 fitskey_SOURCES	 = $(CSRC) main_fitskey.c
 fitssatur_SOURCES = $(CSRC) fitssatur.c main_fitssatur.c
+
+MAINTAINERCLEANFILES = Makefile.in

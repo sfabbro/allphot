@@ -1,8 +1,9 @@
-AC_INIT([allphot], [0.8.1], [sfabbro@uvic.ca])
-AC_PREREQ(2.59)
+AC_INIT([allphot],[0.8.2],[sfabbro@uvic.ca])
+
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([bin/allphot.in])
 AC_CONFIG_AUX_DIR([autoconf])
+
 AM_INIT_AUTOMAKE([foreign])
 
 
@@ -14,7 +15,7 @@ if test x$BASH = "x" ; then
     AC_MSG_ERROR([bash is required])
 fi
 
-AP_PROG_GNU_SED
+AX_PROG_GNU_SED
 if test x$SED = "x" ; then
     AC_MSG_ERROR([GNU sed is required])
 fi
@@ -81,7 +82,14 @@ if test x$BC = "x" ; then
 fi
 
 AC_PROG_CC
-AX_CFITSIO
+
+AX_CHECK_PKG_LIB(
+	[cfitsio],
+	[fitsio.h],
+	[ffopen],,
+	[AC_MSG_ERROR([Could not find cfitsio library])])
+
+AC_CHECK_LIB([m], [floor])
 
 PACKAGE_UPNAME=`echo $PACKAGE_NAME | tr '[:lower:]' '[:upper:]'`
 AC_SUBST(PACKAGE_UPNAME)
