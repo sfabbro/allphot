@@ -63,8 +63,8 @@ dao_match() {
     if [[ ${1} =~ "\[" ]]; then
 	    echo >> ${ALLPHOT_CMDFILE} "$(allphot_input ${1%%\[*})${refcuts}*"
 	    cutout=( $(get_cutout_limits "${1}") )
-	    echo >> ${ALLPHOT_CMDFILE} ${cutout[0]},${cutout[1]}
-	    echo >> ${ALLPHOT_CMDFILE} ${cutout[2]},${cutout[3]}
+	    echo >> ${ALLPHOT_CMDFILE} \
+		${cutout[0]},${cutout[1]},${cutout[2]},${cutout[3]}
     else
 	echo >> ${ALLPHOT_CMDFILE} "$(allphot_input ${1%%\[*})${refcuts}"
     fi
