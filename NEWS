@@ -1,8 +1,13 @@
 ========================================================================
-ALLPHOT version 0.7.0                               Released: 2011-06-20
+ALLPHOT version 0.8.2                               Released: 2012-09-12
 ------------------------------------------------------------------------
-* Added montage2 module
-* Added more debug outputs
+* Adapted to latest ALLFRAME (allframe-4.1.2)
+* Adaptive aperture radii
+* Added a fitssatur executable to automatically find saturation level
+* Catalogues fix
+* Fixed options settings
+* Fixed examples
+* Updated autotools and macros
 
 ========================================================================
 ALLPHOT version 0.7.0                               Released: 2011-06-20
