@@ -10,4 +10,3 @@ allphot daomatch --out=${mch} $*
 allphot daomaster ${mch}
 allphot allframe ${mch}
 allphot montage2 ${mch}
-

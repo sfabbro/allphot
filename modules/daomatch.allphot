@@ -10,18 +10,18 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<star file>[xmin:xmax,ymin:ymax]..."
+    echo "FILE[x0:x1,y0:y1]..."
 }
 
 describe_do_options() {
-    echo "--out=<file>      : Output match file name (default: <ref>.mch)"
-    echo "--ref=<file>      : Name of the master reference star file (default: first)"
-    echo "--chimax=<val>    : Skip stars with chi > <val>"
-    echo "--sharpmax=<val>  : Skip stars with |sharp| > <val>"
-    echo "--magmax=<val>    : Skip stars with mag > <val>"
-    echo "--sigmax=<val>    : Skip stars with dmag > <val>"
-    echo "--scale=<val>     : Force the scale value relative to the reference (1: no scaling)"
-    echo "--onlyshift       : Search only for shifts (no rotations, no scaling)"
+    echo "--out=MCH     : Output match file name (default: REF.mch)"
+    echo "--ref=STAR    : Name of the master reference star file (default: first)"
+    echo "--chimax=VAL  : Skip stars with chi > VAL"
+    echo "--sharpmax=VAL: Skip stars with |sharp| > VAL"
+    echo "--magmax=VAL  : Skip stars with mag > VAL"
+    echo "--sigmax=VAL   : Skip stars with dmag > VAL"
+    echo "--scale=VAL  : Set pixel scale value relative to the reference (1: no scaling)"
+    echo "--onlyshift    : Search only for shifts (no rotations, no scaling)"
 }
 
 do_do() {

@@ -13,8 +13,8 @@ daophot_help_description() {
 
 daophot_options_description() {
     daophot_help_description
-    echo "--opt=<file>        : Initial option file (default: $(opt_file_path daophot))"
-    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: TH=4)"
+    echo "--opt=FILE     : Set initial options values from FILE (default: $(opt_file_path daophot))"
+    echo "--option OP=VAL : Set option OP with value VAL (ex: TH=4)"
 }
 
 daophot_action_usage() {
@@ -89,13 +89,14 @@ describe_opt() {
 }
 
 describe_opt_parameters() {
-    echo "[<FITS header>]"
+    echo "[FITS]"
+    echo "A FITS header is needed if the dict file contains fits() operator"
 }
 
 describe_opt_options() {
     daophot_options_description
-    echo "--dict=<file> : Dictionary to set options from FITS keywords"
-    echo "--out=<file>  : DAOPHOT option file as output (default: daophot.opt)"
+    echo "--dict=DICT : Dictionary to set options from FITS keywords"
+    echo "--out=OPT   : DAOPHOT option file as output (default: daophot.opt)"
 }
 
 do_opt() {
@@ -142,7 +143,7 @@ describe_sky() {
 }
 
 describe_sky_parameters() {
-    echo "<FITS image>"
+    echo "FITS"
 }
 
 describe_sky_options() {
@@ -172,12 +173,12 @@ describe_find() {
 
 describe_find_options() {
     daophot_options_description
-    echo "--frames=<num>,<num>: Number of frames averaged, summed (default: 1,1)"
-    echo "--out=<file>        : Output star list file (default: <fitsfile>.coo)"
+    echo "--frames=N,N  : Number of frames averaged, summed (default: 1,1)"
+    echo "--out=COO     : Output star list file (default: FITS.coo)"
 }
 
 describe_find_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_find() {
@@ -210,16 +211,16 @@ describe_phot() {
 
 describe_phot_options() {
     daophot_help_description
-    echo "--in=<file>         : Input star list file (default: <fitsfile>.coo)"
-    echo "--out=<file>        : Output star list file (default: <fitsfile>.ap)"
-    echo "--radius <RAD>=<val>: Set a aperture radius <RAD>"
-    echo "--rad=<file>    : Specifiy aperture radii file (default $(opt_file_path photo))"
-    echo "--nei=<file>        : Subtract neighbour stars from this file"
-    echo "--psf=<file>        : PSF to subtract neighbours (default: <fitsfile>.psf)"
+    echo "--in=STAR        : Input star list file (default: FITS.coo)"
+    echo "--out=AP         : Output star list file (default: FITS.ap)"
+    echo "--radius RAD=VAL : Set an aperture radius RAD (ex: A1=4)"
+    echo "--rad=PHOTO      : Aperture radii file (default $(opt_file_path photo))"
+    echo "--nei=STAR       : File of stars to subtract (default: FITS.als)"
+    echo "--psf=PSF        : PSF to subtract neighbours (default: FITS.psf)"
 }
 
 describe_phot_parameters() {
-    echo "<FITS image>"
+    echo "FITS"
 }
 
 do_phot() {
@@ -275,13 +276,14 @@ describe_pick() {
 
 describe_pick_options() {
     daophot_options_description
-    echo "--out=<file>        : Output star list file (default: <starfile>.lst)"
-    echo "--magfaint=<value>  : Magnitude of the faintest star (default: 13)"
-    echo "--nstars=<value>    : Max number of stars to pick (default: 200)"    
+    echo "--out=LST       : Output star list file (default: FILE.lst)"
+    echo "--magfaint=VAL  : Magnitude of the faintest star (default: 13)"
+    echo "--nstars=N      : Max number of stars to pick (default: 200)"    
 }
 
 describe_pick_parameters() {
-    echo "<starfile>"
+    echo "STAR"
+    echo "STAR is any DAOPHOT photometry formatted file id,x,y,mag,sky"
 }
 
 do_pick() {
@@ -314,13 +316,13 @@ describe_psf() {
 
 describe_psf_options() {
     daophot_options_description
-    echo "--pho=<file>      : Input photometry (default: <fitsfile>.ap)"
-    echo "--in=<file>      : Input PSF star list (default: <fitsfile>.lst)"
-    echo "--out=<file>     : Output PSF file (default: <fitsfile>.psf)"
+    echo "--pho=STAR    : Input photometry (default: FITS.ap)"
+    echo "--in=FILE     : Input PSF star list (default: FITS.lst)"
+    echo "--out=PSF     : Output PSF file (default: FITS.psf)"
 }
 
 describe_psf_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_psf() {
@@ -358,13 +360,13 @@ describe_peak() {
 
 describe_peak_options() {
     daophot_help_description
-    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
-    echo "--in=<star file>   : Input photometry file (default: <fitsfile>.ap)"
-    echo "--out=<file>  : Output file name (default: <fitsfile>.pk)"
+    echo "--psf=PSF  : Input PSF file (default: FITS.psf)"
+    echo "--in=STAR  : Input photometry file (default: FITS.ap)"
+    echo "--out=PK   : Output photometry file (default: FITS.pk)"
 }
 
 describe_peak_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_peak() {
@@ -398,14 +400,14 @@ describe_group() {
 
 describe_group_options() {
     daophot_options_description
-    echo "--in=<file>        : Input star list file (default: <fitsfile>.ap)"
-    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
-    echo "--out=<file>        : Output star list file (default: <fitsfile>.grp)"
-    echo "--overlap=<value>   : Critical overlap (default: 1sigma)"
+    echo "--in=STAR     : Input star file (default: FITS.ap)"
+    echo "--psf=PSF     : Input PSF file (default: FITS.psf)"
+    echo "--out=GRP     : Output star file (default: FITS.grp)"
+    echo "--overlap=VAL : Critical overlap (default: 1 sigma)"
 }
 
 describe_group_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_group() {
@@ -442,13 +444,13 @@ describe_nstar() {
 
 describe_nstar_options() {
     daophot_options_description
-    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
-    echo "--in=<file>        : Input star group file (default: <fitsfile>.grp)"
-    echo "--out=<file>       : Output star list file (default: <fitsfile>.nst)"
+    echo "--psf=PSF   : Input PSF file (default: FITS.psf)"
+    echo "--in=GRP    : Input star group file (default: FITS.grp)"
+    echo "--out=NST   : Output star list file (default: FITS.nst)"
 }
 
 describe_nstar_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_nstar() {
@@ -484,14 +486,14 @@ describe_substar() {
 
 describe_substar_options() {
     daophot_help_description
-    echo "--psf=<psf file>   : Input PSF file (default: <fitsfile>.psf)"
-    echo "--in=<star file>   : Input photometry file (default: <fitsfile>.nei)"
-    echo "--keep=<star file> : File with stars to keep (default: <fitsfile>.lst)"
-    echo "--out=<FITS image> : Output subtracted image (default: <fitsfile>s.fits)"
+    echo "--psf=PSF   : Input PSF file (default: FITS.psf)"
+    echo "--in=STAR   : Input photometry file (default: FITS.nei)"
+    echo "--keep=STAR : File with stars to keep (default: FITS.lst)"
+    echo "--out=FITS  : Output subtracted image (default: FITSs.fits)"
 }
 
 describe_substar_parameters() {
-    echo "<FITS image>"
+    echo "FITS"
 }
 
 do_substar() {
@@ -526,13 +528,13 @@ describe_sort() {
 
 describe_sort_options() {
     daophot_help_description
-    echo "--index=<val>   : Column index to sort (default: 1)"
-    echo "--out=<file>    : Output file name (default: <starfile>.srt)"
-    echo "--renum         : Renumber the star IDs"
+    echo "--index=N   : Column index to sort (default: 1)"
+    echo "--out=FILE  : Output file name (default: FILE.srt)"
+    echo "--renum     : Renumber the star IDs"
 }
 
 describe_sort_parameters() {
-    echo "<starfile>"
+    echo "FILE"
 }
 
 do_sort() {
@@ -563,13 +565,13 @@ describe_select() {
 
 describe_select_options() {
     daophot_help_description
-    echo "--min=<value>  : Minimum group size (default: 1)"
-    echo "--max=<value>  : Maximum group size (default: 60)"
-    echo "--out=<new group file>  : Output file name (default:<groupfile>.sel)"
+    echo "--min=N    : Minimum group size (default: 1)"
+    echo "--max=N    : Maximum group size (default: 60)"
+    echo "--out=GRP : Output group file (default: FILE.sel)"
 }
 
 describe_select_parameters() {
-    echo "<groupfile>"
+    echo "GRP"
 }
 
 do_select() {
@@ -595,20 +597,20 @@ do_select() {
 
 ### OFFSET ###
 describe_offset() {
-    echo "Add offsets to the first 4 columns of a star file"
+    echo "Add offsets to the first 4 columns of an ASCII file"
 }
 
 describe_offset_options() {
     daophot_help_description
-    echo "--id=<val> : Add <val> to ID (default: 0)"
-    echo "--x=<val>  : Add <val> to x-coordinate (default: 0)"
-    echo "--y=<val>  : Add <val> to y-coordinate (default: 0)"
-    echo "--mag=<val>: Add <val> to magnitude (default: 0)"
-    echo "--out=<file>  : Output file name (default <starfile>.off)"
+    echo "--id=N     : Add N to ID (default: 0)"
+    echo "--x=VAL    : Add VAL to x-coordinate (default: 0)"
+    echo "--y=VAL    : Add VAL to y-coordinate (default: 0)"
+    echo "--mag=VAL  : Add VAL to magnitude (default: 0)"
+    echo "--out=FILE : Output file name (default FILE.off)"
 }
 
 describe_offset_parameters() {
-    echo "<starfile>"
+    echo "FILE"
 }
 
 do_offset() {
@@ -641,11 +643,11 @@ describe_append() {
 
 describe_append_options() {
     daophot_help_description
-    echo "--out=<file>  : Output file name (default: <starfile1>.cmb)"
+    echo "--out=FILE  : Output file name (default: FILE1.cmb)"
 }
 
 describe_append_parameters() {
-    echo "<starfile1> <starfile2>"
+    echo "FILE1 FILE2"
 }
 
 do_append() {
@@ -675,13 +677,13 @@ describe_dump() {
 
 describe_dump_options() {
     daophot_help_description
-    echo "--xc=<value>  : X coordinate of central pixel (default: nrows/2)"
-    echo "--yc=<value>  : Y coordinate of central pixel (default: ncols/2)"
-    echo "--size=<value>  : Size of small array (default: 9)"
+    echo "--xc=VAL  : X coordinate of central pixel (default: nrows/2)"
+    echo "--yc=VAL  : Y coordinate of central pixel (default: ncols/2)"
+    echo "--size=N  : Size of small array (default: 9)"
 }
 
 describe_dump_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_dump() {
@@ -715,15 +717,15 @@ describe_fudge() {
 
 describe_fudge_options() {    
     daophot_help_description
-    echo "--out=<fits file>  : Output picture name (default: <fitsfile>s.fits)"
-    echo "--border=<number>  : Border outside region (default: 0)"
+    echo "--out=FITS  : Output picture name (default: FITSs.fits)"
+    echo "--border=N  : Border outside region (default: 0)"
     echo "--region=[x0:x1,y0:y1] : Image region to fudge, FITS coordinates "
-    echo "--brightness=<value> : Value to replace with"
-    echo "--order=<number>     : Order of the polynomial for extrapolation (default: 1)"
+    echo "--brightness=VAL : Value to replace with"
+    echo "--order=N    : Order of the polynomial for extrapolation (default: 1)"
 }
 
 describe_fudge_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_fudge() {
@@ -770,20 +772,20 @@ describe_addstar() {
 
 describe_addstar_options() {
     daophot_help_description
-    echo "--psf=<psf file>   : Input PSF file (default: <in>.psf)"
-    echo "--seed=<number>    : Input seed number (default: 0)"
-    echo "--gain=<number>    : Input photons/ADU (default: from header)"
-    echo "--in=<star file>   : Input photometry file (default: random stars)"
-    echo "--out=<FITS image> : Output picture name (default: <input>a.fits)"
-    echo "--min=<number>     : Min magnitude (default: )"
-    echo "--max=<number>     : Max magnitude (default: )"
-    echo "--nstars=<number>  : Number of stars to add (default: 0)"
-    echo "--nframes=<number> : Number of frames to produce (default: 1)"
-    echo "--prefix=<string>  : Prefix stem to add to file names (default: fake)"
+    echo "--psf=PSF       : Input PSF file (default: FITS.psf)"
+    echo "--seed=N        : Input seed number (default: 0)"
+    echo "--gain=VAL      : Input photons/ADU (default: from header)"
+    echo "--in=STAR       : Input photometry file (default: random stars)"
+    echo "--out=FITS      : Output picture name (default: FITSa.fits)"
+    echo "--min=VAL       : Min magnitude (default: 10)"
+    echo "--max=VAL       : Max magnitude (default: 15)"
+    echo "--nstars=N      : Number of stars to add (default: 0)"
+    echo "--nframes=N     : Number of frames to produce (default: 1)"
+    echo "--prefix=STRING : Prefix stem to add to file names (default: fake)"
 }
 
 describe_addstar_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_addstar() {
@@ -831,7 +833,7 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<allphot script> [arg1 ... arg]"
+    echo "FILE [ARG...]"
 }
 
 describe_do_options() {

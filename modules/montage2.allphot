@@ -10,16 +10,17 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<match file>"
+    echo "MCH"
+    echo "A DAOMATCH formatted match file with initial transformations"    
 }
 
 describe_do_options() {
-    echo "--suffix=<suf>    : Suffix for input FITS files (default: j.fits)"
-    echo "--frames=<val>,<val> : Minimum number of frames, percentile (default: <nfames>/2, 0.5)"
-    echo "--limits=[xmin:xmax,ymin:ymax] : Limits in master coordinates (default: [1:NAXIS1,1:NAXIS2])"
-    echo "--expansion=<num> : Expansion factor (default: 1)"
-    echo "--no-sky          : Do not re-determine sky"
-    echo "--fits=<file>     : Output FITS file name (default: <input>.fits)"
+    echo "--suffix=STRING  : Suffix for input FITS files (default: j.fits)"
+    echo "--frames=N,N     : Minimum number of frames, percentile (default: nframes/2, 0.5)"
+    echo "--limits=[x0:x1,y0:y1] : Limits in master coordinates (default: [1:NAXIS1,1:NAXIS2])"
+    echo "--expansion=VAL : Expansion factor (default: 1)"
+    echo "--no-sky        : Do not re-determine sky"
+    echo "--fits=FITS     : Output FITS file name (default: MCH.fits)"
 }
 
 do_do() {

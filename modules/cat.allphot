@@ -6,24 +6,21 @@ inherit qa options
 
 ### HEADER ###
 describe_header() {
-    echo "Insert a DAOPHOT header file in a catalogue"
+    echo "Insert a DAOPHOT header file in a star data file"
 }
 
 describe_header_parameters() {
-    echo "<daophot option> <fitsfile> <starfile>"
+    echo "OPT FITS FILE"
+    echo "Need DAOPHOT/OPT file, a FITS file and an input star file"
 }
 
 describe_header_options() {
-    echo "--out=<file>  : Output file name (default: same as input)"
-    echo "--opt=<file>  : Option file as input (default: $(opt_file_path daophot))"
+    echo "--out=FILE  : Output file name (default: same as input)"
 }
 
 do_header() {    
-    local outfile="" optfile=""
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
-	    --out=*) outfile="${1##*=}" ;;
-	    --opt=*) optfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -46,11 +43,11 @@ describe_merge() {
 }
 
 describe_merge_options() {
-    echo "--out=<file>  : Output file name (default: <starfile1>)"
+    echo "--out=FILE1  : Output file name (default: FILE1)"
 }
 
 describe_merge_parameters() {
-    echo "<starfile1> <starfile2>"
+    echo "FILE1 FILE2"
 }
 
 do_merge() {
@@ -68,7 +65,8 @@ do_merge() {
     
     allphot_setup --optfile="${infile}" daophot
     daophot_sort 1 "${1}" tmpmerge.srt Y
-    daophot_offset "${2}" $(tail -n 1 tmpmerge.srt | awk '{print $1+1}') 0 0 0 tmpmerge.off
+    daophot_offset "${2}" $(tail -n 1 tmpmerge.srt | \
+	awk '{print $1+1}') 0 0 0 tmpmerge.off
     daophot_append "${1}" tmpmerge.off tmpmerge.app
     daophot_sort 1 tmpmerge.app ${outfile:-${1}} Y
     allphot_run daophot
@@ -82,14 +80,15 @@ describe_cuts() {
 }
 
 describe_cuts_options() {
-    echo "--sharpmax=<val> : Remove stars with |sharp| > <val> (default: 0.6)"
-    echo "--chimax=<val>   : Remove stars with chi > <val> (default: 2)"
-    echo "--sigmax=<val>   : Remove stars with sig > <val> (default: 9)"
-    echo "--magmax=<val>   : Remove stars with mag > <val> (default: 99)"
+    echo "--sharpmax=VAL : Remove stars with |sharp| > VAL (default: 0.6)"
+    echo "--chimax=VAL   : Remove stars with chi > VAL (default: 2)"
+    echo "--sigmax=VAL   : Remove stars with sig > VAL (default: 9)"
+    echo "--magmax=VAL   : Remove stars with mag > VAL (default: 99)"
 }
 
 describe_cuts_parameters() {
-    echo "<starfile> [<starfile>]..."
+    echo "FILE..."
+    echo "ALLSTAR/ALLFRAME formatted star data files"
 }
 
 do_cuts() {
@@ -149,7 +148,8 @@ describe_neighbours() {
 }
 
 describe_neighbours_parameters() {
-    echo "<neifile> <starfile>"
+    echo "NEI LST"
+    echo "DAOPHOT/PSF neighbour file and  DAOPHOT/PSF input star file"
 }
 
 do_neighbours() {

@@ -11,16 +11,16 @@ describe_do() {
 }
 
 describe_do_options() {
-    echo "--opt : Option file as input (default: $(opt_file_path allstar))"
-    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: FI=4)"
-    echo "--in=<file>  : Input photometry file (default: <fitsfile>.ap)"
-    echo "--psf=<file> : Input PSF file (default: <input>.psf)"
-    echo "--out=<file> : Output photometry file (default: <fitsfile>.als)"
-    echo "--sub=<fits> : Output residual FITS image (default: <fitsfile>s.fits)"
+    echo "--opt=OPT : ALLSTAR Option file (default: $(opt_file_path allstar))"
+    echo "--option OP=VAL: Set option OP with value VAL (ex: FI=4)"
+    echo "--in=STAR  : Input photometry file (default: FITS.ap)"
+    echo "--psf=PSF : Input PSF file (default: FITS.psf)"
+    echo "--out=ALS : Output photometry file (default: FITS.als)"
+    echo "--sub=FITS : Output residual FITS image (default: FITSs.fits)"
 }
 
 describe_do_parameters() {
-    echo "<fitsfile>"
+    echo "FITS"
 }
 
 do_do() {

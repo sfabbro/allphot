@@ -10,13 +10,14 @@ describe_do() {
 }
 
 describe_do_options() {
-    echo "--opt=<file>        : Option file as input (default: $(opt_file_path allframe))"
-    echo "--option <OP>=<val> : Set option <OP> with value <val> (ex: GE=20)"
-    echo "--mag=<file>    : Input file with list of stars (default: <matchfile>.mag)"
+    echo "--opt=OPT  : ALLFRAME option file (default: $(opt_file_path allframe))"
+    echo "--option OP=VAL : Set option <OP> with value <val> (ex: GE=20)"
+    echo "--mag=MAG : Input file with list of reference stars (default: MCH.mag)"
 }
 
 describe_do_parameters() {
-    echo "<matchfile>"
+    echo "MCH"
+    echo "A DAOMATCH formatted match file with initial transformations"
 }
 
 do_do() {

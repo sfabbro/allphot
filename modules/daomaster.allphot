@@ -10,26 +10,27 @@ describe_do() {
 }
 
 describe_do_parameters() {
-    echo "<matchfile>"
+    echo "MCH"
+    echo "A DAOMATCH formatted match file with initial transformations"
 }
 
 describe_do_options() {
-    echo "--frames=<val>,<val>,<val> : Min number, min fraction, enough frames (default <nframes>/2,0.5,<nframes>)"
-    echo "--maxsigma=<val> : Maximum magnitude error in sigma (default 0.2)"
-    echo "--dof=<val>  : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
-    echo "--rad=<val>  : Initial critical match up radius in pixels  (default 5)"
-    echo "--mag=<file> : File with mean magnitudes and scatter (default: <matchfile>.mag)"
-    echo "--cor=<file> : File with corrected magnitudes and errors (default: <matchfile>.cor)"
-    echo "--raw=<file> : File with raw magnitudes and errors (default: <matchfile>.raw)"
-    echo "--out=<file> : File with new transformations (default: <matchfile>)"
-    echo "--tfr=<file> : File with transfer table (default: <matchfile>.tfr)"
+    echo "--frames=N,VAL,N : Min number, min fraction, enough frames (default nframes/2,0.5,nframes)"
+    echo "--maxsigma=VAL : Maximum magnitude error in sigma (default 0.2)"
+    echo "--dof=N  : Number of degrees of freedom in transformations: 2,4,6,12,20 (default 6)"
+    echo "--rad=VAL  : Initial critical match up radius in pixels  (default 5)"
+    echo "--mag=MAG : Output file with mean magnitudes and scatter (default: MCH.mag)"
+    echo "--cor=COR : Output file with corrected magnitudes and errors (default: MCH.cor)"
+    echo "--raw=RAW : Output file with raw magnitudes and errors (default: MCH.raw)"
+    echo "--out=MCH : Output File with new transformations (default: overwrite MCH)"
+    echo "--tfr=TFR : Output File with transfer table (default: MCH.tfr)"
     echo "--no-id :  Do not define new star IDs"
     echo "--no-coo : Do not (over)write coordinates files with new star IDs (.coo files)"
     echo "--no-mtr : Do not produce input files with IDs changed (.mtr files)"
-    echo "--chimax=<val>   : Skip stars with chi > <val>"
-    echo "--sharpmax=<val> : Skip stars with |sharp| > <val>"
-    echo "--magmax=<val>   : Skip stars with mag > <val>"
-    echo "--sigmax=<val>   : Skip stars with dmag > <val>"
+    echo "--chimax=VAL   : Skip stars with chi > VAL"
+    echo "--sharpmax=VAL : Skip stars with |sharp| > VAL"
+    echo "--magmax=VAL   : Skip stars with mag > VAL"
+    echo "--sigmax=VAL   : Skip stars with dmag > VAL"
 }
 
 do_do() {
