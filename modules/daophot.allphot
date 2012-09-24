@@ -131,6 +131,7 @@ do_opt() {
     fi
 
     daophot_opt "${optfile}"
+    daophot_exit
     allphot_run daophot
     [[ -n ${outfile} ]] && \
 	[[ ! ${ALLPHOT_OPTFILE} -ef ${outfile} ]] && \
@@ -163,6 +164,7 @@ do_sky() {
     allphot_setup daophot
     daophot_attach "${1}"
     daophot_sky
+    daophot_exit
     allphot_run daophot
 }
 
@@ -201,6 +203,7 @@ do_find() {
    allphot_setup --optfile="${optfile}" daophot ${options}
    daophot_attach "${1}"
    daophot_find ${frames} "${outfile:-${1%.*}.coo}"
+   daophot_exit
    allphot_run daophot
 }
 
@@ -266,6 +269,7 @@ do_phot() {
     else
 	daophot_phot "${radfile}" "${infile:-${im}.coo}" "${outfile:-${im}.ap}"
     fi
+    daophot_exit
     allphot_run daophot
 }
 
@@ -306,6 +310,7 @@ do_pick() {
 
     allphot_setup --optfile="${optfile}" daophot ${options}
     daophot_pick "${1}" ${nstars} ${magfaint} "${outfile:-${1%.*}.lst}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -350,6 +355,7 @@ do_psf() {
     daophot_psf \
 	"${phofile:-${im}.ap}" "${lstfile:-${im}.lst}" \
 	"${psffile:-${im}.psf}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -390,6 +396,7 @@ do_peak() {
     allphot_setup daophot
     daophot_attach "${1}"
     daophot_peak "${infile:-${im}.ap}" "${psffile:-${im}.psf}" "${outfile:-${im}.pk}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -434,6 +441,7 @@ do_group() {
     allphot_setup --optfile="${optfile}" daophot ${options}
     daophot_attach "${1}"
     daophot_group  "${infile:-${im}.ap}" "${psffile:-${im}.psf}" ${overlap} "${outfile:-${im}.grp}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -476,6 +484,7 @@ do_nstar() {
     allphot_setup --optfile="${optfile}" daophot ${options}
     daophot_attach "${1}"
     daophot_nstar  "${infile:-${im}.grp}" "${psffile:-${im}.psf}" "${outfile:-${im}.nst}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -518,6 +527,7 @@ do_substar() {
     allphot_setup daophot
     daophot_attach "${1}"
     daophot_substar "${psffile:-${im}.psf}" "${infile:-${im}.nei}" "${keepfile}" "${subfits:-${im}s.fits}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -555,6 +565,7 @@ do_sort() {
 
     allphot_setup daophot
     daophot_sort ${idx} "${1}" "${outfile:-${1%.*}.srt}" ${renum}
+    daophot_exit
     allphot_run daophot
 }
 
@@ -592,6 +603,7 @@ do_select() {
 
     allphot_setup daophot
     daophot_select "${1}" ${mingrp} ${maxgrp} "${outfile:-${1%.*}.sel}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -633,6 +645,7 @@ do_offset() {
 
     allphot_setup daophot
     daophot_offset "${1}" ${idoff} ${xoff} ${yoff} ${magoff} "${outfile:-${1%.*}.off}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -666,6 +679,7 @@ do_append() {
 
     allphot_setup daophot
     daophot_append "${1}" "${2}" "${outfile:-${1%.*}.cmb}"
+    daophot_exit
     allphot_run daophot
 }
 
@@ -707,6 +721,7 @@ do_dump() {
     allphot_setup daophot
     daophot_attach "${1}"
     daophot_dump ${sz} ${xc} ${yc}
+    daophot_exit
     allphot_run daophot
 }
 
@@ -762,6 +777,7 @@ do_fudge() {
 	daophot_fudge \
 	    "${outfits:-${im}f.fits}" ${x0} ${x1} ${y0} ${y1} ${brightness}
     fi
+    daophot_exit
     allphot_run daophot
 }
 
@@ -824,6 +840,7 @@ do_addstar() {
 	    "${psffile:-${im}.psf}" ${seed} ${gain} \
 	    "${infile}" "${outfits:-${im}a.fits}"
     fi
+    daophot_exit
     allphot_run daophot
 }
 
