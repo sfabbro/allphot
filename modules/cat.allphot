@@ -20,8 +20,8 @@ describe_header_options() {
 
 do_header() {    
     while [[ $# -gt 0 ]]; do
-	case "${1}" in
-	    --*) die -q "Unrecognized option '${1}'" ;;
+	case "$1" in
+	    --*) die -q "Unrecognized option '$1'" ;;
               *) break ;;
         esac
 	shift
@@ -29,12 +29,12 @@ do_header() {
 
     [[ $# -lt 3 ]] && header_usage && return
 
-    [[ -r ${1} ]] || die -q "File ${1} not readable"
-    [[ -r ${2} ]] || die -q "File ${2} not readable"
-    [[ -w ${3} ]] || die -q "File ${3} not writeable"
+    [[ -r $1 ]] || die -q "File $1 not readable"
+    [[ -r $2 ]] || die -q "File $2 not readable"
+    [[ -w $3 ]] || die -q "File $3 not writeable"
 
-    write_process_msg "Insert a header into ${3}"
-    cat_insert_header ${1} ${2} ${3} || die -q "Could not insert header"
+    write_process_msg "Insert a header into $3"
+    cat_insert_header $1 $2 $3 || die -q "Could not insert header"
 }
 
 ### MERGE ###
@@ -53,9 +53,9 @@ describe_merge_parameters() {
 do_merge() {
     local outfile=""
     while [[ $# -gt 0 ]]; do
-	case "${1}" in
+	case "$1" in
 	    --out=*) outfile="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '${1}'" ;;
+	    --*) die -q "Unrecognized option '$1'" ;;
               *) break ;;
         esac
 	shift
@@ -64,11 +64,11 @@ do_merge() {
     [[ $# -lt 2 ]] && merge_usage && return
     
     allphot_setup --optfile="${infile}" daophot
-    daophot_sort 1 "${1}" tmpmerge.srt Y
-    daophot_offset "${2}" $(tail -n 1 tmpmerge.srt | \
+    daophot_sort 1 "$1" tmpmerge.srt Y
+    daophot_offset "$2" $(tail -n 1 tmpmerge.srt | \
 	awk '{print $1+1}') 0 0 0 tmpmerge.off
-    daophot_append "${1}" tmpmerge.off tmpmerge.app
-    daophot_sort 1 tmpmerge.app ${outfile:-${1}} Y
+    daophot_append "$1" tmpmerge.off tmpmerge.app
+    daophot_sort 1 tmpmerge.app ${outfile:-$1} Y
     allphot_run daophot
 
     rm -f tmpmerge.*
@@ -94,12 +94,12 @@ describe_cuts_parameters() {
 do_cuts() {
     local cmax=2 smax=0.6 mmax=99 dmax=9
     while [[ $# -gt 0 ]]; do
-	case "${1}" in
+	case "$1" in
 	    --sharpmax=*)  smax="${1##*=}" ;;
 	    --chimax=*)    cmax="${1##*=}" ;;
             --magmax=*)    mmax="${1##*=}" ;;
             --sigmax=*)    dmax="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '${1}'" ;;
+	    --*) die -q "Unrecognized option '$1'" ;;
               *) break ;;
         esac
 	shift
@@ -107,7 +107,7 @@ do_cuts() {
 
     [[ $# -lt 1 ]] && cuts_usage && return
 
-    local profile=${1} f id
+    local profile=$1 f id
     [[ -r ${profile} ]] || die -q "File ${profile} not readable"
 
     if [[ $# == 1 ]]; then
@@ -156,13 +156,52 @@ do_neighbours() {
 
     [[ $# -lt 2 ]] && neighbours_usage && return
 
-    [[ -r ${1} ]] || die -q "File ${1} not readable"
-    [[ -w ${2} ]] || die -q "File ${2} not writeable"
+    [[ -r $1 ]] || die -q "File $1 not readable"
+    [[ -w $2 ]] || die -q "File $2 not writeable"
     
-    local nnei=$(grep -c [\*\?] ${1})
+    local nnei=$(grep -c [\*\?] $1)
     [[ ${nnei} -gt 0 ]] && \
 	sed -i \
-	    $(awk '/[\*\?]/ {printf "-e /^[[:space:]]*"$1"/d "}' ${1}) \
-	    ${2}
+	    $(awk '/[\*\?]/ {printf "-e /^[[:space:]]*"$1"/d "}' $1) \
+	    $2
     write_process_msg "Removed ${nnei} neighbours to PSF stars"
+}
+
+### BADPSF ###
+describe_goodpsf() {
+    echo "Filter out stars from a DAOPHOT/PSF run log file"
+}
+
+describe_goodpsf_parameters() {
+    echo "LOG LST"
+    echo "DAOPHOT/PSF log file and  DAOPHOT/PSF input star file"
+}
+
+describe_badpsf_options() {
+    echo "--chimax=VAL   : Remove stars with chi > VAL (default: 0.5)"
+}
+
+do_badpsf() {
+
+    [[ $# -lt 2 ]] && badpsf_usage && return
+
+    [[ -r $1 ]] || die -q "File $1 not readable"
+    [[ -w $2 ]] || die -q "File $2 not writeable"
+    
+    local l1=$(grep -n "Profile errors:" $1 | 
+	sed 's/:/ /g' | awk '(NR==1){print $1+2}')
+    local l2=$(grep -n "File with PSF stars and neighbors =" $1 | 
+	sed 's/:/ /g' | awk '(NR==1){print $1-4}')
+    tail -n +${l1} $1 | head -n $((l2-l1+1)) - | \
+	sed \
+	-e 's/\(saturated\|defective\)/ 1.000   /g' \
+	-e 's/\(*\|?\)/ /g'> .tmp.$2.chi
+    
+
+    local nbad=$(grep -c [\*\?] $1)
+    [[ ${nbad} -gt 0 ]] && \
+	sed -i \
+	    $(awk '/[\*\?]/ {printf "-e /^[[:space:]]*"$1"/d "}' $1) \
+	    $2
+    write_process_msg "Removed ${nbad} neighbours to PSF stars"
 }
