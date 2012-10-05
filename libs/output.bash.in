@@ -40,7 +40,6 @@ set_debug_mode() {
     ALLPHOT_DEBUG_MODE=${1}
 }
 
-
 # is_debug_mode PUBLIC
 # test if $1 is the current debug mode
 is_debug_mode() {

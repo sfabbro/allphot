@@ -70,6 +70,10 @@ allphot_run() {
     if is_output_mode quiet; then
 	$(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) \
 	    > /dev/null || die -q "${cmd} failed."
+    elif is_output_mode log; then
+	$(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) \
+	    > ${ALLPHOT_CMDFILE/.in/.log} || \
+	    die -q "${cmd} failed, see ${ALLPHOT_CMDFILE/.in/.log}."
     else
 	$(type -P ${cmd}) < $(basename ${ALLPHOT_CMDFILE}) \
 	    || die -q "${cmd} failed."

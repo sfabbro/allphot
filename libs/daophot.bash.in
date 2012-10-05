@@ -106,7 +106,7 @@ EOF
 # daophot_psf <input mag file> <input psf stars file> <output psf file> PUBLIC
 # create an answer for daophot PSF command
 daophot_psf() {
-    local phofile=${1} neifile=${2%.*}.nei
+    local phofile=${1} neifile=${3%.*}.nei
     if [[ ${phofile} == ${neifile} ]]; then
 	mv -f ${phofile}{,.2}
 	phofile=$(allphot_input ${phofile}.2)
@@ -122,6 +122,7 @@ daophot_psf() {
 	${phofile}
 	$(allphot_input ${2})
 	$(allphot_output ${3})
+
 EOF
     write_process_msg "Will run DAOPHOT PSF"
 }
