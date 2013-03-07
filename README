@@ -100,6 +100,7 @@ Documentation
 * Two tools to parse FITS headers are also compiled:
     - fitshead: print a FITS header from a HDU or all of them
     - fitskey : print or modify keys of FITS headers
+    - fitssatur: automatic determination of a saturation level
 
 
 Contributing to ALLPHOT
