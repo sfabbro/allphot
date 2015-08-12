@@ -1,7 +1,7 @@
 #
 # SYNOPSIS
 #
-#   AX_CHECK_PKG_LIB(PKG, [HEADER], [SYMBOL-IN-LIBRARY],
+#   AX_PKG_LIB(PKG, [HEADER], [LIBRARY LIST], [FUNCTION], []
 #                    [ACTION-IF-FOUND], [ACTION-IF-NOT_FOUND])
 #
 # DESCRIPTION
@@ -14,24 +14,26 @@
 #   	   --with-<pkg>-libs="-L/path/to/libdir -lpkg -L/another/libdir"
 #	   
 #   Just like pkg-config, it will define <PKG>_CFLAGS and <PKG>_LIBS.
-#   In order, it will check:
-#      1. whether <PKG>_CFLAGS and <PKG>_LIBS were set as environment
+#
+#   In order to verify the existence and validity of the library, it will in order:
+#      1. check whether <PKG>_CFLAGS and <PKG>_LIBS were set as environment
 #      	  variables
-#      2. whether the user set them with the --with-<lib>-cflags/libs options
-#      3. whether pkg-config recognizes the libraries and sets these variables
-#      4. if none of the above, set the variable <PKG>_CFLAGS as "" and
+#      2. if the user set the --with-<lib>-cflags/libs options (overwrites 1.)
+#      3. if 2. failed, check with pkg-config the existence
+#      4. if none of the above succeeded, set the variable <PKG>_CFLAGS as "" and
 #         <PKG>_LIBS="-l<pkg>"
 #
-#   Finally, the headers and library symbols are checked.
-#      	  
+#   Finally, the headers defined in the <PKG>_CFLAGS and libray symbols from <PKG>_LIBS
+#   are checked.
+#
 #   Example:
 #
-#     AX_CHECK_PKG_LIB([cfitsio], [fitsio.h], [ffopen], [],
-#                      [AC_MSG_ERROR([Cound not find a cfitsio library])])
+#     AX_PKG_LIB([cfitsio], [fitsio.h], [cfitsio], [ffopen], [],
+#                [AC_MSG_ERROR([Cound not find a cfitsio library])])
 #
 # LICENSE
 #
-#   Copyright (c) 2012 Sebastien Fabbro <sebfabbro@gmail.com>
+#   Copyright (c) 2015 Sebastien Fabbro <sebfabbro@gmail.com>
 #
 #   This program is free software: you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by the
@@ -59,55 +61,68 @@
 #   modified version of the Autoconf Macro, you may extend this special
 #   exception to the GPL to apply to your modified version as well.
 
-AC_DEFUN([AX_CHECK_PKG_LIB],[
+AC_DEFUN([AX_PKG_LIB],[
 
 AC_ARG_VAR(m4_toupper($1)[_CFLAGS],
 	   [Preprocessing flags for ]$1[ headers])
 AC_ARG_VAR(m4_toupper($1)[_LIBS],
 	   [Linking flags for ]$1[ libraries])
 
-# check if user provided --with-<pkg>-cflags
+# 2. check if user provided --with-<pkg>-cflags
 AC_ARG_WITH(m4_tolower($1)[-cflags],
 	    AS_HELP_STRING([--with-m4_tolower($1)-cflags=CFLAGS],
 		           [Preprocessing flags for $1 headers]),
 	    m4_toupper($1)[_CFLAGS="$withval"])
 
-# check if user provided --with-<pkg>-libs
+# 2. check if user provided --with-<pkg>-libs
 AC_ARG_WITH(m4_tolower($1)[-libs],
 	    AS_HELP_STRING([--with-m4_tolower($1)-libs=LIBS],
 			   [Linking flags for $1 libraries]),
 	    m4_toupper($1)[_LIBS="$withval"])
 
-# check with pkg-config
+# 3. check if the pkg-config macros are defined
+m4_ifndef([PKG_PROG_PKG_CONFIG],
+    [m4_warn([Could not locate the pkg-config autoconf macros.
+  These are usually located in /usr/share/aclocal/pkg.m4. If your macros
+  are in a different location, try setting the environment variable
+  ACLOCAL="aclocal -I/other/macro/dir" before running autoreconf.])])
+PKG_PROG_PKG_CONFIG
+
+# 3. check if library exists with pkg-config
 AS_IF([ test x"$]m4_toupper($1)[_LIBS" = x ],
-      [PKG_CHECK_MODULES(m4_toupper($1), 
+      [PKG_CHECK_MODULES(m4_toupper($1),
       			 m4_tolower($1),
-			 m4_toupper($1)[_PC=]m4_tolower($1))])
+			 m4_toupper($1)[_PC=]m4_tolower($1),
+			 [AC_MSG_NOTICE([Relying on stock library $3])])],
+      [])
 
-# define default <PKG>_LIBS if none was set so far
+# 4. if not found with pkg-config, define default <PKG>_LIBS if none was set so far
 AS_IF([ test x"$]m4_toupper($1)[_LIBS" = x ],
-      m4_toupper($1)[_LIBS="-l]m4_tolower($1)["])
+      m4_toupper($1)[_LIBS="-l]$3["])
 
-# now check header and symbol validity
-AS_IF([ test x"]$3[" = x ],
-      [ax_cv_symbol=main],
-      [ax_cv_symbol=]$3)
+# now check header and function validity
+AS_IF([ test x"]$3[" = x && test x"]$4[" = x],
+      [ax_cv_function=main],
+      [ax_cv_libs=]$3[ ax_cv_function=]$4)
 
 AC_CACHE_VAL(AS_TR_SH([ax_cv_has_]m4_tolower($1)),
 	     [save_CPPFLAGS="$CPPFLAGS"
 	      save_LDFLAGS="$LDFLAGS"
+	      save_LIBS="$LIBS"
 	      AS_IF([ test x"$]m4_toupper($1)[_CFLAGS" != x ],
 	            [CPPFLAGS="$CPPFLAGS $]m4_toupper($1)[_CFLAGS"])
 	      AS_IF([ test "x$]m4_toupper($1)[_LIBS" != x ],
-	      	    [LDFLAGS="$LDFLAGS $]m4_toupper($1)[_LIBS"])
+	      	    [LDFLAGS=" $LDFLAGS $]m4_toupper($1)[_LIBS"])
 	      AC_CHECK_HEADER($2,
-		[AC_CHECK_LIB(m4_tolower($1),
-			      [$ax_cv_symbol],
+		[AC_SEARCH_LIBS([$ax_cv_function],
+			      [$ax_cv_libs],
 			      [AS_TR_SH([ax_cv_has_]m4_tolower($1))=yes],
-         		      [AS_TR_SH([ax_cv_has_]m4_tolower($1))=no])],
+			      [AS_TR_SH([ax_cv_has_]m4_tolower($1))=no],
+			       $LDFLAGS)],
 		[AS_TR_SH([ax_cv_has_]m4_tolower($1))=no])
 	      CPPFLAGS="$save_CPPFLAGS"
-	      LDFLAGS="$save_LDFLAGS"])
+	      LDFLAGS="$save_LDFLAGS"
+	      LIBS="$save_LIBS"])
 
 AC_SUBST(m4_toupper($1)[_LIBS])
 AC_SUBST(m4_toupper($1)[_CFLAGS])
@@ -115,7 +130,6 @@ AC_SUBST(m4_toupper($1)[_PC])
 
 AS_IF([ test x"$]AS_TR_SH([ax_cv_has_]m4_tolower($1))[" = xyes ],
       AC_DEFINE([HAVE_]m4_toupper($1), [1], [Define to 1 if ]$1[ is found])
-    [$4],
-    [$5])
-
+    [$5],
+    [$6])
 ])
