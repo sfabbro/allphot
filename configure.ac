@@ -83,10 +83,12 @@ fi
 
 AC_PROG_CC
 
-AX_CHECK_PKG_LIB(
+AX_PKG_LIB(
 	[cfitsio],
 	[fitsio.h],
-	[ffopen],,
+	[cfitsio],
+	[ffopen],
+	[],
 	[AC_MSG_ERROR([Could not find cfitsio library])])
 
 AC_CHECK_LIB([m], [floor])

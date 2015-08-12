@@ -4,6 +4,9 @@ The following features are planned, development has not started.
 * check non pwd files for all execs
 * add a --quiet or multiple logging options
 * example of pipelines for DAOMATCH/DAOMASTER/ALLFRAME
+* improvements on the psf iteration:
+  - remove *,?,saturated,defective from stdout DAOPHOT/PSF
+  - much quicker psf
 
 == 0.9 ==
 * daogrow module and pipelines
