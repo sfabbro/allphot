@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Create a temporary directory
+TMPDIR=$(mktemp -d)
+cd ${TMPDIR}
+
 # psf analytical profile 
 prof=1
 
@@ -14,27 +18,29 @@ export ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH
 export ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
 export PATH=%BUILDDIR%/src:${PATH}
 
+echo "ALLPHOT_EXE=${ALLPHOT_EXE}"
+
 for fits in ${ALLPHOT_TESTDIR}/sky??.fits; do
     im=$(basename ${fits%.*})
     ${ALLPHOT_EXE} daophot opt \
-	--option GA=$(fitskey -n -p GAIN ${fits}) \
-	--option RE=$(fitskey -n -p RON ${fits}) \
-	--option HI=$(fitskey -n -p SATLEV ${fits})
-    ${ALLPHOT_EXE} daophot find ${fits} --output=${ALLPHOT_TESTDIR}/results/${im}.coo
-    ${ALLPHOT_EXE} daophot phot ${fits} --output=${ALLPHOT_TESTDIR}/results/${im}.ap
-    ${ALLPHOT_EXE} daophot pick ${ALLPHOT_TESTDIR}/results/${im}.ap --output=${ALLPHOT_TESTDIR}/results/${im}.lst
-    ${ALLPHOT_EXE} daophot psf ${fits} --photfile=${ALLPHOT_TESTDIR}/results/${im}.ap --psfstars=${ALLPHOT_TESTDIR}/results/${im}.lst --output=${ALLPHOT_TESTDIR}/results/${im}.psf
-    ${ALLPHOT_EXE} cat neighbours ${ALLPHOT_TESTDIR}/results/${im}.psf.nei ${ALLPHOT_TESTDIR}/results/${im}.lst
-    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${fits} --photfile=${ALLPHOT_TESTDIR}/results/${im}.ap --psfstars=${ALLPHOT_TESTDIR}/results/${im}.lst --output=${ALLPHOT_TESTDIR}/results/${im}.psf
-    ${ALLPHOT_EXE} cat neighbours ${ALLPHOT_TESTDIR}/results/${im}.psf.nei ${ALLPHOT_TESTDIR}/results/${im}.lst
-    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${fits} --photfile=${ALLPHOT_TESTDIR}/results/${im}.ap --psfstars=${ALLPHOT_TESTDIR}/results/${im}.lst --output=${ALLPHOT_TESTDIR}/results/${im}.psf
-    ${ALLPHOT_EXE} allstar ${fits} --output=${ALLPHOT_TESTDIR}/results/${im}.als
+	--option GA=$(${ALLPHOT_EXE} fitskey -p GAIN ${fits}) \
+	--option RE=$(${ALLPHOT_EXE} fitskey -p RON ${fits}) \
+	--option HI=$(${ALLPHOT_EXE} fitskey -p SATLEV ${fits})
+    ${ALLPHOT_EXE} daophot find ${fits}
+    ${ALLPHOT_EXE} daophot phot ${fits}
+    ${ALLPHOT_EXE} daophot pick ${im}.ap
+    ${ALLPHOT_EXE} daophot psf ${fits}
+    ${ALLPHOT_EXE} cat neighbours ${im}.nei ${im}.lst
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${fits}
+    ${ALLPHOT_EXE} cat neighbours ${im}.nei ${im}.lst
+    ${ALLPHOT_EXE} daophot psf --option AN=-${prof} ${fits}
+    ${ALLPHOT_EXE} allstar ${fits}
 done
 
-${ALLPHOT_EXE} daomatch --output=${ALLPHOT_TESTDIR}/results/sky.mch ${ALLPHOT_TESTDIR}/results/sky??.als
-${ALLPHOT_EXE} daomaster ${ALLPHOT_TESTDIR}/results/sky.mch
-${ALLPHOT_EXE} allframe ${ALLPHOT_TESTDIR}/results/sky.mch
-${ALLPHOT_EXE} montage2 ${ALLPHOT_TESTDIR}/results/sky.mch
+${ALLPHOT_EXE} daomatch --out=sky.mch sky??.als
+${ALLPHOT_EXE} daomaster sky.mch
+${ALLPHOT_EXE} allframe sky.mch
+${ALLPHOT_EXE} montage2 sky.mch
 
-unset ALLPHOT_DATA_PATH ALLPHOT_LIBEXEC_PATH 
-unset ALLPHOT_DEFAULT_MODULES_PATH ALLPHOT_OPTDIR
+# Create a tarball of the results
+tar -czf ${ALLPHOT_TESTDIR}/results.tar.gz .

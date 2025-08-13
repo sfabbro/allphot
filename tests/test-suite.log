@@ -3,11 +3,38 @@
 =========================================
 
 # TOTAL: 1
-# PASS:  1
+# PASS:  0
 # SKIP:  0
 # XFAIL: 0
-# FAIL:  0
+# FAIL:  1
 # XPASS: 0
 # ERROR: 0
 
 .. contents:: :depth: 2
+
+FAIL: test-allphot.bash
+=======================
+
+ALLPHOT_EXE=../bin/allphot
+./test-allphot.bash: line 25: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 25: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 25: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 25: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 29: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 30: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 31: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 32: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 33: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 34: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 35: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 36: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 37: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 40: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 41: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 42: ../bin/allphot: No such file or directory
+./test-allphot.bash: line 43: ../bin/allphot: No such file or directory
+tar (child): ../tests/results.tar.gz: Cannot open: No such file or directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+FAIL test-allphot.bash (exit status: 2)
