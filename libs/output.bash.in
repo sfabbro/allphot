@@ -24,17 +24,6 @@ nocolours() {
     COLOUR_LIST_RIGHT=""
 }
 
-# set output mode to $1
-set_output_mode() {
-    ALLPHOT_OUTPUT_MODE=${1}
-}
-
-# is_output_mode PUBLIC
-# test if $1 is the current output mode
-is_output_mode() {
-    [[ ${ALLPHOT_OUTPUT_MODE} = ${1} ]]
-}
-
 # set debug mode to $1
 set_debug_mode() {
     ALLPHOT_DEBUG_MODE=${1}
@@ -52,30 +41,10 @@ init_columns() {
     [[ -n ${COLUMNS} ]] || COLUMNS=$(tput cols) || COLUMNS=80
 }
 
-# write_error_msg PUBLIC
-# write an error
-write_error_msg() {
-    echo -e "${COLOUR_ERROR} Error *** ${COLOUR_NORMAL}${*}" 1>&2
-}
-
-# write_process_msg PUBLIC
-# write a message during processing
-write_process_msg() {
-    is_output_mode quiet && return
-    echo -e "${COLOUR_HI}   >>> ${*}${COLOUR_NORMAL}"
-}
-
-# write_warning_msg PUBLIC
-# write a warning
-write_warning_msg() {
-    echo -e "${COLOUR_WARN} Warning *** ${COLOUR_NORMAL}${*}" 1>&2
-}
-
 # write_list_start PUBLIC
 # Write a list heading. Args may include text highlighting. If -p is passed,
 # use 'plain' highlighting.
 write_list_start() {
-    is_output_mode brief && return
     local colour=${COLOUR_LIST_HEADER} normal=${COLOUR_NORMAL}
     if [[ ${1} == "-p" ]] ; then
 	colour=; normal=
@@ -169,12 +138,10 @@ write_numbered_list_entry() {
 	shift
     fi
     
-    if ! is_output_mode brief; then
-	echo -n -e "  ${left}"
-	echo -n -e "[$(apply_text_highlights "${left}" "$1")]"
-	echo -n -e "${normal}"
-	space $(( 4 - ${#1} ))
-    fi
+    echo -n -e "  ${left}"
+    echo -n -e "[$(apply_text_highlights "${left}" "$1")]"
+    echo -n -e "${normal}"
+    space $(( 4 - ${#1} ))
 
     echo -n -e "${right}"
     echo -n -e "$(apply_text_highlights "${right}" "$2")"
@@ -195,7 +162,7 @@ write_numbered_list() {
 	shift
     done
 
-    if [[ $# -eq 0 && -n ${m} ]] && ! is_output_mode brief; then
+    if [[ $# -eq 0 && -n ${m} ]]; then
 	write_kv_list_entry ${p} "${m}" ""
     fi
 

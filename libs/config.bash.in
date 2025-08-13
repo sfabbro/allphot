@@ -4,14 +4,14 @@
 # Stores a $key/$value pair for given module in $configfile
 store_config() {
     # we need at least "module" and "key"
-    [[ ${#@} -ge 2 ]] || die
+    [[ ${#@} -ge 2 ]] || log_fatal "store_config: needs at least 2 arguments"
     local configfile=${1} key=${2} value content vars line="" changed=0
     shift 2
     value=${@}
 
     if [[ ! -e ${configfile} ]] ; then
 	mkdir -p ${configfile%/*} \
-	    || die -q \
+	    || log_fatal \
 	    "Couldn't create directory ${configfile%/*}"
     fi
 
@@ -51,7 +51,7 @@ store_config() {
 	IFS=${ifs_save}
 	
 	source ${configfile} 2>&1 > /dev/null \
-	    || die "Failed to source ${configfile}."
+	    || log_fatal "Failed to source ${configfile}."
 
 	store_config_header
 	for var in ${vars[@]} ; do
@@ -73,7 +73,7 @@ store_config() {
 # load_config <module> <key> PUBLIC
 # Loads $key value from $configfile
 load_config() {
-    [[ ${#@} -eq 2 ]] || die
+    [[ ${#@} -eq 2 ]] || log_fatal "load_config: needs 2 arguments"
     local configfile key value
     
     configfile=${1}
@@ -83,7 +83,7 @@ load_config() {
     value=$(
 	unset ${key}
 	source ${configfile} 1>&2 > /dev/null \
-	    || die "Failed to source ${configfile}."
+	    || log_fatal "Failed to source ${configfile}."
 	echo "${!key}"
 	)
     echo "${value}"
@@ -93,7 +93,7 @@ load_config() {
 # Appends $item to already stored value of $key in $configfile
 # if $item is not already part of $key
 append_config() {
-    [[ ${#@} -gt 2 ]] || die
+    [[ ${#@} -gt 2 ]] || log_fatal "append_config: needs at least 3 arguments"
     local configfile=${1} key=${2} item oldvalue newvalue
     shift 2
     item="$@"

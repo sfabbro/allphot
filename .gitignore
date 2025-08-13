@@ -31,6 +31,9 @@ src/fitskey
 src/fitssatur
 
 # tests generated (make check)
+tests/*.in
+tests/*.post
+tests/*.pre
 tests/sky*
 tests/*.opt
 !tests/sky*.fits

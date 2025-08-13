@@ -12,10 +12,10 @@ inherit core
 # opt_get_val <option name> <option file> PUBLIC
 # return the value of an option from an option file
 opt_get_val() {
-    [[ -r ${2} ]] || die -q "option file ${2} impossible to read"
+    [[ -r ${2} ]] || log_fatal "option file ${2} impossible to read"
     local val=$(grep "\b${1}.*=" ${2} | cut -d '=' -f 2)
     if [[ -z ${val} ]]; then
-	write_warning_msg "option ${1} unknown in ${2}"
+	log_warn "option ${1} unknown in ${2}"
     else
 	echo ${val}
     fi
@@ -24,13 +24,13 @@ opt_get_val() {
 # opt_set_val <option name>=<option value> <option file> PUBLIC
 # set the value of an option in an option file
 opt_set_val() {
-    [[ -w ${2} ]] || die -q "option file ${2} impossible to set"
+    [[ -w ${2} ]] || log_fatal "option file ${2} impossible to set"
     if [[ -n $(grep ${1%=*} ${2}) ]]; then
 	opt_update_val ${1} ${2}
     else
 	local key=$(echo ${1%=*}) val=$(echo ${1##*=})
-	[[ -z ${key} ]] && die -q "no option to set"
-	[[ -z ${val} ]] && die -q "no value to set for option ${key}"
+	[[ -z ${key} ]] && log_fatal "no option to set"
+	[[ -z ${val} ]] && log_fatal "no value to set for option ${key}"
 	echo "${key}=${val}" >> ${2}
     fi
 }
@@ -38,10 +38,10 @@ opt_set_val() {
 # opt_update_val <option name>=<new option value> <option file> PUBLIC
 # update the value if the option is present in the option file
 opt_update_val() {
-    [[ -w ${2} ]] || die -q "option file ${2} impossible to update"
+    [[ -w ${2} ]] || log_fatal "option file ${2} impossible to update"
     local key=$(echo ${1%=*}) val=$(echo ${1##*=})
-    [[ -z ${key} ]] && die -q "no option to update"
-    [[ -z ${val} ]] && die -q "no value to update for option ${key}"
+    [[ -z ${key} ]] && log_fatal "no option to update"
+    [[ -z ${val} ]] && log_fatal "no value to update for option ${key}"
     %SED% -i -e "s/\b${key}.*=.*/${key}=${val}/" ${2}
 }
 
@@ -79,14 +79,14 @@ opt_file_path() {
 	fi
     done
     echo "none"
-    die -q "no default ${optfile} file found"
+    log_fatal "no default ${optfile} file found"
 }
 
 # opt_update_from_fwhm <fwhm> [option file] PUBLIC
 # update an option file give an FWHM of a star
 opt_update_from_fwhm() {
     local fwhm=${1} optfile=${2:=$(opt_file_path)}
-    [[ -z ${fwhm} ]] && write_warning_msg "Missing FWHM for updating options" && return
+    [[ -z ${fwhm} ]] && log_warn "Missing FWHM for updating options" && return
     
     if is_daophot_opt ${optfile}; then
 	opt_update_val FI=$(calc "${fwhm}*1.2") ${optfile}

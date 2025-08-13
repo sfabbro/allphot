@@ -1,0 +1,62 @@
+# -*-shell-script-*- vim: ft=bash
+
+# Logging levels
+declare -r ALLPHOT_LOG_LEVEL_FATAL=0
+declare -r ALLPHOT_LOG_LEVEL_ERROR=1
+declare -r ALLPHOT_LOG_LEVEL_WARN=2
+declare -r ALLPHOT_LOG_LEVEL_INFO=3
+declare -r ALLPHOT_LOG_LEVEL_DEBUG=4
+
+# Default log level
+: ${ALLPHOT_LOG_LEVEL:=${ALLPHOT_LOG_LEVEL_INFO}}
+
+# set log level from string
+set_log_level_from_string() {
+    case $(echo "$1" | tr '[:lower:]' '[:upper:]') in
+        FATAL) set_log_level "${ALLPHOT_LOG_LEVEL_FATAL}" ;;
+        ERROR) set_log_level "${ALLPHOT_LOG_LEVEL_ERROR}" ;;
+        WARN) set_log_level "${ALLPHOT_LOG_LEVEL_WARN}" ;;
+        INFO) set_log_level "${ALLPHOT_LOG_LEVEL_INFO}" ;;
+        DEBUG) set_log_level "${ALLPHOT_LOG_LEVEL_DEBUG}" ;;
+        QUIET) set_log_level "-1" ;; # Special case for quiet
+        *) die "Unknown log level: $1" ;;
+    esac
+}
+
+# set log level
+set_log_level() {
+    ALLPHOT_LOG_LEVEL=${1}
+}
+
+# internal logging function
+_log() {
+    local level="$1"
+    local message="$2"
+    local color="$3"
+    local level_name="$4"
+
+    if [[ ${ALLPHOT_LOG_LEVEL} -ge ${level} ]]; then
+        echo -e "${color}[${level_name}] ${message}${COLOUR_NORMAL}" >&2
+    fi
+}
+
+log_fatal() {
+    _log "${ALLPHOT_LOG_LEVEL_FATAL}" "$1" "${COLOUR_ERROR}" "FATAL"
+    die "$1"
+}
+
+log_error() {
+    _log "${ALLPHOT_LOG_LEVEL_ERROR}" "$1" "${COLOUR_ERROR}" "ERROR"
+}
+
+log_warn() {
+    _log "${ALLPHOT_LOG_LEVEL_WARN}" "$1" "${COLOUR_WARN}" "WARN"
+}
+
+log_info() {
+    _log "${ALLPHOT_LOG_LEVEL_INFO}" "$1" "${COLOUR_HI}" "INFO"
+}
+
+log_debug() {
+    _log "${ALLPHOT_LOG_LEVEL_DEBUG}" "$1" "${COLOUR_NORMAL}" "DEBUG"
+}

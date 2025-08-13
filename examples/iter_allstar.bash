@@ -18,7 +18,7 @@ psf_profile() {
 	LORENTZ)  echo 5 ;;
 	PENNY1)   echo 6 ;;
 	PENNY2)   echo 7 ;;
-	*) die -q "Unknown PSF profile: ${prof}" ;;
+	*) log_fatal "Unknown PSF profile: ${prof}" ;;
     esac
 }
 
@@ -130,7 +130,7 @@ psf_make_() {
     # 5 rounds of psf
     ${ALLPHOT} daophot opt --opt=${im}.opt ${im}s.fits
     for i in $(seq 5); do
-	echo " === PSF Iteration $i"
+	log_info " === PSF Iteration $i"
 	${ALLPHOT} daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
 	${ALLPHOT} daophot psf \
 	    --in=${im}.lst \
@@ -170,7 +170,7 @@ psf_make_() {
     # another five rounds of psf
     ${ALLPHOT} daophot pick --nstars=300 --magfaint=${maxmag} ${im}.als
     for i in $(seq 5); do
-	echo " === PSF Iteration $i"
+	log_info " === PSF Iteration $i"
 	${ALLPHOT} daophot substar --in=${im}.nei --keep=${im}.lst ${fits}
 	${ALLPHOT} daophot psf \
 	    --in=${im}.lst \
@@ -191,9 +191,9 @@ iter_psf_allstar() {
     
     set -e
 
-    echo " ========================================================"
-    echo " === STEP 1: Make analytical PSF with high S/N stars     "
-    echo " ========================================================"
+    log_info " ========================================================"
+    log_info " === STEP 1: Make analytical PSF with high S/N stars     "
+    log_info " ========================================================"
 
     ${ALLPHOT} daophot opt --dict="${DICTFILE}" --out=${im}.opt ${fits}
     ${ALLPHOT} daophot find --option TH=15 ${fits}
@@ -216,9 +216,9 @@ iter_psf_allstar() {
 	--option OS=0 ${fits}
 
 
-    echo " ================================================================"
-    echo " === STEP 2: Remove neighbours and choose best analytical profile"
-    echo " ================================================================"
+    log_info " ================================================================"
+    log_info " === STEP 2: Remove neighbours and choose best analytical profile"
+    log_info " ================================================================"
 
     ${ALLPHOT} daophot sort --index=3 ${im}.als
     ${ALLPHOT} daophot substar --in=${im}.srt --keep=${im}.lst ${fits}
@@ -232,9 +232,9 @@ iter_psf_allstar() {
 	${im}s.fits
     rm -f ${im}.srt ${ALLPHOT_PROCDIR}/${im}.srt
 
-    echo " ================================================================"
-    echo " === STEP 3: Increase spatial variabilty with one PSF/ALLSTAR run"
-    echo " ================================================================"
+    log_info " ================================================================"
+    log_info " === STEP 3: Increase spatial variabilty with one PSF/ALLSTAR run"
+    log_info " ================================================================"
 
     local fwhm=$(psf_fwhm ${im}.psf)
     ${ALLPHOT} daophot opt \
@@ -263,9 +263,9 @@ iter_psf_allstar() {
     ${ALLPHOT} daophot sort --renum --index=4 --out=${im}.all ${im}.cmb
     rm -f ${im}.cmb
 
-    echo " ================================================================"
-    echo " === STEP 4: Iterate between ALLSTAR and PSF to get unpolluted PSF"
-    echo " ================================================================"
+    log_info " ================================================================"
+    log_info " === STEP 4: Iterate between ALLSTAR and PSF to get unpolluted PSF"
+    log_info " ================================================================"
 
     # 5 rounds of psf
     ${ALLPHOT} daophot opt --opt=${im}.opt ${im}s.fits
@@ -320,9 +320,9 @@ iter_psf_allstar() {
     done
     rm -f ${im}.nei
 
-    echo " ================================================================"
-    echo " === STEP 5: Final ALLSTARs with stable PSF with every star      "
-    echo " ================================================================"
+    log_info " ================================================================"
+    log_info " === STEP 5: Final ALLSTARs with stable PSF with every star      "
+    log_info " ================================================================"
 
     ${ALLPHOT} allstar \
 	--option FI=${fwhm} \
