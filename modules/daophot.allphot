@@ -176,7 +176,7 @@ describe_find() {
 describe_find_options() {
     daophot_options_description
     echo "--frames=N,N  : Number of frames averaged, summed (default: 1,1)"
-    echo "--out=COO     : Output star list file (default: FITS.coo)"
+    echo "--output=COO     : Output star list file (default: FITS.coo)"
 }
 
 describe_find_parameters() {
@@ -191,7 +191,7 @@ do_find() {
 	    --opt=*)  optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --frames=*)  frames="${1##*=}" ;;
-	    --out=*)  outfile="${1##*=}" ;;
+	    --output=*)  outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -215,7 +215,7 @@ describe_phot() {
 describe_phot_options() {
     daophot_help_description
     echo "--in=STAR        : Input star list file (default: FITS.coo)"
-    echo "--out=AP         : Output star list file (default: FITS.ap)"
+    echo "--output=AP         : Output star list file (default: FITS.ap)"
     echo "--radius RAD=VAL : Set an aperture radius RAD (ex: A1=4)"
     echo "--rad=PHOTO      : Aperture radii file (default $(opt_file_path photo))"
     echo "--nei=STAR       : File of stars to subtract (default: FITS.als)"
@@ -233,7 +233,7 @@ do_phot() {
 	case "${1}" in
 	    --help) daophot_action_usage phot && return ;;
 	    --in=*)  infile="${1##*=}" ;;
-	    --out=*) outfile="${1##*=}" ;;
+	    --output=*) outfile="${1##*=}" ;;
 	    --nei=*) neifile="${1##*=}" ;;
 	    --psf=*) psffile="${1##*=}" ;;
 	    --rad=*) radfile="${1##*=}" ;;
@@ -280,7 +280,7 @@ describe_pick() {
 
 describe_pick_options() {
     daophot_options_description
-    echo "--out=LST       : Output star list file (default: FILE.lst)"
+    echo "--output=LST       : Output star list file (default: FILE.lst)"
     echo "--magfaint=VAL  : Magnitude of the faintest star (default: 13)"
     echo "--nstars=N      : Max number of stars to pick (default: 200)"    
 }
@@ -299,7 +299,7 @@ do_pick() {
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --magfaint=*) magfaint="${1##*=}" ;;
 	    --nstars=*) nstars="${1##*=}" ;;
-	    --out=*) outfile="${1##*=}" ;;
+	    --output=*) outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -323,7 +323,7 @@ describe_psf_options() {
     daophot_options_description
     echo "--pho=STAR    : Input photometry (default: FITS.ap)"
     echo "--in=FILE     : Input PSF star list (default: FITS.lst)"
-    echo "--out=PSF     : Output PSF file (default: FITS.psf)"
+    echo "--output=PSF     : Output PSF file (default: FITS.psf)"
 }
 
 describe_psf_parameters() {
@@ -340,7 +340,7 @@ do_psf() {
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --pho=*) phofile="${1##*=}" ;;
 	    --in=*)  lstfile="${1##*=}" ;;
-	    --out=*) psffile="${1##*=}" ;;
+	    --output=*) psffile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -368,7 +368,7 @@ describe_peak_options() {
     daophot_help_description
     echo "--psf=PSF  : Input PSF file (default: FITS.psf)"
     echo "--in=STAR  : Input photometry file (default: FITS.ap)"
-    echo "--out=PK   : Output photometry file (default: FITS.pk)"
+    echo "--output=PK   : Output photometry file (default: FITS.pk)"
 }
 
 describe_peak_parameters() {
@@ -382,7 +382,7 @@ do_peak() {
 	    --help) daophot_action_usage peak && return ;;
 	    --psf=*)    psffile="${1##*=}" ;;
 	    --in=*)     infile="${1##*=}" ;;
-	    --out=*)    outfile="${1##*=}" ;;
+	    --output=*)    outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -409,7 +409,7 @@ describe_group_options() {
     daophot_options_description
     echo "--in=STAR     : Input star file (default: FITS.ap)"
     echo "--psf=PSF     : Input PSF file (default: FITS.psf)"
-    echo "--out=GRP     : Output star file (default: FITS.grp)"
+    echo "--output=GRP     : Output star file (default: FITS.grp)"
     echo "--overlap=VAL : Critical overlap (default: 1 sigma)"
 }
 
@@ -426,7 +426,7 @@ do_group() {
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --overlap=*) overlap="${1##*=}" ;;
 	    --in=*)  infile="${1##*=}" ;;
-	    --out=*) outfile="${1##*=}" ;;
+	    --output=*) outfile="${1##*=}" ;;
 	    --psf=*)    psffile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
@@ -454,7 +454,7 @@ describe_nstar_options() {
     daophot_options_description
     echo "--psf=PSF   : Input PSF file (default: FITS.psf)"
     echo "--in=GRP    : Input star group file (default: FITS.grp)"
-    echo "--out=NST   : Output star list file (default: FITS.nst)"
+    echo "--output=NST   : Output star list file (default: FITS.nst)"
 }
 
 describe_nstar_parameters() {
@@ -469,7 +469,7 @@ do_nstar() {
 	    --opt=*)  optfile="${1##*=}" ;;
 	    --option) shift; options="${options} ${1/ //}" ;;
 	    --in=*)  infile="${1##*=}" ;;
-	    --out=*) outfile="${1##*=}" ;;
+	    --output=*) outfile="${1##*=}" ;;
 	    --psf=*)    psffile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
@@ -498,7 +498,7 @@ describe_substar_options() {
     echo "--psf=PSF   : Input PSF file (default: FITS.psf)"
     echo "--in=STAR   : Input photometry file (default: FITS.nei)"
     echo "--keep=STAR : File with stars to keep (default: FITS.lst)"
-    echo "--out=FITS  : Output subtracted image (default: FITSs.fits)"
+    echo "--output=FITS  : Output subtracted image (default: FITSs.fits)"
 }
 
 describe_substar_parameters() {
@@ -513,7 +513,7 @@ do_substar() {
 	    --psf=*)    psffile="${1##*=}" ;;
 	    --in=*)     infile="${1##*=}" ;;
 	    --keep=*)   keepfile="${1##*=}" ;;
-	    --out=*)    subfits="${1##*=}" ;;
+	    --output=*)    subfits="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -539,7 +539,7 @@ describe_sort() {
 describe_sort_options() {
     daophot_help_description
     echo "--index=N   : Column index to sort (default: 1)"
-    echo "--out=FILE  : Output file name (default: FILE.srt)"
+    echo "--output=FILE  : Output file name (default: FILE.srt)"
     echo "--renum     : Renumber the star IDs"
 }
 
@@ -553,7 +553,7 @@ do_sort() {
 	case "${1}" in
 	    --help) daophot_action_usage sort && return ;;
 	    --index=*) idx="${1##*=}" ;;
-	    --out=*) outfile="${1##*=}" ;;
+	    --output=*) outfile="${1##*=}" ;;
 	    --renum) renum=Y ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
@@ -578,7 +578,7 @@ describe_select_options() {
     daophot_help_description
     echo "--min=N    : Minimum group size (default: 1)"
     echo "--max=N    : Maximum group size (default: 60)"
-    echo "--out=GRP : Output group file (default: FILE.sel)"
+    echo "--output=GRP : Output group file (default: FILE.sel)"
 }
 
 describe_select_parameters() {
@@ -592,7 +592,7 @@ do_select() {
 	    --help) daophot_action_usage select && return ;;
 	    --min=*)    mingrp="${1##*=}" ;;
 	    --max=*)    maxgrp="${1##*=}" ;;
-	    --out=*)    outfile="${1##*=}" ;;
+	    --output=*)    outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -618,7 +618,7 @@ describe_offset_options() {
     echo "--x=VAL    : Add VAL to x-coordinate (default: 0)"
     echo "--y=VAL    : Add VAL to y-coordinate (default: 0)"
     echo "--mag=VAL  : Add VAL to magnitude (default: 0)"
-    echo "--out=FILE : Output file name (default FILE.off)"
+    echo "--output=FILE : Output file name (default FILE.off)"
 }
 
 describe_offset_parameters() {
@@ -634,7 +634,7 @@ do_offset() {
             --x=*)   xoff=${1##*=} ;;
 	    --y=*)   yoff=${1##*=} ;;
 	    --mag=*) magoff=${1##*=} ;;
-	    --out=*)    outfile="${1##*=}" ;;
+	    --output=*)    outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -656,7 +656,7 @@ describe_append() {
 
 describe_append_options() {
     daophot_help_description
-    echo "--out=FILE  : Output file name (default: FILE1.cmb)"
+    echo "--output=FILE  : Output file name (default: FILE1.cmb)"
 }
 
 describe_append_parameters() {
@@ -668,7 +668,7 @@ do_append() {
     while [[ $# -gt 0 ]]; do
 	case "${1}" in
 	    --help) daophot_action_usage append && return ;;
-	    --out=*) outfile="${1##*=}" ;;
+	    --output=*) outfile="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -732,7 +732,7 @@ describe_fudge() {
 
 describe_fudge_options() {    
     daophot_help_description
-    echo "--out=FITS  : Output picture name (default: FITSs.fits)"
+    echo "--output=FITS  : Output picture name (default: FITSs.fits)"
     echo "--border=N  : Border outside region (default: 0)"
     echo "--region=[x0:x1,y0:y1] : Image region to fudge, FITS coordinates "
     echo "--brightness=VAL : Value to replace with"
@@ -752,7 +752,7 @@ do_fudge() {
 	    --region=*)  region="${1##*=}"  ;;
 	    --brightness=*) brightness="${1##*=}"  ;;
 	    --order=*)  order="${1##*=}"  ;;
-	    --out=*)     outfits="${1##*=}" ;;
+	    --output=*)     outfits="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
@@ -792,7 +792,7 @@ describe_addstar_options() {
     echo "--seed=N        : Input seed number (default: 0)"
     echo "--gain=VAL      : Input photons/ADU (default: from header)"
     echo "--in=STAR       : Input photometry file (default: random stars)"
-    echo "--out=FITS      : Output picture name (default: FITSa.fits)"
+    echo "--output=FITS      : Output picture name (default: FITSa.fits)"
     echo "--min=VAL       : Min magnitude (default: 10)"
     echo "--max=VAL       : Max magnitude (default: 15)"
     echo "--nstars=N      : Number of stars to add (default: 0)"
@@ -818,7 +818,7 @@ do_addstar() {
 	    --nstars=*)  nstars="${1##*=}"  ;;
 	    --nframes=*) nframes="${1##*=}" ;;
 	    --in=*)      infile="${1##*=}"  ;;
-	    --out=*)     outfits="${1##*=}" ;;
+	    --output=*)     outfits="${1##*=}" ;;
 	    --*) die -q "Unrecognized option '${1}'" ;;
               *) break ;;
         esac

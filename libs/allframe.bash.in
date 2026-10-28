@@ -52,7 +52,7 @@ dao_match() {
 	    --ref=*) master="${1##*=}" ;;
             --onlyshift) trns=";" ;;
 	    --scale=*) trns="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '${1}'" ;;
+	    --*) log_fatal "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
@@ -91,7 +91,7 @@ dao_match() {
     # adding a y in case daomatch hits the end of the file for a non matching file forever
     echo >> ${ALLPHOT_CMDFILE} "y"
     echo >> ${ALLPHOT_CMDFILE}
-    write_process_msg "Will run DAOMATCH with master reference ${ref}"
+    log_info "Will run DAOMATCH with master reference ${ref}"
 }
 
 # dao_master 1:<input mch file> 2:<min frames>,<min frac frames>,<enough frames>
@@ -108,7 +108,7 @@ dao_master() {
     	    --sharpmax=*) refcuts="${refcuts}[${1##*=}" ;;
 	    --magmax=*) refcuts="${refcuts}<${1##*=}" ;;
 	    --sigmax=*) refcuts="${refcuts}|${1##*=}" ;;
-	    --*) die -q "Unrecognized option '${1}'" ;;
+	    --*) log_fatal "Unrecognized option '${1}'" ;;
               *) break ;;
         esac
 	shift
@@ -178,7 +178,7 @@ EOF
 	echo >> ${ALLPHOT_CMDFILE} ${12}
 	echo >> ${ALLPHOT_CMDFILE} ${13}
     fi
-    write_process_msg "Will run DAOMASTER on ${mchfilein}"
+    log_info "Will run DAOMASTER on ${mchfilein}"
 }
 
 # dao_allframe <mch file> <mag file>
@@ -191,7 +191,7 @@ dao_allframe() {
 	${mchfile}
 	$(allphot_input ${2})
 EOF
-    write_process_msg "Will run ALLFRAME on ${mchfile}"
+    log_info "Will run ALLFRAME on ${mchfile}"
 }
 
 # dao_montage2 <mch file> <suffix> <num frames, perc> <xmin:xmax,ymin:ymax> <expansion factor> <sky?> <output>
@@ -220,5 +220,5 @@ EOF
 	allphot_input ${f}${2} > /dev/null
     done
 
-    write_process_msg "Will run MONTAGE2 on ${mchfile}"
+    log_info "Will run MONTAGE2 on ${mchfile}"
 }

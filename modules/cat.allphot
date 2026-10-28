@@ -21,7 +21,7 @@ describe_header_options() {
 do_header() {    
     while [[ $# -gt 0 ]]; do
 	case "$1" in
-	    --*) die -q "Unrecognized option '$1'" ;;
+	    --*) log_fatal "Unrecognized option '$1'" ;;
               *) break ;;
         esac
 	shift
@@ -29,12 +29,12 @@ do_header() {
 
     [[ $# -lt 3 ]] && header_usage && return
 
-    [[ -r $1 ]] || die -q "File $1 not readable"
-    [[ -r $2 ]] || die -q "File $2 not readable"
-    [[ -w $3 ]] || die -q "File $3 not writeable"
+    [[ -r $1 ]] || log_fatal "File $1 not readable"
+    [[ -r $2 ]] || log_fatal "File $2 not readable"
+    [[ -w $3 ]] || log_fatal "File $3 not writeable"
 
-    write_process_msg "Insert a header into $3"
-    cat_insert_header $1 $2 $3 || die -q "Could not insert header"
+    log_info "Insert a header into $3"
+    cat_insert_header $1 $2 $3 || log_fatal "Could not insert header"
 }
 
 ### MERGE ###
@@ -55,7 +55,7 @@ do_merge() {
     while [[ $# -gt 0 ]]; do
 	case "$1" in
 	    --out=*) outfile="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '$1'" ;;
+	    --*) log_fatal "Unrecognized option '$1'" ;;
               *) break ;;
         esac
 	shift
@@ -99,7 +99,7 @@ do_cuts() {
 	    --chimax=*)    cmax="${1##*=}" ;;
             --magmax=*)    mmax="${1##*=}" ;;
             --sigmax=*)    dmax="${1##*=}" ;;
-	    --*) die -q "Unrecognized option '$1'" ;;
+	    --*) log_fatal "Unrecognized option '$1'" ;;
               *) break ;;
         esac
 	shift
@@ -108,7 +108,7 @@ do_cuts() {
     [[ $# -lt 1 ]] && cuts_usage && return
 
     local profile=$1 f id
-    [[ -r ${profile} ]] || die -q "File ${profile} not readable"
+    [[ -r ${profile} ]] || log_fatal "File ${profile} not readable"
 
     if [[ $# == 1 ]]; then
 	awk -v vcmax="${cmax}" \
@@ -122,7 +122,7 @@ do_cuts() {
 
     shift
     for f in $@; do
-	[[ -w ${f} ]] || die -q "File ${f} not writeable"
+	[[ -w ${f} ]] || log_fatal "File ${f} not writeable"
 	head -n 3 ${profile} > ${f}.filtered    
 	while read line; do
 	    id=$(echo ${line} | awk '{print $1}')
@@ -137,7 +137,7 @@ do_cuts() {
 		echo ${line} >> ${f}.filtered
 	    fi
 	done < ${f}
-	write_process_msg "${f}: removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) ) stars)"
+	log_info "${f}: removed $(( $(cat_nstars ${pickcat}) - $(cat_nstars ${pickcat}.filtered) ) stars)"
 	mv -f ${f}.filtered ${f}
     done
 }
@@ -156,15 +156,15 @@ do_neighbours() {
 
     [[ $# -lt 2 ]] && neighbours_usage && return
 
-    [[ -r $1 ]] || die -q "File $1 not readable"
-    [[ -w $2 ]] || die -q "File $2 not writeable"
+    [[ -r $1 ]] || log_fatal "File $1 not readable"
+    [[ -w $2 ]] || log_fatal "File $2 not writeable"
     
     local nnei=$(grep -c [\*\?] $1)
     [[ ${nnei} -gt 0 ]] && \
 	sed -i \
 	    $(awk '/[\*\?]/ {printf "-e /^[[:space:]]*"$1"/d "}' $1) \
 	    $2
-    write_process_msg "Removed ${nnei} neighbours to PSF stars"
+    log_info "Removed ${nnei} neighbours to PSF stars"
 }
 
 ### BADPSF ###
@@ -185,8 +185,8 @@ do_badpsf() {
 
     [[ $# -lt 2 ]] && badpsf_usage && return
 
-    [[ -r $1 ]] || die -q "File $1 not readable"
-    [[ -w $2 ]] || die -q "File $2 not writeable"
+    [[ -r $1 ]] || log_fatal "File $1 not readable"
+    [[ -w $2 ]] || log_fatal "File $2 not writeable"
     
     local l1=$(grep -n "Profile errors:" $1 | 
 	sed 's/:/ /g' | awk '(NR==1){print $1+2}')
@@ -203,5 +203,5 @@ do_badpsf() {
 	sed -i \
 	    $(awk '/[\*\?]/ {printf "-e /^[[:space:]]*"$1"/d "}' $1) \
 	    $2
-    write_process_msg "Removed ${nbad} neighbours to PSF stars"
+    log_info "Removed ${nbad} neighbours to PSF stars"
 }

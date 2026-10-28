@@ -31,8 +31,8 @@ SUFFIXES = .in
 		chmod +x $@ ; \
 	fi
 
-CLEANFILES = *~ \
-	process_* *.psf *.als *s.fits *j.fits *.coo *.opt *.ap *.nei \
-	*.lst *.pk *.raw *.mtr *.alf *k.fits *.tfr *.nmg *.mch *.cor \
-	*.mag *.old allstar_*.in daophot_*.in daomatch_*.in daomaster_*.in \
-	allframe_*.in  *.post $(check_SCRIPTS)
+#CLEANFILES = *~ \
+#	process_* *.psf *.als *s.fits *j.fits *.coo *.opt *.ap *.nei \
+#	*.lst *.pk *.raw *.mtr *.alf *k.fits *.tfr *.nmg *.mch *.cor \
+#	*.mag *.old allstar_*.in daophot_*.in daomatch_*.in daomaster_*.in \
+#	allframe_*.in  *.post $(check_SCRIPTS)

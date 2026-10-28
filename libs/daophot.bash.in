@@ -28,14 +28,14 @@ daophot_opt() {
 	fi
     done
     echo >> ${ALLPHOT_CMDFILE}
-    write_process_msg "Will run DAOPHOT OPT"
+    log_info "Will run DAOPHOT OPT"
 }
 
 # daophot_exit PUBLIC
 # create an answer for daophot EXIT command
 daophot_exit() {
     echo >> ${ALLPHOT_CMDFILE} "EXIT"
-    write_process_msg "Will run DAOPHOT EXIT"
+    log_info "Will run DAOPHOT EXIT"
 }
 
 # daophot_attach <FITS file> PUBLIC
@@ -44,14 +44,14 @@ daophot_attach() {
     local fitsname="$(allphot_input ${1})"
     ALLPHOT_NAME="${fitsname%.*}"    
     echo >> ${ALLPHOT_CMDFILE} "ATTACH ${fitsname}"
-    write_process_msg "Will run DAOPHOT ATTACH on ${fitsname}"
+    log_info "Will run DAOPHOT ATTACH on ${fitsname}"
 }
 
 # daophot_sky PUBLIC
 # create an answer for daophot SKY command
 daophot_sky() {
     echo >> ${ALLPHOT_CMDFILE} "SKY"
-    write_process_msg "Will run DAOPHOT SKY"
+    log_info "Will run DAOPHOT SKY"
 }
 
 # daophot_find  <nframes average,summed> <output coordinate file> PUBLIC
@@ -64,7 +64,7 @@ daophot_find() {
 	$(allphot_output ${2})
 	y
 EOF
-    write_process_msg "Will run DAOPHOT FIND"
+    log_info "Will run DAOPHOT FIND"
 }
 
 # daophot_phot <input phot options file> <input coordinate file> <output file>
@@ -88,7 +88,7 @@ daophot_phot() {
 	fi
 	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${3})"
     fi
-    write_process_msg "Will run DAOPHOT PHOT"
+    log_info "Will run DAOPHOT PHOT"
 }
 
 # daophot_pick <input file> <nstars> <mag faint> <output psf stars file> PUBLIC
@@ -100,7 +100,7 @@ daophot_pick() {
 	${2} ${3}
 	$(allphot_output ${4})
 EOF
-    write_process_msg "Will run DAOPHOT PICK"
+    log_info "Will run DAOPHOT PICK"
 }
 
 # daophot_psf <input mag file> <input psf stars file> <output psf file> PUBLIC
@@ -124,7 +124,7 @@ daophot_psf() {
 	$(allphot_output ${3})
 
 EOF
-    write_process_msg "Will run DAOPHOT PSF"
+    log_info "Will run DAOPHOT PSF"
 }
 
 # daophot_append <input file 1>  <input file 2> <output merged file> PUBLIC
@@ -136,7 +136,7 @@ daophot_append() {
 	$(allphot_input ${2})
 	$(allphot_output ${3})
 EOF
-    write_process_msg "Will run DAOPHOT APPEND"
+    log_info "Will run DAOPHOT APPEND"
 }
 
 # daophot_offset <input file> <ID> <DX> <DY> <DMAG> <output file>
@@ -148,7 +148,7 @@ daophot_offset() {
 	${2} ${3} ${4} ${5}
 	$(allphot_output ${6})
 EOF
-    write_process_msg "Will run DAOPHOT OFFSET"
+    log_info "Will run DAOPHOT OFFSET"
 }
 
 # daophot_sort <column index> <input file> <output file> <renumber stars?> PUBLIC
@@ -161,7 +161,7 @@ daophot_sort() {
 	$(allphot_output ${3})
 	${4}
 EOF
-    write_process_msg "Will run DAOPHOT SORT"
+    log_info "Will run DAOPHOT SORT"
 }
 
 # daophot_substar <input psf file> <input phot file>  [<stars to keep file>] <output FITS file> PUBLIC
@@ -183,7 +183,7 @@ EOF
 	echo >> ${ALLPHOT_CMDFILE} "N"
 	echo >> ${ALLPHOT_CMDFILE} "$(allphot_output ${4})"
     fi
-    write_process_msg "Will run DAOPHOT SUBSTAR"
+    log_info "Will run DAOPHOT SUBSTAR"
 }
 
 # daophot_peak <input phot file> <input psf file> <output file> PUBLIC
@@ -195,7 +195,7 @@ daophot_peak() {
 	$(allphot_input ${2})
 	$(allphot_output ${3})
 EOF
-    write_process_msg "Will run DAOPHOT PEAK"
+    log_info "Will run DAOPHOT PEAK"
 }
 
 # daophot_group <input photometry file> <input psf file> <critical overlay> <output group file> PUBLIC
@@ -208,7 +208,7 @@ daophot_group() {
 	${3}
 	$(allphot_output ${4})
 EOF
-    write_process_msg "Will run DAOPHOT GROUP"
+    log_info "Will run DAOPHOT GROUP"
 }
 
 # daophot_nstar <input psf file> <input group file> <output file> PUBLIC
@@ -220,7 +220,7 @@ daophot_nstar() {
 	$(allphot_input ${2})
 	$(allphot_output ${3})
 EOF
-    write_process_msg "Will run DAOPHOT NSTAR"
+    log_info "Will run DAOPHOT NSTAR"
 }
 
 # daophot_select <input group file> <min group file> <max group> <output group file> PUBLIC
@@ -232,7 +232,7 @@ daophot_select() {
 	${2},${3}
 	$(allphot_output ${4})
 EOF
-    write_process_msg "Will run DAOPHOT SELECT"
+    log_info "Will run DAOPHOT SELECT"
 }
 
 # daophot_dump <box size> <x center> <y center> PUBLIC
@@ -243,7 +243,7 @@ daophot_dump() {
 	${1}
 	${2},${3}
 EOF
-    write_process_msg "Will run DAOPHOT DUMP"
+    log_info "Will run DAOPHOT DUMP"
 }
 
 # daophot_addstar <input psf file> <seed> <gain> <minmag> <maxmag> <nstars> <nframes> <prefix>
@@ -277,9 +277,9 @@ EOF
 
 EOF
     else
-	die -q "Incorrect number of parameters in addstar"
+	log_fatal "Incorrect number of parameters in addstar"
     fi
-    write_process_msg "Will run DAOPHOT ADDSTAR"
+    log_info "Will run DAOPHOT ADDSTAR"
 }
 
 # daophot_fudge <output> <first col> <last col> <first row> <last row> <brightness>
@@ -306,9 +306,9 @@ EOF
 	    e
 EOF
     else
-	die -q "Incorrect number of parameters in fudge"
+	log_fatal "Incorrect number of parameters in fudge"
     fi
-    write_process_msg "Will run DAOPHOT FUDGE"
+    log_info "Will run DAOPHOT FUDGE"
 }
 
 # dao_allstar <fits file> <input psf file> <input mag file> <output allstar file> <output fits sub> PUBLIC
@@ -322,5 +322,5 @@ dao_allstar() {
 	$(allphot_output ${4})
 	$(allphot_output ${5})
 EOF
-    write_process_msg "Will run ALLSTAR"
+    log_info "Will run ALLSTAR"
 }

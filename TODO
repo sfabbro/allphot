@@ -1,18 +1,29 @@
-The following features are planned, development has not started.
+# TODO
 
-== 0.8.3 ==
-* check non pwd files for all execs
-* add a --quiet or multiple logging options
-* example of pipelines for DAOMATCH/DAOMASTER/ALLFRAME
-* improvements on the psf iteration:
-  - remove *,?,saturated,defective from stdout DAOPHOT/PSF
-  - much quicker psf
+The following features are planned.
 
-== 0.9 ==
-* daogrow module and pipelines
-* tests work: compare, many more tests, generate fits
-* find a way to exit from a bash script calls allphot
-* more pipeline works
+## 0.8.3
 
-== 1.0 ==
-* bug fixes from 0.9 only
+*   [ ] Check non-pwd files for all execs.
+*   [x] Add a `--quiet` or multiple logging options.
+    *   A new logging system with multiple verbosity levels has been implemented.
+*   [ ] Example of pipelines for DAOMATCH/DAOMASTER/ALLFRAME.
+*   [ ] Improvements on the psf iteration:
+    *   Remove `*`, `?`, `saturated`, `defective` from stdout of DAOPHOT/PSF.
+    *   Much quicker psf.
+
+## 0.9
+
+*   [ ] `daogrow` module and pipelines.
+*   [ ] Tests work: compare, many more tests, generate fits.
+*   [ ] Find a way to exit from a bash script that calls `allphot`.
+*   [ ] More pipeline works.
+
+## 1.0
+
+*   [ ] Bug fixes from 0.9 only.
+
+## Other
+
+*   [x] Modernize the build system from Autotools to CMake.
+*   [x] Improve the command-line interface for the `cat` module.

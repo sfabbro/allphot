@@ -4,7 +4,8 @@ allphotlibs_SCRIPTS = \
 	default.allphot \
 	core.bash \
 	config.bash \
-        output.bash \
+	output.bash \
+	logging.bash \
 	paths.bash \
 	tests.bash \
 	qa.bash \
@@ -17,7 +18,8 @@ EXTRA_DIST = \
 	default.allphot.in \
 	core.bash.in \
 	config.bash.in \
-        output.bash.in \
+	output.bash.in \
+	logging.bash.in \
 	paths.bash.in \
 	tests.bash.in \
 	options.bash.in \
